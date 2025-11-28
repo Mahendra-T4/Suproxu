@@ -1,0 +1,543 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:async';
+import 'dart:developer';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import 'package:trading_app/Assets/assets.dart';
+import 'package:trading_app/core/constants/color.dart';
+import 'package:trading_app/core/extensions/color_ext.dart';
+import 'package:trading_app/core/responsive/responsive.dart';
+import 'package:trading_app/core/service/connectivity/connectivity_service.dart';
+import 'package:trading_app/core/service/connectivity/no_internet.dart';
+import 'package:trading_app/core/service/page/not_connected.dart';
+import 'package:trading_app/core/service/repositorie/global_respo.dart';
+import 'package:trading_app/features/navbar/home/mcx/McxSymbolsScreen.dart';
+import 'package:trading_app/features/navbar/home/model/mcx_entity.dart';
+import 'package:trading_app/features/navbar/home/model/stock_list_entity.dart';
+import 'package:trading_app/features/navbar/home/repository/trade_repository.dart';
+import 'package:trading_app/features/navbar/wishlist/repositories/wishlist_repo.dart';
+
+class Mcxscreen extends StatefulWidget {
+  bool isMCX = false;
+  Mcxscreen({
+    Key? key,
+    required this.isMCX,
+  }) : super(key: key);
+
+  static const String routeName = '/mcx-screen';
+
+  @override
+  State<Mcxscreen> createState() => _McxscreenState();
+}
+
+class _McxscreenState extends State<Mcxscreen>
+    with SingleTickerProviderStateMixin {
+  final StreamController<List<RecordMCX>> _streamController =
+      StreamController<List<RecordMCX>>.broadcast();
+  late Timer _dataTimer;
+  late TabController _tabController;
+  late StockListEntity stockListEntity;
+  List<RecordMCX> records = [];
+  List<RecordMCX> filteredRecords = [];
+  TextEditingController searchController = TextEditingController();
+  bool isMarketOpen = true;
+  bool isSearch = false;
+
+  // InternetConnection isConnected = InternetConnection()
+
+  final _searchDebouncer =
+      Debouncer(milliseconds: 500); // Increased for better performance
+  final FocusNode _searchFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    _initializeTabs();
+    _tabController = TabController(
+        length: 5, vsync: this); // Adjust length dynamically if needed
+
+    _dataTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
+      _fetchData();
+      _checkMarketStatus();
+    }); // Reduced frequency
+    _fetchData(); // Initial fetch
+    _checkMarketStatus();
+    super.initState();
+  }
+
+  // Color colorBlink(dynamic baseValue, dynamic compValue) {
+  //   if (baseValue > compValue) {
+  //     return Colors.green;
+  //   } else if (baseValue < compValue) {
+  //     return Colors.red;
+  //   } else {
+  //     return Colors.transparent;
+  //   }
+  // }
+
+  Future<void> _initializeTabs() async {
+    stockListEntity = await GlobalRepository.stocksMapper();
+    // Optionally update _tabController length based on stockListEntity if dynamic
+  }
+
+  Future<void> _fetchData() async {
+    try {
+      final dataModel = await TradeRepository.mcxTradeDataLoader(
+          query: searchController.text);
+      if (!_streamController.isClosed) {
+        final newRecords = dataModel.response ?? [];
+        records = newRecords;
+        _streamController.add(records); // Always add, even if same
+      }
+    } catch (error) {
+      if (!_streamController.isClosed) {
+        _streamController.addError("Error fetching data: $error");
+      }
+    }
+  }
+
+  bool _recordsHaveChanged(List<RecordMCX> newRecords) {
+    if (newRecords.length != records.length) return true;
+    for (int i = 0; i < newRecords.length; i++) {
+      if (newRecords[i].symbolKey != records[i].symbolKey ||
+          newRecords[i].ohlc?.lastPrice != records[i].ohlc?.lastPrice) {
+        return true; // Check key fields for changes
+      }
+    }
+    return false;
+  }
+
+  void _checkMarketStatus() {
+    final now = DateTime.now();
+    final marketOpenTime = DateTime(now.year, now.month, now.day, 9, 15);
+    final marketCloseTime = DateTime(now.year, now.month, now.day, 23, 00);
+
+    // Make sure the system is not on Saturday or Sunday
+    final isWeekday =
+        now.weekday >= DateTime.monday && now.weekday <= DateTime.friday;
+
+    final newMarketStatus = isWeekday &&
+        now.isAfter(marketOpenTime) &&
+        now.isBefore(marketCloseTime);
+
+    if (isMarketOpen != newMarketStatus) {
+      setState(() {
+        isMarketOpen = newMarketStatus;
+      });
+    }
+
+    print('Now: $now');
+    print('Market Open Time: $marketOpenTime');
+    print('Market Close Time: $marketCloseTime');
+    print('Market Status: $isMarketOpen');
+  }
+
+  @override
+  void dispose() {
+    _dataTimer.cancel();
+    _streamController.close();
+    _tabController.dispose();
+    _searchDebouncer.dispose();
+    _searchFocusNode.dispose();
+    searchController.dispose();
+    super.dispose();
+  }
+
+  String _formatNumber(dynamic number) {
+    if (number == null) return 'N/A';
+    return NumberFormat('#,##,##0.00').format(number);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // final connectivity = context.watch<ConnectivityService>();
+    return Scaffold(
+            backgroundColor: scaffoldBGColor,
+            appBar: AppBar(
+              backgroundColor: scaffoldBGColor,
+              title: const Text(
+                'Status',
+                style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 16,
+                    color: Colors.white),
+              ),
+              actions: [
+                Container(
+                  margin: const EdgeInsets.only(right: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isMarketOpen
+                        ? const Color(0xFF00C853)
+                        : const Color(0xFFFF3D00),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    isMarketOpen ? 'OPEN' : 'CLOSED',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                )
+              ],
+            ),
+            body: Column(
+              children: [
+                if (widget.isMCX) _buildSearchBar(),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: StreamBuilder<List<RecordMCX>>(
+                    stream: _streamController.stream,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        // return Center(child: Text("Error: ${snapshot.error}"));
+                        log("Error: ${snapshot.error}");
+                      }
+                      if (!snapshot.hasData || snapshot.data == null) {
+                        // return const Center(child: Text("No Data Available"));
+                        log("No Data Available");
+                      }
+
+                      final displayRecords = snapshot.data;
+
+                      return Column(
+                        children: [
+                          // Container(
+                          //   padding: EdgeInsets.symmetric(
+                          //       horizontal:
+                          //           Responsive.screenHeight(context) * 0.04),
+                          //   child: Row(
+                          //     children: [
+                          //       Expanded(
+                          //           flex: 3,
+                          //           child: Text('SYMBOL',
+                          //               style: TextStyle(
+                          //                   color: Colors.grey,
+                          //                   fontSize: 16.sp,
+                          //                   fontWeight: FontWeight.w600))),
+                          //       Expanded(
+                          //           flex: 2,
+                          //           child: Text('SELL',
+                          //               style: TextStyle(
+                          //                   color: Colors.red,
+                          //                   fontSize: 16.sp,
+                          //                   fontWeight: FontWeight.w600),
+                          //               textAlign: TextAlign.end)),
+                          //       Expanded(
+                          //           flex: 2,
+                          //           child: Text('BUY',
+                          //               style: TextStyle(
+                          //                   color: Colors.green,
+                          //                   fontSize: 16.sp,
+                          //                   fontWeight: FontWeight.w600),
+                          //               textAlign: TextAlign.end)),
+                          //     ],
+                          //   ),
+                          // ),
+                          if (snapshot.data != null)
+                            Expanded(
+                              child: ListView.builder(
+                                itemCount: snapshot.data?.length,
+                                itemBuilder: (context, index) => _buildListItem(
+                                    snapshot.data![index],
+                                    index,
+                                    snapshot.data!),
+                              ),
+                            )
+                          // : Padding(
+                          //     padding: EdgeInsets.only(
+                          //         top: MediaQuery.sizeOf(context).width *
+                          //             .60),
+                          //     child: const Center(
+                          //       child: Text(
+                          //         'NO Data Found',
+                          //         style: TextStyle(color: Colors.white),
+                          //       ),
+                          //     ),
+                          //   ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        // : const NoInternetConnection();
+  }
+
+  Widget _buildListItem(
+      RecordMCX record, int index, List<RecordMCX> snapshotData) {
+    if (record.symbol == null || record.ohlc == null) {
+      return const Center(
+          child: Text('Invalid record',
+              style: TextStyle(fontSize: 16, color: Colors.white)));
+    }
+
+    return GestureDetector(
+      onTap: () {
+        if (record.symbol != null) {
+          GoRouter.of(context).pushNamed(Symbolscreen.routeName,
+              extra: SymbolScreenParams(
+                  symbol: record.symbol.toString(),
+                  index: index,
+                  symbolKey: record.symbolKey.toString()));
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+            color: const Color(0xFF2C2C2E),
+            borderRadius: BorderRadius.circular(12)),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(record.symbolName ?? '',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.white)),
+                      SizedBox(height: 4.h),
+                    ],
+                  ),
+                ),
+                Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            color: colorBlinkExtension(
+                                baseValue: record.ohlc!.lastPrice,
+                                compValue: record.ohlc!.salePrice),
+                          ),
+                          child: Text(
+                              "₹${_formatNumber(record.ohlc!.salePrice)}",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.bold)),
+                        ),
+                        SizedBox(width: 20.w),
+                        Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            color: colorBlinkExtension(
+                                baseValue: record.ohlc!.lastPrice,
+                                compValue: record.ohlc!.buyPrice),
+                          ),
+                          child: Text(
+                              "₹${_formatNumber(record.ohlc!.buyPrice)}",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: Responsive.screenHeight(context) * 0.01),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 5,
+                  children: [
+                    Text(record.expiryDate ?? '',
+                        style: TextStyle(color: Colors.grey, fontSize: 12.sp)),
+                    // Row(
+                    //   children: [
+                    //     const Text(
+                    //       'LotSize : ',
+                    //       style: TextStyle(
+                    //           fontWeight: FontWeight.w400,
+                    //           color: Colors.white,
+                    //           fontSize: 14),
+                    //     ),
+                    //     Text(
+                    //       record.lotSize.toString(),
+                    //       style: const TextStyle(
+                    //           fontWeight: FontWeight.bold,
+                    //           color: Colors.white,
+                    //           fontSize: 14),
+                    //     )
+                    //   ],
+                    // ),
+                  ],
+                ),
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      WishlistRepository.addToWishlist(
+                        category: 'MCX',
+                        symbolKey: record.symbolKey.toString(),
+                        context: context,
+                      );
+                      record.watchlist =
+                          record.watchlist == 1 ? 1 : 1; // Toggle locally
+                    });
+                  },
+                  child: record.watchlist == 1
+                      ? Image.asset(Assets.assetsImagesSupertradeRomoveWishlist,
+                          scale: 19, color: Colors.deepPurpleAccent)
+                      : Image.asset(Assets.assetsImagesSuperTradeAddWishlist,
+                          scale: 19, color: Colors.white),
+                ),
+              ],
+            ),
+            SizedBox(height: Responsive.screenHeight(context) * 0.02),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Text("LTP: ",
+                        style: TextStyle(color: Colors.white, fontSize: 13)),
+                    Text(_formatNumber(record.ohlc!.lastPrice),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const Text("Chg: ",
+                        style: TextStyle(color: Colors.white, fontSize: 13)),
+                    Text(_formatNumber(record.change),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const Text("H: ",
+                        style: TextStyle(color: Colors.white, fontSize: 13)),
+                    Text(_formatNumber(record.ohlc!.high),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const Text("L: ",
+                        style: TextStyle(color: Colors.white, fontSize: 13)),
+                    Text(_formatNumber(record.ohlc!.low),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2C2C2E),
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 2))
+        ],
+      ),
+      child: TextField(
+        controller: searchController,
+        focusNode: _searchFocusNode,
+        style: TextStyle(color: Colors.white, fontSize: 16.sp),
+        onChanged: (query) {
+          // _searchDebouncer.run(() {
+          //   if (_lastQuery != query) {
+          //     setState(() {
+          //       _lastQuery = query;
+          //       _showClearButton = query.isNotEmpty;
+          //       filteredRecords = _filterRecords(query);
+          //     });
+          //   }
+          // });
+        },
+        decoration: InputDecoration(
+          hintText: 'Search by symbol or price...',
+          hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
+          prefixIcon: Icon(Icons.search, color: Colors.grey[400], size: 20.r),
+          // suffixIcon: _showClearButton
+          //     ? IconButton(
+          //         icon: Icon(Icons.clear, color: Colors.grey[400], size: 20.r),
+          //         onPressed: () {
+          //           searchController.clear();
+          //           setState(() {
+          //             filteredRecords = _filterAndSortRecords(records);
+          //             _showClearButton = false;
+          //           });
+          //           _searchFocusNode.unfocus();
+          //         },
+          //       )
+          //     : null,
+          border: InputBorder.none,
+          contentPadding:
+              EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        ),
+      ),
+    );
+  }
+
+  Color contColor(dynamic open, dynamic last) {
+    final value = (open ?? 0) - (last ?? 0);
+    return value >= 0 ? Colors.green : Colors.red;
+  }
+}
+
+class Debouncer {
+  final int milliseconds;
+  Timer? _timer;
+
+  Debouncer({required this.milliseconds});
+
+  void run(VoidCallback action) {
+    _timer?.cancel();
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
+  }
+
+  void dispose() {
+    _timer?.cancel();
+  }
+}

@@ -1,0 +1,1 @@
+const String mcxBoxKey = 'mcx_data_key';

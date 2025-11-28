@@ -36,265 +36,267 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder(
-        bloc: _tradeBloc,
-        builder: (context, state) {
-          switch (state.runtimeType) {
-            case const (TradeLoadingState):
-              return const Center(
-                child: CircularProgressIndicator.adaptive(),
-              );
-            case const (ClosedTradeLoadedSuccessState):
-              final closedTrade =
-                  (state as ClosedTradeLoadedSuccessState).closedTradeEntity;
-              return closedTrade.status == 1
-                  ? ListView.builder(
-                      shrinkWrap: true,
-                      // padding:
-                      //     EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                      itemCount: closedTrade.record!.length,
-                      itemBuilder: (context, index) {
-                        return InkWell(
-                          onTap: () {
-                            if (closedTrade.record![index].dataRelatedTo ==
-                                'MCX') {
-                              GoRouter.of(context).pushNamed(
-                                  MCXSymbolRecordPage.routeName,
-                                  extra: MCXSymbolParams(
-                                      symbol: closedTrade
-                                          .record![index].symbolName
+      bloc: _tradeBloc,
+      builder: (context, state) {
+        switch (state.runtimeType) {
+          case const (TradeLoadingState):
+            return const Center(child: CircularProgressIndicator.adaptive());
+          case const (ClosedTradeLoadedSuccessState):
+            final closedTrade =
+                (state as ClosedTradeLoadedSuccessState).closedTradeEntity;
+            return closedTrade.status == 1
+                ? ListView.builder(
+                    shrinkWrap: true,
+                    // padding:
+                    //     EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                    itemCount: closedTrade.record!.length,
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        onTap: () {
+                          if (closedTrade.record![index].dataRelatedTo ==
+                              'MCX') {
+                            GoRouter.of(context).pushNamed(
+                              MCXSymbolRecordPage.routeName,
+                              extra: MCXSymbolParams(
+                                symbol: closedTrade.record![index].symbolName
+                                    .toString(),
+                                index: index,
+                                symbolKey: closedTrade.record![index].symbolKey
+                                    .toString(),
+                              ),
+                            );
+                          } else if (closedTrade.record![index].dataRelatedTo ==
+                              'NFO') {
+                            GoRouter.of(context).pushNamed(
+                              NseFutureSymbolPage.routeName,
+                              extra: SymbolScreenParams(
+                                symbol: closedTrade.record![index].symbolName
+                                    .toString(),
+                                index: index,
+                                symbolKey: closedTrade.record![index].symbolKey
+                                    .toString(),
+                              ),
+                            );
+                          }
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(top: 15),
+                          padding: const EdgeInsets.only(left: 10, right: 10),
+                          alignment: Alignment.center,
+                          child: Column(
+                            spacing: 4,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  SizedBox(
+                                    width:
+                                        MediaQuery.sizeOf(context).width / 2.6,
+                                    child: Text(
+                                      closedTrade.record![index].symbolName
                                           .toString(),
-                                      index: index,
-                                      symbolKey: closedTrade
-                                          .record![index].symbolKey
-                                          .toString()));
-                            } else if (closedTrade
-                                    .record![index].dataRelatedTo ==
-                                'NFO') {
-                              GoRouter.of(context).pushNamed(
-                                  NseFutureSymbolPage.routeName,
-                                  extra: SymbolScreenParams(
-                                      symbol: closedTrade
-                                          .record![index].symbolName
-                                          .toString(),
-                                      index: index,
-                                      symbolKey: closedTrade
-                                          .record![index].symbolKey
-                                          .toString()));
-                            }
-                          },
-                          child: Container(
-                              margin: const EdgeInsets.only(top: 15),
-                              padding:
-                                  const EdgeInsets.only(left: 10, right: 10),
-                              alignment: Alignment.center,
-                              child: Column(
-                                spacing: 4,
-                                mainAxisAlignment: MainAxisAlignment.center,
+                                    ).textStyleH1(),
+                                  ),
+                                  Row(
+                                    spacing: 4,
+                                    children: [
+                                      Container(
+                                        // margin: const EdgeInsets.only(left: 10),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          // vertical: 2.5,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          border: Border.all(
+                                            color:
+                                                closedTrade
+                                                    .record![index]
+                                                    .profitLoss
+                                                    .toString()
+                                                    .contains('-')
+                                                ? Colors.red
+                                                : Colors.green,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          '${closedTrade.record![index].profitLoss}/${closedTrade.record![index].brokerageValue}',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+
+                                            // fontFamily: 'JetBrainsMono',
+                                            color:
+                                                closedTrade
+                                                    .record![index]
+                                                    .profitLoss
+                                                    .toString()
+                                                    .contains('-')
+                                                ? Colors.red
+                                                : Colors.green,
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        // margin: const EdgeInsets.only(left: 10),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          // vertical: 2.5,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          border: Border.all(
+                                            color: Colors.green,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Qty ${closedTrade.record![index].stockQty}',
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            // fontFamily: 'JetBrainsMono',
+                                            color: Colors.green,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 4.h),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.sizeOf(context).width /
-                                                2.6,
-                                        child: Text(
-                                          closedTrade.record![index].symbolName
-                                              .toString(),
-                                        ).textStyleH1(),
-                                      ),
-                                      Row(
-                                        spacing: 4,
-                                        children: [
-                                          Container(
-                                            // margin: const EdgeInsets.only(left: 10),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              // vertical: 2.5,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              border: Border.all(
-                                                color: closedTrade
-                                                        .record![index]
-                                                        .profitLoss
-                                                        .toString()
-                                                        .contains('-')
-                                                    ? Colors.red
-                                                    : Colors.green,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                            ),
-                                            child: Text(
-                                              '${closedTrade.record![index].profitLoss}/${closedTrade.record![index].brokerageValue}',
-                                              style: TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w600,
-                                                // fontFamily: 'JetBrainsMono',
-
-                                                color: closedTrade
-                                                        .record![index]
-                                                        .profitLoss
-                                                        .toString()
-                                                        .contains('-')
-                                                    ? Colors.red
-                                                    : Colors.green,
-                                              ),
-                                            ),
-                                          ),
-                                          Container(
-                                            // margin: const EdgeInsets.only(left: 10),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              // vertical: 2.5,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              border: Border.all(
-                                                  color: Colors.green),
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                            ),
-                                            child: Text(
-                                              'Qty ${closedTrade.record![index].stockQty}',
-                                              style: const TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w600,
-                                                // fontFamily: 'JetBrainsMono',
-                                                color: Colors.green,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  SizedBox(height: 4.h),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            'Sold by Trader',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                color: kGoldenBraunColor,
-                                                // fontFamily: 'JetBrainsMono',
-                                                fontSize: 12),
-                                          ),
-                                          Container(
-                                            margin:
-                                                const EdgeInsets.only(left: 10),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              // vertical: 2.5,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              border: Border.all(
-                                                  color: Colors.redAccent),
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                            ),
-                                            child: Text(
-                                              '${closedTrade.record![index].salePrice}',
-                                              style: const TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                // fontFamily: 'JetBrainsMono',
-                                                color: Colors.redAccent,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          const Text(
-                                            'Bought by Trader',
-                                          ).textStyleH3(),
-                                          Container(
-                                            margin:
-                                                const EdgeInsets.only(left: 10),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              // vertical: 2.5,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              border: Border.all(
-                                                  color: Colors.green),
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                            ),
-                                            child: Text(
-                                              '${closedTrade.record![index].buyPrice}',
-                                              style: const TextStyle(
-                                                // fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                // fontFamily: 'JetBrainsMono',
-                                                color: Colors.green,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        '${closedTrade.record![index].closeDate}',
-                                      ).textStyleH2(),
-                                      // Text(
-                                      //   'Holding Mar.Ref: 10000',
-                                      //   style: TextStyle(
-                                      //       fontWeight: FontWeight.w400,
-                                      //       fontSize: 12),
-                                      // ),
+                                        'Sold by Trader',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: kGoldenBraunColor,
+                                          // fontFamily: 'JetBrainsMono',
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      Container(
+                                        margin: const EdgeInsets.only(left: 10),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          // vertical: 2.5,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          border: Border.all(
+                                            color: Colors.redAccent,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          '${closedTrade.record![index].salePrice}',
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            // fontFamily: 'JetBrainsMono',
+                                            color: Colors.redAccent,
+                                          ),
+                                        ),
+                                      ),
                                     ],
                                   ),
-                                  const Divider(
-                                    thickness: 1.5,
-                                    color: zBlack,
-                                  )
+                                  Row(
+                                    children: [
+                                      const Text(
+                                        'Bought by Trader',
+                                      ).textStyleH3(),
+                                      Container(
+                                        margin: const EdgeInsets.only(left: 10),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          // vertical: 2.5,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          border: Border.all(
+                                            color: Colors.green,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          '${closedTrade.record![index].buyPrice}',
+                                          style: const TextStyle(
+                                            // fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            // fontFamily: 'JetBrainsMono',
+                                            color: Colors.green,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
-                              )),
-                        );
-                      },
-                    )
-                  : Center(
-                      child: Text(
-                        closedTrade.message.toString(),
-                        style: TextStyle(
-                          color: kGoldenBraunColor,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '${closedTrade.record![index].closeDate}',
+                                  ).textStyleH2(),
+                                  // Text(
+                                  //   'Holding Mar.Ref: 10000',
+                                  //   style: TextStyle(
+                                  //       fontWeight: FontWeight.w400,
+                                  //       fontSize: 12),
+                                  // ),
+                                ],
+                              ),
+                              const Divider(thickness: 1.5, color: zBlack),
+                            ],
+                          ),
                         ),
+                      );
+                    },
+                  )
+                : Center(
+                    child: Text(
+                      closedTrade.message.toString(),
+                      style: TextStyle(
+                        color: kWhiteColor,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
                       ),
-                    );
-            case const (ClosedTradeFailedErrorState):
-              return Center(
-                child: Text(
-                  (state as ClosedTradeFailedErrorState).error,
-                  style: TextStyle(color: Colors.red, fontSize: 16.sp),
-                ),
-              );
-            default:
-              return const Center(
-                child: Text(
-                  'State not found',
-                  style: TextStyle(color: Colors.white),
-                ),
-              );
-          }
-        });
+                    ),
+                  );
+          case const (ClosedTradeFailedErrorState):
+            return Center(
+              child: Text(
+                (state as ClosedTradeFailedErrorState).error,
+                style: TextStyle(color: Colors.red, fontSize: 16.sp),
+              ),
+            );
+          default:
+            return const Center(
+              child: Text(
+                'State not found',
+                style: TextStyle(color: Colors.white),
+              ),
+            );
+        }
+      },
+    );
   }
 }
 
@@ -310,18 +312,19 @@ class OrderCard extends StatelessWidget {
   final String closeMargin;
   final dynamic brockrage;
 
-  const OrderCard(
-      {super.key,
-      required this.stockName,
-      required this.expiryDate,
-      required this.soldBy,
-      required this.boughtBy,
-      required this.market,
-      required this.qty,
-      required this.totalBuyPrice,
-      required this.totalSalePrice,
-      required this.closeMargin,
-      required this.brockrage});
+  const OrderCard({
+    super.key,
+    required this.stockName,
+    required this.expiryDate,
+    required this.soldBy,
+    required this.boughtBy,
+    required this.market,
+    required this.qty,
+    required this.totalBuyPrice,
+    required this.totalSalePrice,
+    required this.closeMargin,
+    required this.brockrage,
+  });
 
   parseDigits(String value) {
     return double.tryParse(value)?.toStringAsFixed(2) ?? value;
@@ -341,10 +344,7 @@ class OrderCard extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.grey[800]!,
-          width: 1,
-        ),
+        border: Border.all(color: Colors.grey[800]!, width: 1),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16.r),
@@ -389,7 +389,7 @@ class OrderCard extends StatelessWidget {
                 _buildTradeDetails1(),
                 SizedBox(height: 16.h),
                 _buildProfitLoss(),
-                _buildBrokrage()
+                _buildBrokrage(),
               ],
             ),
           ),
@@ -405,11 +405,7 @@ class OrderCard extends StatelessWidget {
         color: Colors.blue.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12.r),
       ),
-      child: Icon(
-        Icons.show_chart,
-        color: Colors.blue,
-        size: 20.r,
-      ),
+      child: Icon(Icons.show_chart, color: Colors.blue, size: 20.r),
     );
   }
 
@@ -447,9 +443,15 @@ class OrderCard extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _buildTradeInfo(
-            "Total Sale Price", parseDigits(totalSalePrice), Colors.red),
+          "Total Sale Price",
+          parseDigits(totalSalePrice),
+          Colors.red,
+        ),
         _buildTradeInfo(
-            "Total Buy Price", parseDigits(totalBuyPrice), Colors.green),
+          "Total Buy Price",
+          parseDigits(totalBuyPrice),
+          Colors.green,
+        ),
         // _buildTradeInfo("Qty", qty, Colors.blue),
       ],
     );
@@ -461,10 +463,7 @@ class OrderCard extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(
-            color: Colors.grey[400],
-            fontSize: 12.sp,
-          ),
+          style: TextStyle(color: Colors.grey[400], fontSize: 12.sp),
         ),
         SizedBox(height: 4.h),
         Text(
@@ -485,10 +484,7 @@ class OrderCard extends StatelessWidget {
       children: [
         Text(
           "Close Margin",
-          style: TextStyle(
-            color: kGoldenBraunColor,
-            fontSize: 14.sp,
-          ),
+          style: TextStyle(color: kGoldenBraunColor, fontSize: 14.sp),
         ),
         Text(
           parseDigits(closeMargin),
@@ -508,10 +504,7 @@ class OrderCard extends StatelessWidget {
       children: [
         Text(
           "Brokerage",
-          style: TextStyle(
-            color: kGoldenBraunColor,
-            fontSize: 14.sp,
-          ),
+          style: TextStyle(color: kGoldenBraunColor, fontSize: 14.sp),
         ),
         Text(
           brockrage.toString(),

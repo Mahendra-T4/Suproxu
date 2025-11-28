@@ -47,9 +47,7 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
             },
           ),
         ],
-        title: Text(
-          widget.params.symbol,
-        ).textStyleH(),
+        title: Text(widget.params.symbol).textStyleH(),
       ),
       body: StreamBuilder<bool>(
         stream: InternetConnectionService().connectionStream,
@@ -89,14 +87,11 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
 
               // Show loading indicator while waiting for first data
               if (symbolData.status != 1 && errorMessage == null) {
-                webSocket.connect();
-                return const SizedBox.shrink();
+                return const Center(child: CircularProgressIndicator());
               }
 
               if (symbolData.response.isEmpty) {
-                return const Center(
-                  child: Text('No data available'),
-                );
+                return const Center(child: Text('No data available'));
               }
 
               return SingleChildScrollView(
@@ -105,7 +100,9 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
                     SizedBox(height: screenHeight * 0.01),
                     Container(
                       margin: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         color: kWhiteColor,
@@ -130,8 +127,9 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
                                             end: Alignment.bottomRight,
                                             colors: [
                                               const Color(0xFF00C853),
-                                              const Color(0xFF00C853)
-                                                  .withOpacity(0.8),
+                                              const Color(
+                                                0xFF00C853,
+                                              ).withOpacity(0.8),
                                             ],
                                           )
                                         : null,
@@ -139,8 +137,9 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
                                     boxShadow: selectedTab == 0
                                         ? [
                                             BoxShadow(
-                                              color: const Color(0xFF00C853)
-                                                  .withOpacity(0.3),
+                                              color: const Color(
+                                                0xFF00C853,
+                                              ).withOpacity(0.3),
                                               spreadRadius: 1,
                                               blurRadius: 8,
                                               offset: const Offset(0, 2),
@@ -196,16 +195,18 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
                                             end: Alignment.bottomRight,
                                             colors: [
                                               const Color(0xFF00C853),
-                                              const Color(0xFF00C853)
-                                                  .withOpacity(0.8),
+                                              const Color(
+                                                0xFF00C853,
+                                              ).withOpacity(0.8),
                                             ],
                                           )
                                         : null,
                                     boxShadow: selectedTab == 1
                                         ? [
                                             BoxShadow(
-                                              color: const Color(0xFF00C853)
-                                                  .withOpacity(0.3),
+                                              color: const Color(
+                                                0xFF00C853,
+                                              ).withOpacity(0.3),
                                               spreadRadius: 1,
                                               blurRadius: 8,
                                               offset: const Offset(0, 2),
@@ -247,20 +248,20 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
                     ),
                     symbolData.status == 1
                         ? selectedTab == 0
-                            ? marketCrudeoil(
-                                context,
-                                symbolData.response.first.ohlc,
-                                symbolData.response.first,
-                                screenHeight,
-                                screenWidth,
-                              )
-                            : limitCrudeoil(
-                                context,
-                                symbolData.response.first.ohlc,
-                                symbolData.response.first,
-                                screenHeight,
-                                screenWidth,
-                              )
+                              ? marketCrudeoil(
+                                  context,
+                                  symbolData.response.first.ohlc,
+                                  symbolData.response.first,
+                                  screenHeight,
+                                  screenWidth,
+                                )
+                              : limitCrudeoil(
+                                  context,
+                                  symbolData.response.first.ohlc,
+                                  symbolData.response.first,
+                                  screenHeight,
+                                  screenWidth,
+                                )
                         : Center(
                             child: Text(
                               symbolData.message.toString(),
@@ -270,7 +271,7 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                          )
+                          ),
                   ],
                 ),
               );

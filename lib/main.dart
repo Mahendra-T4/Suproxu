@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
     return ScreenUtilInit(
       child: ProviderScope(
         child: MaterialApp.router(
-          title: 'Stock Info',
+          title: 'Suproxu',
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,

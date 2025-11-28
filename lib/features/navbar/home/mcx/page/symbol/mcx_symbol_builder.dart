@@ -32,10 +32,12 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
   final TextEditingController usernameController = TextEditingController(
     text: 0.toString(),
   );
-  final TextEditingController lotsMktController =
-      TextEditingController(text: '1');
-  final TextEditingController lotsOdrController =
-      TextEditingController(text: '1');
+  final TextEditingController lotsMktController = TextEditingController(
+    text: '1',
+  );
+  final TextEditingController lotsOdrController = TextEditingController(
+    text: '1',
+  );
   int lots = 1; // Variable to track the lot count
   int selectedTab = 0;
   bool isBuyClicked = false;
@@ -59,12 +61,16 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
         if (!mounted) return;
         try {
           // Extra validation: ensure response contains the requested symbol
-          final hasMatchingSymbol = data.response.isNotEmpty && 
+          final hasMatchingSymbol =
+              data.response.isNotEmpty &&
               data.response.any(
-                  (r) => r.symbolKey.trim() == widget.params.symbolKey.trim());
+                (r) => r.symbolKey.trim() == widget.params.symbolKey.trim(),
+              );
 
           if (!hasMatchingSymbol) {
-            log('⚠ Rejected data: no matching symbolKey. Expected: ${widget.params.symbolKey}');
+            log(
+              '⚠ Rejected data: no matching symbolKey. Expected: ${widget.params.symbolKey}',
+            );
             return;
           }
 
@@ -104,6 +110,55 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
   final client = http.Client();
   final url = Uri.parse(superTradeBaseApiEndPointUrl);
   dynamic uBalance;
+
+  /// Fetch initial data via HTTP to show immediately while WebSocket connects
+  Future<void> _fetchInitialDataViaHttp() async {
+    try {
+      DatabaseService databaseService = DatabaseService();
+      final userKey = await databaseService.getUserData(key: userIDKey);
+      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      final deviceID = androidInfo.id.toString();
+
+      final response = await client
+          .post(
+            url,
+            body: {
+              'activity': 'get-stock-record',
+              'userKey': userKey,
+              'symbolKey': widget.params.symbolKey,
+              'dataRelatedTo': 'MCX',
+              'deviceID': deviceID.toString(),
+            },
+          )
+          .timeout(
+            const Duration(seconds: 5),
+            onTimeout: () => http.Response('timeout', 408),
+          );
+
+      if (response.statusCode == 200) {
+        if (!mounted) return;
+        try {
+          final jsonResponse = jsonDecode(response.body);
+          final data = GetStockRecordEntity.fromJson(jsonResponse);
+
+          if (data.status == 1 && data.response.isNotEmpty) {
+            setState(() {
+              symbolData = data;
+              errorMessage = null;
+            });
+            log('Initial HTTP data loaded successfully');
+          }
+        } catch (e) {
+          log('Failed to parse initial HTTP response: $e');
+        }
+      }
+    } catch (e) {
+      log('Initial HTTP fetch error: $e');
+      // Continue silently - WebSocket will handle it
+    }
+  }
+
   Future<void> buyStock({
     required String symbolKey,
     required String activity,
@@ -326,7 +381,8 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
     final isWeekday =
         now.weekday >= DateTime.monday && now.weekday <= DateTime.friday;
 
-    final newMarketStatus = isWeekday &&
+    final newMarketStatus =
+        isWeekday &&
         now.isAfter(marketOpenTime) &&
         now.isBefore(marketCloseTime);
 
@@ -350,6 +406,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
   void initState() {
     super.initState();
     initMCXSymbolWebSocket();
+    _fetchInitialDataViaHttp(); // Fetch data immediately via HTTP while WebSocket connects
     initUser();
 
     // Setup lots notifier listeners
@@ -427,9 +484,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    "Lots",
-                  ).textStyleH1(),
+                  const Text("Lots").textStyleH1(),
                   ValueListenableBuilder<int>(
                     valueListenable: lotsNotifierMrk,
                     builder: (context, lots, child) {
@@ -467,7 +522,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                               textAlign: TextAlign.center,
                               keyboardType: TextInputType.number,
                               inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly
+                                FilteringTextInputFormatter.digitsOnly,
                               ],
                               style: TextStyle(
                                 fontSize: screenWidth * 0.045,
@@ -553,10 +608,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                             gradient: const LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
-                              colors: [
-                                Color(0xFFFF3B30),
-                                Color(0xFFFF3B30),
-                              ],
+                              colors: [Color(0xFFFF3B30), Color(0xFFFF3B30)],
                             ),
                             // boxShadow: [
                             //   BoxShadow(
@@ -632,9 +684,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                           size: 20,
                                         ),
                                         const SizedBox(width: 8),
-                                        const Text(
-                                          "SELL",
-                                        ).textStyleH1W(),
+                                        const Text("SELL").textStyleH1W(),
                                       ],
                                     ),
                                     const SizedBox(height: 4),
@@ -675,10 +725,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                             gradient: const LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
-                              colors: [
-                                Color(0xFF34C759),
-                                Color(0xFF34C759),
-                              ],
+                              colors: [Color(0xFF34C759), Color(0xFF34C759)],
                             ),
                             // boxShadow: [
                             //   BoxShadow(
@@ -733,9 +780,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                           size: 20,
                                         ),
                                         const SizedBox(width: 8),
-                                        const Text(
-                                          "BUY",
-                                        ).textStyleH1W(),
+                                        const Text("BUY").textStyleH1W(),
                                       ],
                                     ),
                                     const SizedBox(height: 4),
@@ -788,9 +833,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text(
-                                "Bid",
-                              ).textStyleH2S(),
+                              const Text("Bid").textStyleH2S(),
                               const SizedBox(height: 4),
                               Text(
                                 response.lastSell.price.toString(),
@@ -815,9 +858,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text(
-                                "Ask",
-                              ).textStyleH2S(),
+                              const Text("Ask").textStyleH2S(),
                               const SizedBox(height: 4),
                               Text(
                                 response.lastBuy.price.toString(),
@@ -1052,7 +1093,9 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                               onTap: () {
                                 if (lots > 1) {
                                   lotsNotifierLmt.value--;
-                                  log('Lots decreased to: ${lotsNotifierLmt.value}');
+                                  log(
+                                    'Lots decreased to: ${lotsNotifierLmt.value}',
+                                  );
                                 }
                               },
                               borderRadius: BorderRadius.circular(30),
@@ -1082,7 +1125,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                               textAlign: TextAlign.center,
                               keyboardType: TextInputType.number,
                               inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly
+                                FilteringTextInputFormatter.digitsOnly,
                               ],
                               style: TextStyle(
                                 fontSize: screenWidth * 0.045,
@@ -1113,7 +1156,9 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                             child: InkWell(
                               onTap: () {
                                 lotsNotifierLmt.value++;
-                                log('Lots increased to: ${lotsNotifierLmt.value}');
+                                log(
+                                  'Lots increased to: ${lotsNotifierLmt.value}',
+                                );
                               },
                               borderRadius: BorderRadius.circular(30),
                               child: Container(
@@ -1248,8 +1293,10 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                   stockQty: lotsNotifierLmt.value.toString(),
                                 );
                               } else {
-                                waringToast(context,
-                                    'You Cant Sale Stock Your Price is not in Range!');
+                                waringToast(
+                                  context,
+                                  'You Cant Sale Stock Your Price is not in Range!',
+                                );
                               }
                               // if (isMarketOpen) {
 
@@ -1277,7 +1324,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                               (() {
                                 final double price =
                                     double.tryParse(usernameController.text) ??
-                                        0.0;
+                                    0.0;
                                 // final int lots = lotsNotifierLmt.value;
                                 // final double total = price * lots;
                                 return 'SALE ${price.toStringAsFixed(2)}';
@@ -1337,8 +1384,10 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                   stockQty: lotsNotifierLmt.value.toString(),
                                 );
                               } else {
-                                waringToast(context,
-                                    'You Cant Buy Stock Your Price is not in Range!');
+                                waringToast(
+                                  context,
+                                  'You Cant Buy Stock Your Price is not in Range!',
+                                );
                               }
                               // if (isMarketOpen) {
 
@@ -1369,7 +1418,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                               (() {
                                 final double price =
                                     double.tryParse(usernameController.text) ??
-                                        0.0;
+                                    0.0;
                                 // final int lots = lotsNotifierLmt.value;
                                 // final double total = price * lots;
                                 return 'BUY ${price.toStringAsFixed(2)}';
@@ -1672,13 +1721,9 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            label,
-          ).textStyleH2S(),
+          Text(label).textStyleH2S(),
           const SizedBox(height: 4),
-          Text(
-            value.toString(),
-          ).textStyleH1(),
+          Text(value.toString()).textStyleH1(),
         ],
       ),
     );

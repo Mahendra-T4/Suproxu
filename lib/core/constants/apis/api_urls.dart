@@ -1,11 +1,11 @@
 const String superTradeBaseApiEndPointUrl =
-    'https://www.thesupertrade.com/mobile-api/index.php?';
+    'https://www.suproxu.com/mobile-api/index.php?';
 
-const String notificationApiEndPointUrl = 
-    'https://www.thesupertrade.com/mobile-api/index.php?activity=notification&userKey=2dc4bbdadf62eec2dfc46022866002de';
+const String notificationApiEndPointUrl =
+    'https://www.suproxu.com/mobile-api/index.php?activity=notification&userKey=2dc4bbdadf62eec2dfc46022866002de';
 
 const String loginApiEndPointUrl =
-    'https://www.thesupertrade.com/mobile-api/index.php';
+    'https://www.suproxu.com/mobile-api/index.php';
 
 // const String mcxApiEndPointUrl =
 //     'https://www.thesupertrade.com/supertrade/zerodha2/restAPI.php?dataRelatedTo=MCX';
@@ -14,16 +14,16 @@ const String loginApiEndPointUrl =
 //     'https://www.thesupertrade.com/supertrade/zerodha2/restAPI.php?dataRelatedTo=NSE';
 
 const String forgotPasswordApiEndPointUrl =
-    'https://www.thesupertrade.com/mobile-api/index.php';
+    'https://www.suproxu.com/mobile-api/index.php';
 
 // params => activity=forget-password&uEmail=demo@thesupertrade.com
 
 const String changePasswordApiUrlEndPointUrl =
-    'https://www.thesupertrade.com/mobile-api/index.php';
+    'https://www.suproxu.com/mobile-api/index.php';
 
 //* get api
 const String stocksListApiEndPointUrl =
-    'https://www.thesupertrade.com/mobile-api/index.php?activity=get-stock-category&userKey=2dc4bbdadf62eec2dfc46022866002de';
+    'https://www.suproxu.com/mobile-api/index.php?activity=get-stock-category&userKey=2dc4bbdadf62eec2dfc46022866002de';
 
 //* get api
 

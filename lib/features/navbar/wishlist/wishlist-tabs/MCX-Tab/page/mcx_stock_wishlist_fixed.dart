@@ -200,13 +200,15 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
         });
 
         // Create comma-separated string for symbolKey
-        String symbolKeys =
-            _localWatchlist.map((e) => e.symbolKey.toString()).join(',');
+        String symbolKeys = _localWatchlist
+            .map((e) => e.symbolKey.toString())
+            .join(',');
 
         // Create array format string for symbolOrder
-        String orderNumbers =
-            List.generate(_localWatchlist.length, (i) => (i + 1).toString())
-                .join(',');
+        String orderNumbers = List.generate(
+          _localWatchlist.length,
+          (i) => (i + 1).toString(),
+        ).join(',');
 
         WishlistRepository.symbolSorting(
           param: SortListParam(
@@ -239,11 +241,7 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
 
   Widget _buildListItem(MCXWatchlist item, int index) {
     return Container(
-      margin: const EdgeInsets.only(
-        left: 10,
-        right: 10,
-        top: 10,
-      ),
+      margin: const EdgeInsets.only(left: 10, right: 10, top: 10),
       decoration: BoxDecoration(
         color: zBlack,
         borderRadius: BorderRadius.circular(12),
@@ -263,10 +261,7 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(
-          flex: 3,
-          child: Text(item.symbolName ?? '').textStyleH1(),
-        ),
+        Expanded(flex: 3, child: Text(item.symbolName ?? '').textStyleH1()),
         Row(
           children: [
             BlinkingPriceText(
@@ -402,22 +397,24 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
       backgroundColor: zBlack,
       body: Column(
         children: [
-          const SizedBox(
-            height: 8,
-          ),
+          const SizedBox(height: 8),
           SearchWidget(
             hint: 'Search & Add',
             isReadOnly: true,
             onTap: () => context.pushNamed(McxHome.routeName),
           ),
-          const SizedBox(
-            height: 8,
-          ),
+          const SizedBox(height: 8),
           Expanded(
             child: Builder(
               builder: (context) {
-                if (errorMessage != null) {
-                  return _buildErrorState();
+                if (_localWatchlist.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'Data not available',
+                      style: const TextStyle(color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                  );
                 }
 
                 // if (mcxWishlist.mcxWatchlist == null) {

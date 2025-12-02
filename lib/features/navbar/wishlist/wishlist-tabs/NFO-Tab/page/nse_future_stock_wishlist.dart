@@ -49,6 +49,8 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
     });
   }
 
+  String? errorMessage;
+
   void _initializeWebSocket() {
     if (_disposed) return;
 
@@ -96,6 +98,7 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
         _safeSetState(() {
           nfoWishlist = NFOWishlistEntity();
           _localNfoWatchlist = [];
+          errorMessage = error;
         });
       },
       onConnected: () {
@@ -176,7 +179,7 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                   if (_localNfoWatchlist.isEmpty) {
                     return Center(
                       child: Text(
-                        'Data not available',
+                        errorMessage ?? 'Data not available',
                         style: const TextStyle(color: Colors.white),
                         textAlign: TextAlign.center,
                       ),
@@ -213,6 +216,30 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
 
                   return ReorderableListView.builder(
                     itemCount: data.nfoWatchlist!.length,
+                    proxyDecorator: (child, index, animation) {
+                      return AnimatedBuilder(
+                        animation: animation,
+                        builder: (context, child) {
+                          return Material(
+                            elevation: 12,
+                            color: zBlack,
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: zBlack,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: kGoldenBraunColor.withOpacity(0.5),
+                                  width: 2,
+                                ),
+                              ),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: child,
+                      );
+                    },
                     onReorder: (oldIndex, newIndex) {
                       _safeSetState(() {
                         if (newIndex > oldIndex) newIndex--;
@@ -250,7 +277,7 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                       var record = data.nfoWatchlist![index];
                       // Remove unused variable
                       //  final item = data.mcxWatchlist![index];
-
+                      final date = record.expiryDate?.substring(0, 10);
                       return Container(
                         key: ValueKey(record.symbolKey),
                         child: GestureDetector(
@@ -362,9 +389,7 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                                           CrossAxisAlignment.start,
                                       spacing: 5,
                                       children: [
-                                        Text(
-                                          record.expiryDate ?? '',
-                                        ).textStyleH2(),
+                                        Text(date ?? '').textStyleH2(),
                                       ],
                                     ),
                                     IconButton(
@@ -419,11 +444,22 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                                                 strokeWidth: 2,
                                               ),
                                             )
-                                          : SvgPicture.asset(
-                                              Assets
-                                                  .assetsImagesSupertradeRemoveWishlistIcon,
-                                              height: 30,
-                                              color: kGoldenBraunColor,
+                                          : Container(
+                                              decoration: BoxDecoration(
+                                                border: Border.all(
+                                                  color: Colors.green,
+                                                  width: 2,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              width: 20,
+                                              height: 20,
+                                              child: Icon(
+                                                Icons.check,
+                                                size: 16,
+                                                color: Colors.green,
+                                              ),
                                             ),
                                     ),
                                   ],

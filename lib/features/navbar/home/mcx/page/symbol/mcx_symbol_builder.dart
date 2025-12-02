@@ -605,11 +605,12 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                           width: screenWidth / 2.5,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
-                            gradient: const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [Color(0xFFFF3B30), Color(0xFFFF3B30)],
-                            ),
+                            color: Colors.red,
+                            // gradient: const LinearGradient(
+                            //   begin: Alignment.topLeft,
+                            //   end: Alignment.bottomRight,
+                            //   colors: [Color(0xFFFF3B30), Color(0xFFFF3B30)],
+                            // ),
                             // boxShadow: [
                             //   BoxShadow(
                             //     color: const Color(0xFFFF3B30).withOpacity(0.3),
@@ -722,11 +723,12 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                           width: screenWidth / 2.5,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
-                            gradient: const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [Color(0xFF34C759), Color(0xFF34C759)],
-                            ),
+                            color: Colors.green,
+                            // gradient: const LinearGradient(
+                            //   begin: Alignment.topLeft,
+                            //   end: Alignment.bottomRight,
+                            //   colors: [Color(0xFF34C759), Color(0xFF34C759)],
+                            // ),
                             // boxShadow: [
                             //   BoxShadow(
                             //     color: const Color(0xFF34C759).withOpacity(0.3),
@@ -836,8 +838,15 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                               const Text("Bid").textStyleH2S(),
                               const SizedBox(height: 4),
                               Text(
-                                response.lastSell.price.toString(),
-                              ).textStyleH1(),
+                                ohlc.buyPrice.toString(),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
+                                  color: ohlc.buyPrice > ohlc.lastPrice
+                                      ? Colors.white
+                                      : kGoldenBraunColor,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -862,7 +871,14 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                               const SizedBox(height: 4),
                               Text(
                                 response.lastBuy.price.toString(),
-                              ).textStyleH1(),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
+                                  color: ohlc.buyPrice > ohlc.lastPrice
+                                      ? Colors.white
+                                      : kGoldenBraunColor,
+                                ),
+                              ),
                             ],
                           ),
                         ),

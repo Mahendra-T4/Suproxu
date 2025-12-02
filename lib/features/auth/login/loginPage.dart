@@ -4,12 +4,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suproxu/Assets/assets.dart';
+import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/constants/widget/toast.dart';
 import 'package:suproxu/core/error/error_widget.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
 import 'package:suproxu/core/service/page/not_connected.dart';
+import 'package:suproxu/core/widgets/trade_warning.dart';
 import 'package:suproxu/features/Rules/rulesPage.dart';
 import 'package:suproxu/features/auth/bloc/auth_bloc.dart';
 import 'package:suproxu/features/auth/forgot-pass/forgetPassword.dart';
@@ -63,9 +65,12 @@ class _LoginPagesState extends State<LoginPages> {
   Future<void> _checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
     if (isLoggedIn) {
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => const Rulespage()));
+        context,
+        MaterialPageRoute(builder: (context) => const Rulespage()),
+      );
     }
   }
 
@@ -89,281 +94,310 @@ class _LoginPagesState extends State<LoginPages> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<bool>(
-        stream: InternetConnectionService().connectionStream,
-        builder: (context, snapshot) {
-          if (snapshot.data == false) {
-            return const NoInternetConnection(); // Show your offline UI
-          }
-          return Scaffold(
-            backgroundColor: zBlack,
-            resizeToAvoidBottomInset: true,
-            body: SafeArea(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Logo
-                    // SizedBox(height: 50),
-                    Center(
-                      child: Image.asset(
-                        Assets.assetsImageSuproxuTraderLogo,
-                        width: 200,
-                        // color: zBlack,
-                      ),
+      stream: InternetConnectionService().connectionStream,
+      builder: (context, snapshot) {
+        if (snapshot.data == false) {
+          return const NoInternetConnection(); // Show your offline UI
+        }
+        return Scaffold(
+          backgroundColor: zBlack,
+          resizeToAvoidBottomInset: true,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo
+                  // SizedBox(height: 50),
+                  Center(
+                    child: Image.asset(
+                      Assets.assetsImageSuproxuTraderLogo,
+                      width: 200,
+                      // color: zBlack,
                     ),
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 50, vertical: 20),
-                      child: Form(
-                        key: _formKey,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // Email Field
-                              SizedBox(
-                                child: TextFormField(
-                                  style: TextStyle(color: kWhiteColor),
-                                  controller: _emailController,
-                                  focusNode: _emailFocusNode,
-                                  keyboardType: TextInputType.emailAddress,
-                                  textInputAction: TextInputAction.next,
-                                  onFieldSubmitted: (_) {
-                                    FocusScope.of(context)
-                                        .requestFocus(_passwordFocusNode);
-                                  },
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 10.0, horizontal: 20.0),
-                                    label: const Text("Username/Email ID"),
-                                    labelStyle: TextStyle(
-                                        // fontFamily: 'JetBrainsMono',
-                                        fontSize: 16,
-                                        color: kWhiteColor),
-                                    fillColor: Colors.white,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(50),
-                                      borderSide: BorderSide(
-                                          color: kGoldenBraunColor, width: 1.0),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(50),
-                                      borderSide: BorderSide(
-                                          color: kGoldenBraunColor, width: 1.0),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(50),
-                                      borderSide: BorderSide(
-                                          color: kGoldenBraunColor, width: 2.0),
+                  ),
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 50,
+                      vertical: 20,
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Email Field
+                            SizedBox(
+                              child: TextFormField(
+                                style: TextStyle(color: kWhiteColor),
+                                controller: _emailController,
+                                focusNode: _emailFocusNode,
+                                keyboardType: TextInputType.emailAddress,
+                                textInputAction: TextInputAction.next,
+                                onFieldSubmitted: (_) {
+                                  FocusScope.of(
+                                    context,
+                                  ).requestFocus(_passwordFocusNode);
+                                },
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 10.0,
+                                    horizontal: 20.0,
+                                  ),
+                                  label: const Text("Username/Email ID"),
+                                  labelStyle: TextStyle(
+                                    // fontFamily: 'JetBrainsMono',
+                                    fontSize: 16,
+                                    color: kWhiteColor,
+                                  ),
+                                  fillColor: Colors.white,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(50),
+                                    borderSide: BorderSide(
+                                      color: kGoldenBraunColor,
+                                      width: 1.0,
                                     ),
                                   ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter your email ID';
-                                    }
-                                    // final emailRegex = RegExp(
-                                    //     r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                                    // if (!emailRegex.hasMatch(value)) {
-                                    //   return 'Please enter a valid email ID';
-                                    // }
-                                    return null;
-                                  },
-                                ),
-                              ),
-                              SizedBox(height: 15.h),
-                              // Password Field
-                              SizedBox(
-                                child: TextFormField(
-                                  style: TextStyle(color: kWhiteColor),
-                                  controller: _passwordController,
-                                  focusNode: _passwordFocusNode,
-                                  obscureText: !_isPasswordVisible,
-                                  textInputAction: TextInputAction.done,
-                                  decoration: InputDecoration(
-                                    fillColor: zBlack,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 10.0, horizontal: 20.0),
-                                    label: const Text("Password"),
-                                    labelStyle: TextStyle(
-                                        // fontFamily: 'JetBrainsMono',
-                                        fontSize: 16,
-                                        color: kWhiteColor),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(50),
-                                      borderSide: BorderSide(
-                                          color: kGoldenBraunColor, width: 1.0),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(50),
-                                      borderSide: BorderSide(
-                                          color: kGoldenBraunColor, width: 1.0),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(50),
-                                      borderSide: BorderSide(
-                                          color: kGoldenBraunColor, width: 2.0),
-                                    ),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        _isPasswordVisible
-                                            ? Icons.visibility
-                                            : Icons.visibility_off,
-                                        color: zBlack,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _isPasswordVisible =
-                                              !_isPasswordVisible;
-                                        });
-                                      },
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(50),
+                                    borderSide: BorderSide(
+                                      color: kGoldenBraunColor,
+                                      width: 1.0,
                                     ),
                                   ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter your password';
-                                    } else if (value.length < 6) {
-                                      return 'Password too short (min 6 chars)';
-                                    }
-                                    return null;
-                                  },
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(50),
+                                    borderSide: BorderSide(
+                                      color: kGoldenBraunColor,
+                                      width: 2.0,
+                                    ),
+                                  ),
                                 ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your email ID';
+                                  }
+                                  // final emailRegex = RegExp(
+                                  //     r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                                  // if (!emailRegex.hasMatch(value)) {
+                                  //   return 'Please enter a valid email ID';
+                                  // }
+                                  return null;
+                                },
                               ),
-                            ],
-                          ),
+                            ),
+                            SizedBox(height: 15.h),
+                            // Password Field
+                            SizedBox(
+                              child: TextFormField(
+                                style: TextStyle(color: kWhiteColor),
+                                controller: _passwordController,
+                                focusNode: _passwordFocusNode,
+                                obscureText: !_isPasswordVisible,
+                                textInputAction: TextInputAction.done,
+                                decoration: InputDecoration(
+                                  fillColor: zBlack,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 10.0,
+                                    horizontal: 20.0,
+                                  ),
+                                  label: const Text("Password"),
+                                  labelStyle: TextStyle(
+                                    // fontFamily: 'JetBrainsMono',
+                                    fontSize: 16,
+                                    color: kWhiteColor,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(50),
+                                    borderSide: BorderSide(
+                                      color: kGoldenBraunColor,
+                                      width: 1.0,
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(50),
+                                    borderSide: BorderSide(
+                                      color: kGoldenBraunColor,
+                                      width: 1.0,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(50),
+                                    borderSide: BorderSide(
+                                      color: kGoldenBraunColor,
+                                      width: 2.0,
+                                    ),
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _isPasswordVisible
+                                          ? Icons.visibility
+                                          : Icons.visibility_off,
+                                      color: zBlack,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _isPasswordVisible =
+                                            !_isPasswordVisible;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your password';
+                                  } else if (value.length < 6) {
+                                    return 'Password too short (min 6 chars)';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    SizedBox(height: 15.h),
+                  ),
+                  SizedBox(height: 15.h),
 
-                    // Forgot Password Text
-                    InkWell(
-                      onTap: () {
-                        context.pushNamed(Forgetpassword.routeName);
-                        // Navigator.pushNamed(context, Forgetpassword.routeName);
-                      },
-                      child: const Text(
-                        "Forgot Password?",
-                      ).textStyleH1(),
-                    ),
-                    SizedBox(height: 30.h),
-                    BlocConsumer(
-                      bloc: _authBloc,
-                      listener: (context, state) {
-                        if (state is AuthLoadedSuccessStateForUserLogin) {
-                          if (state.loginModel.status == 1) {
-                            successToastMsg(
-                                context, state.loginModel.message.toString());
-                            _authBloc.add(NavigateToGlobalNavbarEvent());
-                          } else {
-                            failedToast(
-                                context, state.loginModel.message.toString());
-                          }
-                        } else if (state is AuthFailedErrorStateForUserLogin) {
-                          ErrorPage(errorMessage: state.error);
-                        } else if (state
-                            is NavigateToGlobalNavBarAuthActionState) {
-                          GoRouter.of(context).goNamed(WishList.routeName);
-                          // Navigator.pushReplacementNamed(
-                          //     context, GlobalNavBar.routeName);
+                  // Forgot Password Text
+                  InkWell(
+                    onTap: () {
+                      context.pushNamed(Forgetpassword.routeName);
+                      // Navigator.pushNamed(context, Forgetpassword.routeName);
+                    },
+                    child: const Text("Forgot Password?").textStyleH1(),
+                  ),
+                  SizedBox(height: 30.h),
+                  BlocConsumer(
+                    bloc: _authBloc,
+                    listener: (context, state) async {
+                      if (state is AuthLoadedSuccessStateForUserLogin) {
+                        if (state.loginModel.status == 1) {
+                          successToastMsg(
+                            context,
+                            state.loginModel.message.toString(),
+                          );
+                          _authBloc.add(NavigateToGlobalNavbarEvent());
+                        } else {
+                          failedToast(
+                            context,
+                            state.loginModel.message.toString(),
+                          );
                         }
-                      },
-                      builder: (_, state) {
-                        if (state is AuthLoadingState) {
-                          return flag
-                              ? const Center(
-                                  child: CircularProgressIndicator.adaptive(),
-                                )
-                              : ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    foregroundColor: Colors.black,
-                                    backgroundColor: kGoldenBraunColor,
-                                    //minimumSize: const Size(120, 20),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 80, vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(50),
-                                    ),
+                      } else if (state is AuthFailedErrorStateForUserLogin) {
+                        ErrorPage(errorMessage: state.error);
+                      } else if (state
+                          is NavigateToGlobalNavBarAuthActionState) {
+                        GoRouter.of(context).goNamed(TradeWarning.routeName);
+                        // Navigator.pushReplacementNamed(
+                        //     context, GlobalNavBar.routeName);
+                      }
+                    },
+                    builder: (_, state) {
+                      if (state is AuthLoadingState) {
+                        return flag
+                            ? const Center(
+                                child: CircularProgressIndicator.adaptive(),
+                              )
+                            : ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.black,
+                                  backgroundColor: kGoldenBraunColor,
+                                  //minimumSize: const Size(120, 20),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 80,
+                                    vertical: 12,
                                   ),
-                                  onPressed: () {},
-                                  child: const Text(
-                                    "LOGGING IN...",
-                                  ).textStyleH1W());
-                        }
-                        return ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.black,
-                              backgroundColor: kGoldenBraunColor,
-                              //minimumSize: const Size(120, 20),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 100, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                            ),
-                            onPressed: () {
-                              final formState = _formKey.currentState;
-                              if (formState != null) {
-                                final isValid = formState.validate();
-                                // Autofocus logic for empty fields
-                                if (_emailController.text.isEmpty) {
-                                  FocusScope.of(context)
-                                      .requestFocus(_emailFocusNode);
-                                } else if (_passwordController.text.isEmpty) {
-                                  FocusScope.of(context)
-                                      .requestFocus(_passwordFocusNode);
-                                }
-                                if (isValid) {
-                                  formState.save();
-                                  _authBloc.add(AuthUserLoginEvent(
-                                      uEmail: _emailController.text,
-                                      uPassword: _passwordController.text));
-                                  flag = false;
-                                }
-                              }
-                              setState(() {});
-                            },
-                            child: const Text(
-                              "LOG IN",
-                            ).textStyleH1W());
-                      },
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                ),
+                                onPressed: () {},
+                                child: const Text(
+                                  "LOGGING IN...",
+                                ).textStyleH1W(),
+                              );
+                      }
+                      return ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.black,
+                          backgroundColor: kGoldenBraunColor,
+                          //minimumSize: const Size(120, 20),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 100,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                        ),
+                        onPressed: () {
+                          final formState = _formKey.currentState;
+                          if (formState != null) {
+                            final isValid = formState.validate();
+                            // Autofocus logic for empty fields
+                            if (_emailController.text.isEmpty) {
+                              FocusScope.of(
+                                context,
+                              ).requestFocus(_emailFocusNode);
+                            } else if (_passwordController.text.isEmpty) {
+                              FocusScope.of(
+                                context,
+                              ).requestFocus(_passwordFocusNode);
+                            }
+                            if (isValid) {
+                              formState.save();
+                              _authBloc.add(
+                                AuthUserLoginEvent(
+                                  uEmail: _emailController.text,
+                                  uPassword: _passwordController.text,
+                                ),
+                              );
+                              flag = false;
+                            }
+                          }
+                          setState(() {});
+                        },
+                        child: const Text("LOG IN").textStyleH1W(),
+                      );
+                    },
+                  ),
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 24.w,
+                      vertical: 20.h,
                     ),
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 24.w, vertical: 20.h),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Disclaimer:').textStyleH1(),
+                        SizedBox(height: 8.h),
+                        ...[
                           const Text(
-                            'Disclaimer:',
-                          ).textStyleH1(),
+                            'No real money involved. This is a virtual trading application which has all features to trade.',
+                          ).textStyleH5(),
                           SizedBox(height: 8.h),
-                          ...[
-                            const Text(
-                              'No real money involved. This is a virtual trading application which has all features to trade.',
-                            ).textStyleH5(),
-                            SizedBox(
-                              height: 8.h,
-                            ),
-                            const Text(
-                              'This application is used for exchanging views on market for trading purposes only.',
-                            ).textStyleH5(),
-                            SizedBox(
-                              height: 8.h,
-                            ),
-                            const Text(
-                              'The Super Trade is not liable for any real money transaction. We dont deal in any real money.',
-                            ).textStyleH5(),
-                          ]
+                          const Text(
+                            'This application is used for exchanging views on market for trading purposes only.',
+                          ).textStyleH5(),
+                          SizedBox(height: 8.h),
+                          const Text(
+                            'The Super Trade is not liable for any real money transaction. We dont deal in any real money.',
+                          ).textStyleH5(),
                         ],
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 }

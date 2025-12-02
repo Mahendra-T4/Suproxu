@@ -190,6 +190,31 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
   Widget _buildListView() {
     return ReorderableListView.builder(
       itemCount: mcxWishlist.mcxWatchlist?.length ?? 0,
+      proxyDecorator: (child, index, animation) {
+        return AnimatedBuilder(
+          animation: animation,
+          builder: (context, child) {
+            return Material(
+              elevation: 12,
+              color: zBlack,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: zBlack,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: kGoldenBraunColor.withOpacity(0.5),
+                    width: 2,
+                  ),
+                ),
+                child: child,
+              ),
+            );
+          },
+          child: child,
+        );
+      },
+
       onReorder: (oldIndex, newIndex) {
         _safeSetState(() {
           if (newIndex > oldIndex) newIndex--;
@@ -217,6 +242,7 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
           ),
         );
       },
+
       itemBuilder: (context, index) {
         final item = _localWatchlist[index];
         return GestureDetector(
@@ -284,10 +310,11 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
   }
 
   Widget _buildItemControls(MCXWatchlist item, int index) {
+    final date = item.expiryDate?.substring(0, 10);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(item.expiryDate ?? '').textStyleH2(),
+        Text(date ?? '').textStyleH2(),
         IconButton(
           onPressed: () => _removeItem(item, index),
           icon: removingItems.contains(item.symbolKey.toString())
@@ -299,10 +326,14 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
                     strokeWidth: 2,
                   ),
                 )
-              : SvgPicture.asset(
-                  Assets.assetsImagesSupertradeRemoveWishlistIcon,
-                  height: 30,
-                  color: kGoldenBraunColor,
+              : Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.green, width: 2),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  width: 20,
+                  height: 20,
+                  child: Icon(Icons.check, size: 16, color: Colors.green),
                 ),
         ),
       ],
@@ -410,7 +441,7 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
                 if (_localWatchlist.isEmpty) {
                   return Center(
                     child: Text(
-                      'Data not available',
+                      errorMessage ?? 'Data not available',
                       style: const TextStyle(color: Colors.white),
                       textAlign: TextAlign.center,
                     ),

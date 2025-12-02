@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:suproxu/core/widgets/trade_warning.dart';
 import 'package:suproxu/features/auth/change-pass/changePassword.dart';
 import 'package:suproxu/features/auth/forgot-pass/forgetPassword.dart';
 import 'package:suproxu/features/auth/login/loginPage.dart';
@@ -24,7 +25,6 @@ import 'package:suproxu/features/navbar/wishlist/model/mcx_symbol_param.dart';
 import 'package:suproxu/features/navbar/wishlist/wishlist-tabs/MCX-Tab/page/mcx_stock_wishlist_fixed.dart';
 import 'package:suproxu/features/navbar/wishlist/wishlist.dart';
 import 'package:suproxu/features/splash/splash_screen.dart';
-
 
 final GoRouter routerConfig = GoRouter(
   initialLocation: SplashScreen.routeName,
@@ -68,11 +68,7 @@ final GoRouter routerConfig = GoRouter(
           name: WishList.routeName,
           builder: (context, state) => const WishList(),
         ),
-        // GoRoute(
-        //   path: MCXWishListPanel.routeName,
-        //   name: MCXWishListPanel.routeName,
-        //   builder: (context, state) => MCXWishListPanel(),
-        // ),
+
         GoRoute(
           path: TradeTabsScreen.routeName,
           name: TradeTabsScreen.routeName,
@@ -167,6 +163,11 @@ final GoRouter routerConfig = GoRouter(
           builder: (context, state) => const ChangePasswordScreen(),
         ),
       ],
+    ),
+    GoRoute(
+      path: TradeWarning.routeName,
+      name: TradeWarning.routeName,
+      builder: (context, state) => TradeWarning(),
     ),
     GoRoute(
       path: LoginPages.routeName,

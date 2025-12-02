@@ -4,3 +4,9 @@ class WebSocketConfig {
   static const String socketUrl = 'https://www.thesupertrade.com';
   static const String socketPath = '/socket.io/';
 }
+
+
+//! new url 'https://www.suproxu.com'; 
+
+
+//! old url 'https://www.thesupertrade.com';

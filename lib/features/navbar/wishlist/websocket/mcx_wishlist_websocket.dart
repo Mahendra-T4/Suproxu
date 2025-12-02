@@ -51,8 +51,10 @@ class MCXWishlistWebSocketService {
         return;
       }
 
-      final wsUrl =
-          WebSocketConfig.socketUrl.replaceFirst('https://', 'wss://');
+      final wsUrl = WebSocketConfig.socketUrl.replaceFirst(
+        'https://',
+        'wss://',
+      );
 
       final socket = IO.io(
         wsUrl,
@@ -163,7 +165,8 @@ class MCXWishlistWebSocketService {
       }
 
       // Guard 1: Ensure this response is for MCX market
-      final dr = (data['dataRelatedTo'] ?? data['category'])
+      final dr =
+          (data['dataRelatedTo'] ?? data['category'])
               ?.toString()
               .toUpperCase() ??
           '';
@@ -179,7 +182,8 @@ class MCXWishlistWebSocketService {
           (data['symbolKey'] != null &&
               data['symbolKey'].toString().isNotEmpty)) {
         developer.log(
-            'Ignored symbol-level response (not a wishlist): activity=$activity');
+          'Ignored symbol-level response (not a wishlist): activity=$activity',
+        );
         return;
       }
 
@@ -188,8 +192,10 @@ class MCXWishlistWebSocketService {
       // Guard 3: Only forward non-empty watchlist responses
       if (mcxData.mcxWatchlist != null && mcxData.mcxWatchlist!.isNotEmpty) {
         onDataReceived(mcxData);
+        developer.log('✓ MCX Wishlist Data Response: $data');
         developer.log(
-            '✓ MCX Wishlist Data Parsed: ${mcxData.mcxWatchlist!.length} items');
+          '✓ MCX Wishlist Data Parsed: ${mcxData.mcxWatchlist!.length} items',
+        );
       } else {
         developer.log('Ignored empty MCX watchlist response');
       }

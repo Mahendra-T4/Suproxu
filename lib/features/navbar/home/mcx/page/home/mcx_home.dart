@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:suproxu/Assets/assets.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/color_blinker.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
@@ -49,7 +48,8 @@ class _McxHomeState extends State<McxHome> {
       });
     } else {
       // Filter by symbol name, symbol key, or category
-      final filtered = mcx.response?.where((item) {
+      final filtered =
+          mcx.response?.where((item) {
             final symbol = (item.symbol ?? '').toLowerCase();
             final symbolName = (item.symbolName ?? '').toLowerCase();
             final symbolKey = (item.symbolKey ?? '').toLowerCase();
@@ -64,9 +64,10 @@ class _McxHomeState extends State<McxHome> {
 
       setState(() {
         filteredMcx = MCXDataEntity(
-            status: mcx.status,
-            response: filtered,
-            message: 'Found ${filtered.length} result(s)');
+          status: mcx.status,
+          response: filtered,
+          message: 'Found ${filtered.length} result(s)',
+        );
       });
     }
   }
@@ -84,17 +85,22 @@ class _McxHomeState extends State<McxHome> {
       },
       keyword: _searchController.text,
       onError: (error) {
+        if (!mounted) return;
         setState(() {
           errorMessage = error;
         });
       },
       onConnected: () {
-        developer.log('MCX WebSocket Connected Successfully',
-            name: 'MCX Socket Connected');
+        developer.log(
+          'MCX WebSocket Connected Successfully',
+          name: 'MCX Socket Connected',
+        );
       },
       onDisconnected: () {
-        developer.log('MCX WebSocket Disconnected',
-            name: 'MCX Socket Disconnected');
+        developer.log(
+          'MCX WebSocket Disconnected',
+          name: 'MCX Socket Disconnected',
+        );
       },
     );
     socket.connect();
@@ -132,9 +138,7 @@ class _McxHomeState extends State<McxHome> {
           },
           child: Column(
             children: [
-              SearchBarWidget(
-                controller: _searchController,
-              ),
+              SearchBarWidget(controller: _searchController),
               Expanded(
                 child: Builder(
                   builder: (context) {
@@ -180,8 +184,9 @@ class _McxHomeState extends State<McxHome> {
                     }
 
                     // Use filtered data if search query exists, otherwise use all data
-                    final displayData =
-                        _currentSearchQuery.isEmpty ? mcx : filteredMcx;
+                    final displayData = _currentSearchQuery.isEmpty
+                        ? mcx
+                        : filteredMcx;
 
                     return displayData.response!.isEmpty
                         ? Center(
@@ -204,15 +209,16 @@ class _McxHomeState extends State<McxHome> {
                                       extra: MCXSymbolParams(
                                         symbol: itemData.symbol.toString(),
                                         index: index,
-                                        symbolKey:
-                                            itemData.symbolKey.toString(),
+                                        symbolKey: itemData.symbolKey
+                                            .toString(),
                                       ),
                                     );
                                   }
                                 },
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 10),
+                                    horizontal: 10,
+                                  ),
                                   color: zBlack,
                                   child: Column(
                                     children: [
@@ -221,15 +227,18 @@ class _McxHomeState extends State<McxHome> {
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           SizedBox(
-                                            width: MediaQuery.sizeOf(context)
-                                                    .width /
+                                            width:
+                                                MediaQuery.sizeOf(
+                                                  context,
+                                                ).width /
                                                 4,
                                             child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
-                                                Text(itemData.symbolName ?? '')
-                                                    .textStyleH1(),
+                                                Text(
+                                                  itemData.symbolName ?? '',
+                                                ).textStyleH1(),
                                               ],
                                             ),
                                           ),
@@ -244,11 +253,15 @@ class _McxHomeState extends State<McxHome> {
                                                     assetId: itemData.symbolKey,
                                                     text:
                                                         "₹${_formatNumber(itemData.ohlc?.salePrice)}",
-                                                    compareValue: itemData
-                                                            .ohlc?.lastPrice ??
+                                                    compareValue:
+                                                        itemData
+                                                            .ohlc
+                                                            ?.lastPrice ??
                                                         0.0,
-                                                    currentValue: itemData
-                                                            .ohlc?.salePrice ??
+                                                    currentValue:
+                                                        itemData
+                                                            .ohlc
+                                                            ?.salePrice ??
                                                         0.0,
                                                   ),
                                                   const SizedBox(width: 8),
@@ -257,11 +270,15 @@ class _McxHomeState extends State<McxHome> {
                                                         itemData.symbolName,
                                                     text:
                                                         "₹${_formatNumber(itemData.ohlc?.buyPrice)}",
-                                                    compareValue: itemData
-                                                            .ohlc?.lastPrice ??
+                                                    compareValue:
+                                                        itemData
+                                                            .ohlc
+                                                            ?.lastPrice ??
                                                         0.0,
-                                                    currentValue: itemData
-                                                            .ohlc?.buyPrice ??
+                                                    currentValue:
+                                                        itemData
+                                                            .ohlc
+                                                            ?.buyPrice ??
                                                         0.0,
                                                   ),
                                                   const SizedBox(width: 8),
@@ -280,25 +297,29 @@ class _McxHomeState extends State<McxHome> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text(itemData.expiryDate ?? '')
-                                                  .textStyleH2(),
+                                              Text(
+                                                itemData.expiryDate ?? '',
+                                              ).textStyleH2(),
                                             ],
                                           ),
+
                                           GestureDetector(
                                             onTap: () async {
                                               final success =
-                                                  await WishlistRepository
-                                                      .addToWishlist(
-                                                category: 'MCX',
-                                                symbolKey: mcx
-                                                    .response![index].symbolKey
-                                                    .toString(),
-                                                context: context,
-                                              );
+                                                  await WishlistRepository.addToWishlist(
+                                                    category: 'MCX',
+                                                    symbolKey: mcx
+                                                        .response![index]
+                                                        .symbolKey
+                                                        .toString(),
+                                                    context: context,
+                                                  );
                                               if (success && mounted) {
                                                 setState(() {
-                                                  mcx.response![index]
-                                                      .watchlist = mcx
+                                                  mcx
+                                                          .response![index]
+                                                          .watchlist =
+                                                      mcx
                                                               .response![index]
                                                               .watchlist ==
                                                           1
@@ -307,18 +328,27 @@ class _McxHomeState extends State<McxHome> {
                                                 });
                                               }
                                             },
-                                            child: itemData.watchlist == 1
-                                                ? Image.asset(
-                                                    Assets
-                                                        .assetsImagesSupertradeRomoveWishlist,
-                                                    scale: 19,
-                                                    color:
-                                                        Colors.deepPurpleAccent)
-                                                : Image.asset(
-                                                    Assets
-                                                        .assetsImagesSuperTradeAddWishlist,
-                                                    scale: 19,
-                                                    color: kGoldenBraunColor),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                border: Border.all(
+                                                  color: itemData.watchlist == 1
+                                                      ? Colors.green
+                                                      : kGoldenBraunColor,
+                                                  width: 2,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              width: 20,
+                                              height: 20,
+                                              child: itemData.watchlist == 1
+                                                  ? Icon(
+                                                      Icons.check,
+                                                      size: 16,
+                                                      color: Colors.green,
+                                                    )
+                                                  : null,
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -332,7 +362,8 @@ class _McxHomeState extends State<McxHome> {
                                               Text(
                                                 "Chg: ",
                                                 style: TextStyle(
-                                                  color: itemData.change
+                                                  color:
+                                                      itemData.change
                                                           .toString()
                                                           .contains('-')
                                                       ? Colors.red
@@ -344,7 +375,8 @@ class _McxHomeState extends State<McxHome> {
                                               Text(
                                                 _formatNumber(itemData.change),
                                                 style: TextStyle(
-                                                  color: itemData.change
+                                                  color:
+                                                      itemData.change
                                                           .toString()
                                                           .contains('-')
                                                       ? Colors.red
@@ -360,7 +392,8 @@ class _McxHomeState extends State<McxHome> {
                                               const Text("LTP: ").textStyleH3(),
                                               Text(
                                                 _formatNumber(
-                                                    itemData.ohlc?.lastPrice),
+                                                  itemData.ohlc?.lastPrice,
+                                                ),
                                               ).textStyleH3(),
                                             ],
                                           ),
@@ -369,7 +402,8 @@ class _McxHomeState extends State<McxHome> {
                                               const Text("H: ").textStyleH3(),
                                               Text(
                                                 _formatNumber(
-                                                    itemData.ohlc?.high),
+                                                  itemData.ohlc?.high,
+                                                ),
                                               ).textStyleH3(),
                                             ],
                                           ),
@@ -378,20 +412,23 @@ class _McxHomeState extends State<McxHome> {
                                               const Text("L: ").textStyleH3(),
                                               Text(
                                                 _formatNumber(
-                                                    itemData.ohlc?.low),
+                                                  itemData.ohlc?.low,
+                                                ),
                                               ).textStyleH3(),
                                             ],
                                           ),
                                         ],
                                       ),
                                       Divider(
-                                          thickness: 1.5,
-                                          color: Colors.grey.shade800),
+                                        thickness: 1.5,
+                                        color: Colors.grey.shade800,
+                                      ),
                                     ],
                                   ),
                                 ),
                               );
-                            });
+                            },
+                          );
                   },
                 ),
               ),

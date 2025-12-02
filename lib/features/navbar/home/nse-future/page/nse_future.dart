@@ -29,12 +29,14 @@ class _NseFutureState extends State<NseFuture> {
     nfoWebSocket = NFOWebSocket(
       keyword: _searchController.text,
       onNFODataReceived: (data) {
+        if (!mounted) return;
         setState(() {
           nfoData = data;
           _performSearch(_searchController.text);
         });
       },
       onError: (error) {
+        if (!mounted) return;
         setState(() {
           errorMessage = error;
         });

@@ -334,7 +334,7 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                                                   .symbolKey
                                                   .toString(),
                                               text:
-                                                  "₹${_formatNumber(data.nfoWatchlist![index].lastSale!.price)}",
+                                                  "₹${_formatNumber(data.nfoWatchlist![index].ohlc!.salePrice)}",
                                               compareValue: double.parse(
                                                 data
                                                     .nfoWatchlist![index]
@@ -345,8 +345,8 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                                               currentValue: double.parse(
                                                 data
                                                     .nfoWatchlist![index]
-                                                    .lastSale!
-                                                    .price
+                                                    .ohlc!
+                                                    .salePrice
                                                     .toString(),
                                               ),
                                             ),
@@ -357,7 +357,7 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                                                   .symbol
                                                   .toString(),
                                               text:
-                                                  "₹${_formatNumber(data.nfoWatchlist![index].lastBuy!.price)}",
+                                                  "₹${_formatNumber(data.nfoWatchlist![index].ohlc!.buyPrice)}",
                                               compareValue: double.parse(
                                                 data
                                                     .nfoWatchlist![index]
@@ -368,8 +368,8 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                                               currentValue: double.parse(
                                                 data
                                                     .nfoWatchlist![index]
-                                                    .lastBuy!
-                                                    .price
+                                                    .ohlc!
+                                                    .buyPrice
                                                     .toString(),
                                               ),
                                             ),
@@ -389,7 +389,9 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                                           CrossAxisAlignment.start,
                                       spacing: 5,
                                       children: [
-                                        Text(date ?? '').textStyleH2(),
+                                        Text(
+                                          record.expiryDate ?? '',
+                                        ).textStyleH2(),
                                       ],
                                     ),
                                     IconButton(

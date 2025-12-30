@@ -19,6 +19,7 @@ import 'package:suproxu/features/navbar/profile/ledger/ledgerScreen.dart';
 import 'package:suproxu/features/navbar/profile/notification/notificationScreen.dart';
 import 'package:suproxu/features/navbar/profile/payment/paymentScreen.dart';
 import 'package:suproxu/features/navbar/profile/profile/profile_info.dart';
+import 'package:suproxu/features/navbar/profile/roles/superoxu_rules.dart';
 import 'package:suproxu/features/navbar/profile/wallet/user_wallet.dart';
 import 'package:suproxu/features/navbar/profile/withdraw/withdraw.dart';
 import 'package:suproxu/features/navbar/wishlist/model/mcx_symbol_param.dart';
@@ -103,6 +104,11 @@ final GoRouter routerConfig = GoRouter(
           path: NseFuture.routeName,
           name: NseFuture.routeName,
           builder: (context, state) => const NseFuture(),
+        ),
+        GoRoute(
+          path: SuproxuRulesPage.routeName,
+          name: SuproxuRulesPage.routeName,
+          builder: (context, state) => const SuproxuRulesPage(),
         ),
 
         GoRoute(

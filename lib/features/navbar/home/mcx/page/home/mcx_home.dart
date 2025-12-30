@@ -293,14 +293,15 @@ class _McxHomeState extends State<McxHome> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                itemData.expiryDate ?? '',
-                                              ).textStyleH2(),
-                                            ],
+                                          SizedBox(
+                                            width:
+                                                MediaQuery.sizeOf(
+                                                  context,
+                                                ).width /
+                                                2,
+                                            child: Text(
+                                              itemData.expiryDate ?? '',
+                                            ).textStyleH2(),
                                           ),
 
                                           GestureDetector(

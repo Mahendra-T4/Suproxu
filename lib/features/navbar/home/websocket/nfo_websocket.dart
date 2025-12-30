@@ -44,6 +44,7 @@ class NFOWebSocket {
             Stocks(categoryID: 0, categoryName: 'NFO', categoryCode: 'NFO'),
       );
       stockName = nfoStock?.categoryCode ?? 'NFO';
+
       developer.log('Found stock category: $stockName');
     } catch (e) {
       developer.log('Error getting stock category: $e');
@@ -56,8 +57,10 @@ class NFOWebSocket {
       developer.log('Device ID: $deviceID');
       developer.log('Stock Name: $stockName');
 
-      final wsUrl =
-          WebSocketConfig.socketUrl.replaceFirst('https://', 'wss://');
+      final wsUrl = WebSocketConfig.socketUrl.replaceFirst(
+        'https://',
+        'wss://',
+      );
       developer.log('Connecting to WebSocket URL: $wsUrl');
 
       socket = IO.io(WebSocketConfig.socketUrl, {
@@ -71,7 +74,7 @@ class NFOWebSocket {
         'timeout': 10000,
         'auth': {'token': WebSocketConfig.authToken},
         'extraHeaders': {
-          'Authorization': 'Bearer ${WebSocketConfig.authToken}'
+          'Authorization': 'Bearer ${WebSocketConfig.authToken}',
         },
       });
 
@@ -85,14 +88,14 @@ class NFOWebSocket {
             'userKey': uKey.toString(),
             'deviceID': deviceID.toString(),
             'dataRelatedTo': 'NFO',
-            'keyword': keyword
+            'keyword': keyword,
           });
         }
 
         emitNFODataRequest();
 
         _emitTimer?.cancel();
-        _emitTimer = Timer.periodic(const Duration(milliseconds: 400), (timer) {
+        _emitTimer = Timer.periodic(const Duration(milliseconds: 200), (timer) {
           emitNFODataRequest();
         });
       });
@@ -107,24 +110,21 @@ class NFOWebSocket {
         onError?.call(data.toString());
       });
 
-      socket.on(
-        'response',
-        (data) {
-          try {
-            if (data is Map<String, dynamic>) {
-              final nfoDataEntity = NFODataEntity.fromJson(data);
-              developer.log('NFO Data Received: ${nfoDataEntity.toString()}');
-              onNFODataReceived(nfoDataEntity);
-            } else {
-              developer.log('Unexpected data format: $data');
-              onError?.call('Unexpected data format received.');
-            }
-          } catch (e) {
-            developer.log('NFO Data parsing error: $e');
-            onError?.call('NFO Data parsing error: $e');
+      socket.on('response', (data) {
+        try {
+          if (data is Map<String, dynamic>) {
+            final nfoDataEntity = NFODataEntity.fromJson(data);
+            developer.log('NFO Data Received: ${nfoDataEntity}');
+            onNFODataReceived(nfoDataEntity);
+          } else {
+            developer.log('Unexpected data format: $data');
+            onError?.call('Unexpected data format received.');
           }
-        },
-      );
+        } catch (e) {
+          developer.log('NFO Data parsing error: $e');
+          onError?.call('NFO Data parsing error: $e');
+        }
+      });
     } catch (error) {
       developer.log('WebSocket Connection Error: $error');
       onError?.call(error.toString());

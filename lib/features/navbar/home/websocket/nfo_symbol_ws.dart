@@ -22,7 +22,7 @@ class NFOSymbolWebSocket {
   final String symbolKey;
   final String categoryName = 'NFO';
   static const String _activity = 'get-stock-record';
-  static const Duration _emitInterval = Duration(milliseconds: 400);
+  static const Duration _emitInterval = Duration(milliseconds: 200);
 
   NFOSymbolWebSocket({
     required this.symbolKey,
@@ -36,8 +36,10 @@ class NFOSymbolWebSocket {
   Future<void> connect() async {
     if (_isDisposed) return;
     if (_socket?.connected == true || _isConnecting) {
-      developer.log('Already connected or connecting. Skipping.',
-          name: 'NFO WebSocket');
+      developer.log(
+        'Already connected or connecting. Skipping.',
+        name: 'NFO WebSocket',
+      );
       return;
     }
 
@@ -52,8 +54,10 @@ class NFOSymbolWebSocket {
         return;
       }
 
-      final wsUrl =
-          WebSocketConfig.socketUrl.replaceFirst('https://', 'wss://');
+      final wsUrl = WebSocketConfig.socketUrl.replaceFirst(
+        'https://',
+        'wss://',
+      );
 
       final socket = IO.io(
         wsUrl,
@@ -77,8 +81,10 @@ class NFOSymbolWebSocket {
         if (_isDisposed) return;
 
         _isConnecting = false;
-        developer.log('NFO WebSocket Connected: ${socket.id}',
-            name: 'NFO WebSocket');
+        developer.log(
+          'NFO WebSocket Connected: ${socket.id}',
+          name: 'NFO WebSocket',
+        );
         onConnected?.call();
 
         _startPeriodicEmit(userKey, deviceID);
@@ -87,8 +93,10 @@ class NFOSymbolWebSocket {
       socket.onDisconnect((_) {
         if (_isDisposed) return;
 
-        developer.log('NFO WebSocket Disconnected: ${socket.id}',
-            name: 'NFO WebSocket');
+        developer.log(
+          'NFO WebSocket Disconnected: ${socket.id}',
+          name: 'NFO WebSocket',
+        );
         onDisconnected?.call();
         _stopPeriodicEmit();
       });
@@ -108,16 +116,20 @@ class NFOSymbolWebSocket {
       });
 
       socket.onReconnect((attempt) {
-        developer.log('NFO WebSocket Reconnected after $attempt attempts',
-            name: 'NFO WebSocket');
+        developer.log(
+          'NFO WebSocket Reconnected after $attempt attempts',
+          name: 'NFO WebSocket',
+        );
         // Re-emit immediately on reconnect
         _emitNFORequest(userKey, deviceID);
         _startPeriodicEmit(userKey, deviceID);
       });
 
       socket.onReconnectAttempt((attempt) {
-        developer.log('NFO WebSocket Reconnect Attempt: $attempt',
-            name: 'NFO WebSocket');
+        developer.log(
+          'NFO WebSocket Reconnect Attempt: $attempt',
+          name: 'NFO WebSocket',
+        );
       });
 
       // Manually connect
@@ -144,8 +156,10 @@ class NFOSymbolWebSocket {
     };
 
     _socket!.emit('activity', payload);
-    developer.log('Emitted NFO Symbol Request: $payload',
-        name: 'NFO WebSocket Emit');
+    developer.log(
+      'Emitted NFO Symbol Request: $payload',
+      name: 'NFO WebSocket Emit',
+    );
   }
 
   /// Start periodic emission
@@ -175,21 +189,26 @@ class NFOSymbolWebSocket {
       }
 
       // Guard 1: Ensure response is for NFO market
-      final dr = (data['dataRelatedTo'] ?? data['category'])
+      final dr =
+          (data['dataRelatedTo'] ?? data['category'])
               ?.toString()
               .toUpperCase() ??
           '';
       if (dr.isNotEmpty && dr != 'NFO') {
-        developer.log('Ignored response for different market: $dr',
-            name: 'NFO WebSocket');
+        developer.log(
+          'Ignored response for different market: $dr',
+          name: 'NFO WebSocket',
+        );
         return;
       }
 
       // Guard 2: Check if response is for symbol-level activity (not wishlist)
       final activity = data['activity']?.toString().toLowerCase() ?? '';
       if (activity.isNotEmpty && activity.contains('wishlist')) {
-        developer.log('Ignored wishlist response on symbol page: $activity',
-            name: 'NFO WebSocket');
+        developer.log(
+          'Ignored wishlist response on symbol page: $activity',
+          name: 'NFO WebSocket',
+        );
         return;
       }
 
@@ -218,22 +237,29 @@ class NFOSymbolWebSocket {
         return false;
       }
 
-      final hasMatchingSymbol = NFOData.response.isNotEmpty &&
+      final hasMatchingSymbol =
+          NFOData.response.isNotEmpty &&
           NFOData.response.any((r) => matchesRecord(r));
 
       if (!hasMatchingSymbol) {
         developer.log(
-            'Ignored NFO response (symbol=$symbolKey not in response): ${NFOData.response.map((r) => r.symbolKey).join(",")}',
-            name: 'NFO WebSocket');
+          'Ignored NFO response (symbol=$symbolKey not in response): ${NFOData.response.map((r) => r.symbolKey).join(",")}',
+          name: 'NFO WebSocket',
+        );
         return;
       }
 
       onDataReceived(NFOData);
-      developer.log('✓ NFO Symbol Data Parsed & Sent: symbolKey=$symbolKey',
-          name: 'NFO WebSocket');
+      developer.log(
+        '✓ NFO Symbol Data Parsed & Sent: symbolKey=$symbolKey',
+        name: 'NFO WebSocket',
+      );
     } catch (e, stack) {
-      developer.log('Failed to parse NFO response: $e',
-          name: 'NFO WebSocket', stackTrace: stack);
+      developer.log(
+        'Failed to parse NFO response: $e',
+        name: 'NFO WebSocket',
+        stackTrace: stack,
+      );
       onError?.call('Parse error: $e');
     }
   }

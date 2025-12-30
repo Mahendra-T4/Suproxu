@@ -292,16 +292,16 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
           children: [
             BlinkingPriceText(
               assetId: item.symbolKey.toString(),
-              text: "₹${_formatNumber(item.lastSale!.price.toString())}",
+              text: "₹${_formatNumber(item.ohlc!.salePrice.toString())}",
               compareValue: item.ohlc!.lastPrice,
-              currentValue: item.lastSale!.price,
+              currentValue: item.ohlc!.salePrice,
             ),
             SizedBox(width: 10.w),
             BlinkingPriceText(
               assetId: item.symbolName.toString(),
-              text: "₹${_formatNumber(item.lastBuy!.price.toString())}",
+              text: "₹${_formatNumber(item.ohlc!.buyPrice.toString())}",
               compareValue: item.ohlc!.lastPrice,
-              currentValue: item.lastBuy!.price,
+              currentValue: item.ohlc!.buyPrice,
             ),
           ],
         ),
@@ -310,11 +310,11 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
   }
 
   Widget _buildItemControls(MCXWatchlist item, int index) {
-    final date = item.expiryDate?.substring(0, 10);
+    // final date = item.expiryDate?.substring(0, 10);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(date ?? '').textStyleH2(),
+        Text(item.expiryDate ?? '').textStyleH2(),
         IconButton(
           onPressed: () => _removeItem(item, index),
           icon: removingItems.contains(item.symbolKey.toString())

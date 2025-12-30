@@ -99,6 +99,7 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
                   children: [
                     SizedBox(height: screenHeight * 0.01),
                     Container(
+                      height: screenHeight * 0.08,
                       margin: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 8,
@@ -109,138 +110,147 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(8),
-                        child: Row(
+                        child: Stack(
                           children: [
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => setState(() => selectedTab = 0),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  alignment: Alignment.center,
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: screenHeight * 0.018,
+                            // Animated Sliding Background Indicator
+                            AnimatedAlign(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeOutCubic,
+                              alignment: selectedTab == 0
+                                  ? Alignment.centerLeft
+                                  : Alignment.centerRight,
+                              child: Container(
+                                width:
+                                    (MediaQuery.of(context).size.width - 48) /
+                                    2, // Half width minus padding/margin
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                  vertical: screenHeight * 0.018,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: selectedTab == 0
+                                        ? [marketColor, marketColor]
+                                        : [orderColor, orderColor],
                                   ),
-                                  decoration: BoxDecoration(
-                                    gradient: selectedTab == 0
-                                        ? LinearGradient(
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                            colors: [
-                                              const Color(0xFF00C853),
-                                              const Color(
-                                                0xFF00C853,
-                                              ).withOpacity(0.8),
-                                            ],
-                                          )
-                                        : null,
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: selectedTab == 0
-                                        ? [
-                                            BoxShadow(
-                                              color: const Color(
-                                                0xFF00C853,
-                                              ).withOpacity(0.3),
-                                              spreadRadius: 1,
-                                              blurRadius: 8,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                          ]
-                                        : null,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.show_chart,
-                                        color: selectedTab == 0
-                                            ? Colors.white
-                                            : Colors.black,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        "Market",
-                                        style: TextStyle(
-                                          color: selectedTab == 0
-                                              ? Colors.white
-                                              : Colors.black,
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 16,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(
+                                        0xFF00C853,
+                                      ).withOpacity(0.3),
+                                      spreadRadius: 1,
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                            SizedBox(width: 8.h),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => setState(() => selectedTab = 1),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  alignment: Alignment.center,
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: screenHeight * 0.018,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: selectedTab == 1
-                                        ? const Color(0xFF2C2C2E)
-                                        : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(12),
-                                    gradient: selectedTab == 1
-                                        ? LinearGradient(
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                            colors: [
-                                              const Color(0xFF00C853),
-                                              const Color(
-                                                0xFF00C853,
-                                              ).withOpacity(0.8),
-                                            ],
-                                          )
-                                        : null,
-                                    boxShadow: selectedTab == 1
-                                        ? [
-                                            BoxShadow(
-                                              color: const Color(
-                                                0xFF00C853,
-                                              ).withOpacity(0.3),
-                                              spreadRadius: 1,
-                                              blurRadius: 8,
-                                              offset: const Offset(0, 2),
+
+                            // Tab Buttons (on top of the sliding background)
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        setState(() => selectedTab = 0),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: screenHeight * 0.018,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          AnimatedScale(
+                                            scale: selectedTab == 0
+                                                ? 1.05
+                                                : 1.0,
+                                            duration: const Duration(
+                                              milliseconds: 300,
                                             ),
-                                          ]
-                                        : null,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.receipt_long,
-                                        color: selectedTab == 1
-                                            ? Colors.white
-                                            : zBlack,
-                                        size: 20,
+                                            child: Icon(
+                                              Icons.show_chart,
+                                              color: selectedTab == 0
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                              size: 20,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          AnimatedDefaultTextStyle(
+                                            duration: const Duration(
+                                              milliseconds: 300,
+                                            ),
+                                            style: TextStyle(
+                                              color: selectedTab == 0
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: 18.5,
+                                              letterSpacing: 2,
+                                            ),
+                                            child: const Text("MARKET"),
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        "Order",
-                                        style: TextStyle(
-                                          color: selectedTab == 1
-                                              ? Colors.white
-                                              : zBlack,
-                                          fontFamily: 'JetBrainsMono',
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 16,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    ],
+                                    ),
                                   ),
                                 ),
-                              ),
+                                SizedBox(width: 8.h),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        setState(() => selectedTab = 1),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: screenHeight * 0.018,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          AnimatedScale(
+                                            scale: selectedTab == 1
+                                                ? 1.05
+                                                : 1.0,
+                                            duration: const Duration(
+                                              milliseconds: 300,
+                                            ),
+                                            child: Icon(
+                                              Icons.receipt_long,
+                                              color: selectedTab == 1
+                                                  ? Colors.white
+                                                  : zBlack,
+                                              size: 20,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          AnimatedDefaultTextStyle(
+                                            duration: const Duration(
+                                              milliseconds: 300,
+                                            ),
+                                            style: TextStyle(
+                                              color: selectedTab == 1
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: 18.5,
+                                              letterSpacing: 2,
+                                            ),
+                                            child: const Text("ORDER"),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),

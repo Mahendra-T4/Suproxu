@@ -21,7 +21,7 @@ class MCXSymbolWebSocketService {
   final String symbolKey;
   // final String categoryName;
   static const String _activity = 'get-stock-record';
-  static const Duration _emitInterval = Duration(milliseconds: 400);
+  static const Duration _emitInterval = Duration(milliseconds: 200);
 
   MCXSymbolWebSocketService({
     required this.symbolKey,
@@ -36,8 +36,10 @@ class MCXSymbolWebSocketService {
   Future<void> connect() async {
     if (_isDisposed) return;
     if (_socket?.connected == true || _isConnecting) {
-      developer.log('Already connected or connecting. Skipping.',
-          name: 'MCX WebSocket');
+      developer.log(
+        'Already connected or connecting. Skipping.',
+        name: 'MCX WebSocket',
+      );
       return;
     }
 
@@ -52,8 +54,10 @@ class MCXSymbolWebSocketService {
         return;
       }
 
-      final wsUrl =
-          WebSocketConfig.socketUrl.replaceFirst('https://', 'wss://');
+      final wsUrl = WebSocketConfig.socketUrl.replaceFirst(
+        'https://',
+        'wss://',
+      );
 
       final socket = IO.io(
         wsUrl,
@@ -77,8 +81,10 @@ class MCXSymbolWebSocketService {
         if (_isDisposed) return;
 
         _isConnecting = false;
-        developer.log('MCX WebSocket Connected: ${socket.id}',
-            name: 'MCX WebSocket');
+        developer.log(
+          'MCX WebSocket Connected: ${socket.id}',
+          name: 'MCX WebSocket',
+        );
         onConnected?.call();
 
         _startPeriodicEmit(userKey, deviceID);
@@ -87,8 +93,10 @@ class MCXSymbolWebSocketService {
       socket.onDisconnect((_) {
         if (_isDisposed) return;
 
-        developer.log('MCX WebSocket Disconnected: ${socket.id}',
-            name: 'MCX WebSocket');
+        developer.log(
+          'MCX WebSocket Disconnected: ${socket.id}',
+          name: 'MCX WebSocket',
+        );
         onDisconnected?.call();
         _stopPeriodicEmit();
       });
@@ -108,16 +116,20 @@ class MCXSymbolWebSocketService {
       });
 
       socket.onReconnect((attempt) {
-        developer.log('MCX WebSocket Reconnected after $attempt attempts',
-            name: 'MCX WebSocket');
+        developer.log(
+          'MCX WebSocket Reconnected after $attempt attempts',
+          name: 'MCX WebSocket',
+        );
         // Re-emit immediately on reconnect
         _emitMCXRequest(userKey, deviceID);
         _startPeriodicEmit(userKey, deviceID);
       });
 
       socket.onReconnectAttempt((attempt) {
-        developer.log('MCX WebSocket Reconnect Attempt: $attempt',
-            name: 'MCX WebSocket');
+        developer.log(
+          'MCX WebSocket Reconnect Attempt: $attempt',
+          name: 'MCX WebSocket',
+        );
       });
 
       // Manually connect
@@ -144,8 +156,10 @@ class MCXSymbolWebSocketService {
     };
 
     _socket!.emit('activity', payload);
-    developer.log('Emitted MCX Symbol Request: $payload',
-        name: 'MCX WebSocket Emit');
+    developer.log(
+      'Emitted MCX Symbol Request: $payload',
+      name: 'MCX WebSocket Emit',
+    );
   }
 
   /// Start periodic emission
@@ -175,43 +189,57 @@ class MCXSymbolWebSocketService {
       }
 
       // Guard 1: Ensure response is for MCX market
-      final dr = (data['dataRelatedTo'] ?? data['category'])
+      final dr =
+          (data['dataRelatedTo'] ?? data['category'])
               ?.toString()
               .toUpperCase() ??
           '';
       if (dr.isNotEmpty && dr != 'MCX') {
-        developer.log('Ignored response for different market: $dr',
-            name: 'MCX WebSocket');
+        developer.log(
+          'Ignored response for different market: $dr',
+          name: 'MCX WebSocket',
+        );
         return;
       }
+
+      developer.log('✓ MCX Wishlist Data Response: $data');
 
       // Guard 2: Check if response is for symbol-level activity (not wishlist)
       final activity = data['activity']?.toString().toLowerCase() ?? '';
       if (activity.isNotEmpty && activity.contains('wishlist')) {
-        developer.log('Ignored wishlist response on symbol page: $activity',
-            name: 'MCX WebSocket');
+        developer.log(
+          'Ignored wishlist response on symbol page: $activity',
+          name: 'MCX WebSocket',
+        );
         return;
       }
 
       final mcxData = GetStockRecordEntity.fromJson(data);
 
       // Guard 3: Only forward if response contains THIS specific symbol
-      final hasMatchingSymbol = mcxData.response.isNotEmpty &&
+      final hasMatchingSymbol =
+          mcxData.response.isNotEmpty &&
           mcxData.response.any((r) => r.symbolKey.trim() == symbolKey.trim());
 
       if (!hasMatchingSymbol) {
         developer.log(
-            'Ignored MCX response (symbol=$symbolKey not in response): ${mcxData.response.map((r) => r.symbolKey).join(",")}',
-            name: 'MCX WebSocket');
+          'Ignored MCX response (symbol=$symbolKey not in response): ${mcxData.response.map((r) => r.symbolKey).join(",")}',
+          name: 'MCX WebSocket',
+        );
         return;
       }
 
       onDataReceived(mcxData);
-      developer.log('✓ MCX Symbol Data Parsed & Sent: symbolKey=$symbolKey',
-          name: 'MCX WebSocket');
+      developer.log(
+        '✓ MCX Symbol Data Parsed & Sent: symbolKey=$symbolKey',
+        name: 'MCX WebSocket',
+      );
     } catch (e, stack) {
-      developer.log('Failed to parse MCX response: $e',
-          name: 'MCX WebSocket', stackTrace: stack);
+      developer.log(
+        'Failed to parse MCX response: $e',
+        name: 'MCX WebSocket',
+        stackTrace: stack,
+      );
       onError?.call('Parse error: $e');
     }
   }

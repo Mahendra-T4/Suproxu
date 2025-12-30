@@ -12,6 +12,10 @@ Color greyColor = Colors.grey.shade700;
 
 Color kWhiteColor = const Color(0xFFFFFFFF);
 
-Color kGoldenBraunColor = const Color(0xffc9a227);
+Color kGoldenBraunColor = const Color.fromARGB(255, 222, 176, 22);
 
 Color kGreenColor = const Color(0xFF00C853);
+
+Color marketColor = Color.fromARGB(255, 34, 65, 190);
+
+Color orderColor = Color(0xff274029);

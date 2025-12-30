@@ -36,7 +36,7 @@ class RecordMCX {
   int? watchlist;
   final dynamic symbolName;
   final dynamic category;
-  final dynamic expiryDate;
+  final String? expiryDate;
   final dynamic currentTime;
   final dynamic change;
   final int? lotSize;
@@ -74,7 +74,7 @@ class RecordMCX {
           : int.tryParse(json['watchlist']?.toString() ?? ''),
       symbolName: json['symbolName']?.toString(),
       category: json['category']?.toString(),
-      expiryDate: json['expiryDate']?.toString(),
+      expiryDate: json['expiryDate'],
       currentTime: json['current_time']?.toString(),
       change: parseDouble(json['change']),
       lotSize: json['lotSize'],
@@ -220,4 +220,3 @@ class OhlcMCX {
     );
   }
 }
-

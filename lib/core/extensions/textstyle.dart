@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:suproxu/core/constants/color.dart';
 
-
 extension TextStyleX on Text {
   Text textStyleH1() {
     return Text(
@@ -20,12 +19,62 @@ extension TextStyleX on Text {
     );
   }
 
+  Text textStyleH11() {
+    return Text(
+      data ?? '',
+      style: TextStyle(
+        fontWeight: FontWeight.w900,
+        fontSize: 18,
+        color: kWhiteColor,
+        letterSpacing: 2,
+      ),
+      textAlign: textAlign,
+      maxLines: maxLines,
+      overflow: overflow,
+      softWrap: softWrap,
+      textDirection: textDirection,
+    );
+  }
+
+  Text textStyleH1Custom(Color? color) {
+    return Text(
+      data ?? '',
+      style: TextStyle(
+        fontWeight: FontWeight.w800,
+        fontSize: 15,
+        color: color ?? kGoldenBraunColor,
+      ),
+      textAlign: textAlign,
+      maxLines: maxLines,
+      overflow: overflow,
+      softWrap: softWrap,
+      textDirection: textDirection,
+    );
+  }
+
   Text textStyleH1C(Color color) {
     return Text(
       data ?? '',
       style: TextStyle(
         color: color,
         fontSize: 16.sp,
+        // fontFamily: 'JetBrainsMono',
+        fontWeight: FontWeight.bold,
+      ),
+      textAlign: textAlign,
+      maxLines: maxLines,
+      overflow: overflow,
+      softWrap: softWrap,
+      textDirection: textDirection,
+    );
+  }
+
+  Text textStyleH1CPL() {
+    return Text(
+      data ?? '',
+      style: TextStyle(
+        color: data!.contains('-') ? Colors.red : Colors.green,
+        fontSize: 16,
         // fontFamily: 'JetBrainsMono',
         fontWeight: FontWeight.bold,
       ),
@@ -73,9 +122,10 @@ extension TextStyleX on Text {
     return Text(
       data ?? '',
       style: TextStyle(
-          fontWeight: FontWeight.w700,
-          color: kGoldenBraunColor,
-          fontSize: 12.sp),
+        fontWeight: FontWeight.w700,
+        color: kGoldenBraunColor,
+        fontSize: 12.sp,
+      ),
       textAlign: textAlign,
       maxLines: maxLines,
       overflow: overflow,
@@ -100,9 +150,10 @@ extension TextStyleX on Text {
     return Text(
       data ?? '',
       style: TextStyle(
-          fontWeight: FontWeight.w700,
-          color: kGoldenBraunColor,
-          fontSize: 12.sp),
+        fontWeight: FontWeight.w700,
+        color: kGoldenBraunColor,
+        fontSize: 12.sp,
+      ),
       textAlign: textAlign,
       maxLines: maxLines,
       overflow: overflow,
@@ -115,7 +166,10 @@ extension TextStyleX on Text {
     return Text(
       data ?? '',
       style: TextStyle(
-          fontWeight: FontWeight.w700, color: kWhiteColor, fontSize: 12),
+        fontWeight: FontWeight.w700,
+        color: kWhiteColor,
+        fontSize: 12,
+      ),
       textAlign: textAlign,
       maxLines: maxLines,
       overflow: overflow,
@@ -128,7 +182,10 @@ extension TextStyleX on Text {
     return Text(
       data ?? '',
       style: const TextStyle(
-          fontWeight: FontWeight.w700, color: Colors.redAccent, fontSize: 12),
+        fontWeight: FontWeight.w700,
+        color: Colors.redAccent,
+        fontSize: 12,
+      ),
       textAlign: textAlign,
       maxLines: maxLines,
       overflow: overflow,
@@ -141,7 +198,10 @@ extension TextStyleX on Text {
     return Text(
       data ?? '',
       style: const TextStyle(
-          fontWeight: FontWeight.w700, color: zBlack, fontSize: 12),
+        fontWeight: FontWeight.w700,
+        color: zBlack,
+        fontSize: 12,
+      ),
       textAlign: textAlign,
       maxLines: maxLines,
       overflow: overflow,
@@ -156,7 +216,7 @@ extension TextStyleX on Text {
       style: TextStyle(
         color: kGoldenBraunColor,
         fontWeight: FontWeight.w600,
-        fontSize: 11.5,
+        fontSize: 13,
       ),
       textAlign: textAlign,
       maxLines: maxLines,

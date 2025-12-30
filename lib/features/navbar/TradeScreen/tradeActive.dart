@@ -293,7 +293,13 @@ class _TradeactiveState extends State<Tradeactive>
                                                     decoration: BoxDecoration(
                                                       color: Colors.white,
                                                       border: Border.all(
-                                                        color: Colors.red,
+                                                        color:
+                                                            activeTradeEntity
+                                                                    .record![index]
+                                                                    .tradeMethod ==
+                                                                1
+                                                            ? Colors.green
+                                                            : Colors.red,
                                                       ),
                                                       borderRadius:
                                                           BorderRadius.circular(
@@ -302,7 +308,16 @@ class _TradeactiveState extends State<Tradeactive>
                                                     ),
                                                     child: Text(
                                                       '${activeTradeEntity.record![index].orderMethod} X ${activeTradeEntity.record![index].availableQty}',
-                                                    ).textStyleH2R(),
+                                                      style: TextStyle(
+                                                        color:
+                                                            activeTradeEntity
+                                                                    .record![index]
+                                                                    .tradeMethod ==
+                                                                1
+                                                            ? Colors.green
+                                                            : Colors.red,
+                                                      ),
+                                                    ),
                                                   ),
                                                   Container(
                                                     // margin: const EdgeInsets.only(left: 10),

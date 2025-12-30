@@ -8,7 +8,6 @@ import 'package:suproxu/core/config/web_socket_config.dart';
 import 'package:suproxu/core/service/repositorie/global_respo.dart';
 import 'package:suproxu/features/navbar/home/model/mcx_entity.dart';
 
-
 class SocketService {
   late IO.Socket socket;
 
@@ -19,13 +18,14 @@ class SocketService {
   String? keyword;
   String socketType;
 
-  SocketService(
-      {this.onDataReceived,
-      this.onError,
-      this.onConnected,
-      this.onDisconnected,
-      this.keyword,
-      this.socketType = 'get-stock-list'});
+  SocketService({
+    this.onDataReceived,
+    this.onError,
+    this.onConnected,
+    this.onDisconnected,
+    this.keyword,
+    this.socketType = 'get-stock-list',
+  });
 
   void connect() async {
     DatabaseService databaseService = DatabaseService();
@@ -37,8 +37,9 @@ class SocketService {
     final stockName = stockList.stocks!
         .firstWhere((stock) => stock.categoryName == 'MCX')
         .categoryCode;
-    final expectedActivity =
-        socketType == 'stock-search' ? 'get-stock-search' : 'get-stock-list';
+    final expectedActivity = socketType == 'stock-search'
+        ? 'get-stock-search'
+        : 'get-stock-list';
 
     try {
       log('=== WebSocket Connection Start ===');
@@ -48,8 +49,10 @@ class SocketService {
       log('Socket Type: $socketType');
       log('Keyword: $keyword');
 
-      final wsUrl =
-          WebSocketConfig.socketUrl.replaceFirst('https://', 'wss://');
+      final wsUrl = WebSocketConfig.socketUrl.replaceFirst(
+        'https://',
+        'wss://',
+      );
       log('Connecting to WebSocket URL: $wsUrl');
 
       socket = IO.io(WebSocketConfig.socketUrl, {
@@ -63,7 +66,7 @@ class SocketService {
         'timeout': 10000,
         'auth': {'token': WebSocketConfig.authToken},
         'extraHeaders': {
-          'Authorization': 'Bearer ${WebSocketConfig.authToken}'
+          'Authorization': 'Bearer ${WebSocketConfig.authToken}',
         },
       });
 
@@ -80,7 +83,7 @@ class SocketService {
             'userKey': uKey,
             'deviceID': deviceID,
             'dataRelatedTo': stockName,
-            'keyword': keyword
+            'keyword': keyword,
           });
         }
 
@@ -89,7 +92,7 @@ class SocketService {
 
         // Set up periodic emission every 1 second
         _emitTimer?.cancel();
-        _emitTimer = Timer.periodic(const Duration(milliseconds: 400), (_) {
+        _emitTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
           if (socket.connected) {
             emitDataRequest();
           }
@@ -110,17 +113,21 @@ class SocketService {
             // Attempt to guard: only process responses that match the expected
             // activity and the stock category (dataRelatedTo) to avoid
             // cross-feed from other socket consumers (e.g. wishlist).
-            final respActivity = data['activity'] as String? ??
+            final respActivity =
+                data['activity'] as String? ??
                 (data['response'] is Map<String, dynamic>
                     ? (data['response'] as Map<String, dynamic>)['activity']
                     : null);
-            final respDataRelatedTo = data['dataRelatedTo'] as String? ??
+            final respDataRelatedTo =
+                data['dataRelatedTo'] as String? ??
                 (data['response'] is Map<String, dynamic>
                     ? (data['response']
-                        as Map<String, dynamic>)['dataRelatedTo']
+                          as Map<String, dynamic>)['dataRelatedTo']
                     : null);
 
-            log('Response activity: $respActivity, dataRelatedTo: $respDataRelatedTo');
+            log(
+              'Response activity: $respActivity, dataRelatedTo: $respDataRelatedTo',
+            );
 
             if (respActivity != null && respActivity != expectedActivity) {
               log('Ignoring response for activity: $respActivity');
@@ -142,7 +149,9 @@ class SocketService {
             }
           } else {
             onError?.call('Invalid response format');
-            log('Error: Invalid response format - Expected Map<String, dynamic>');
+            log(
+              'Error: Invalid response format - Expected Map<String, dynamic>',
+            );
             log('======================================');
           }
         } catch (e) {

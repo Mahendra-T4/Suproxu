@@ -22,7 +22,7 @@ class MCXWishlistWebSocketService {
 
   // Activity and config
   static const String _activity = 'get-wishlist-stocks';
-  static const Duration _emitInterval = Duration(milliseconds: 400);
+  static const Duration _emitInterval = Duration(milliseconds: 200);
   static const String _dataRelatedTo = 'MCX';
 
   MCXWishlistWebSocketService({

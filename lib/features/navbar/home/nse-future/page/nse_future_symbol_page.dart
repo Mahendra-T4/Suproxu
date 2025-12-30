@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:suproxu/Assets/assets.dart';
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
@@ -169,11 +170,19 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.check_circle_outlined,
-                    color: Colors.green,
-                    size: 48,
-                  ),
+                  jsonResponse['stateus'] == 1
+                      ? Lottie.asset(
+                          Assets.assetsImagesSupertradeGreenAnimation,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.contain,
+                        )
+                      : Lottie.asset(
+                          Assets.assetsImagesSupertradeFailedGreenAnimation,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.contain,
+                        ),
                   SizedBox(height: 16.h),
                   Text(
                     buySaleEntity.message.toString(),
@@ -266,11 +275,19 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.check_circle_outlined,
-                    color: Colors.green,
-                    size: 48,
-                  ),
+                  jsonResponse['status'] == 1
+                      ? Lottie.asset(
+                          Assets.assetsImagesSupertradeRedAnimation,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.contain,
+                        )
+                      : Lottie.asset(
+                          Assets.assetsImagesSupertradeFailedRedAnimation,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.contain,
+                        ),
                   SizedBox(height: 16.h),
                   Text(
                     buySaleEntity.message.toString(),
@@ -540,12 +557,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                   ? LinearGradient(
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
-                                      colors: [
-                                        const Color(0xFF00C853),
-                                        const Color(
-                                          0xFF00C853,
-                                        ).withOpacity(0.8),
-                                      ],
+                                      colors: [marketColor, marketColor],
                                     )
                                   : null,
                               borderRadius: BorderRadius.circular(12),
@@ -574,15 +586,15 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                 ),
                                 SizedBox(width: 8.h),
                                 Text(
-                                  "Market",
+                                  "MARKET",
                                   style: TextStyle(
                                     color: selecteddTab == 0
                                         ? Colors.white
                                         : Colors.black,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 18,
                                     // fontFamily: 'JetBrainsMono',
-                                    letterSpacing: 0.5,
+                                    letterSpacing: 2,
                                   ),
                                 ),
                               ],
@@ -609,12 +621,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                   ? LinearGradient(
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
-                                      colors: [
-                                        const Color(0xFF00C853),
-                                        const Color(
-                                          0xFF00C853,
-                                        ).withOpacity(0.8),
-                                      ],
+                                      colors: [orderColor, orderColor],
                                     )
                                   : null,
                               boxShadow: selecteddTab == 1
@@ -642,15 +649,15 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                 ),
                                 SizedBox(width: 8.h),
                                 Text(
-                                  "Order",
+                                  "ORDER",
                                   style: TextStyle(
                                     color: selecteddTab == 1
                                         ? Colors.white
                                         : zBlack,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 18,
                                     fontFamily: 'JetBrainsMono',
-                                    letterSpacing: 0.5,
+                                    letterSpacing: 2,
                                   ),
                                 ),
                               ],
@@ -679,13 +686,13 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                 margin: const EdgeInsets.symmetric(vertical: 8),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(15),
-                                  color: Colors.white,
+                                  color: marketColor,
                                 ),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text("Unit").textStyleH4(),
+                                    const Text("UNIT").textStyleH11(),
                                     ValueListenableBuilder<int>(
                                       valueListenable: lotsNotifierMrk,
                                       builder: (context, lots, child) {
@@ -710,7 +717,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                   ),
                                                   child: Icon(
                                                     Icons.remove,
-                                                    color: zBlack,
+                                                    color: kWhiteColor,
                                                     size: screenWidth * 0.05,
                                                   ),
                                                 ),
@@ -740,7 +747,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                 ],
                                                 style: TextStyle(
                                                   fontSize: screenWidth * 0.045,
-                                                  color: zBlack,
+                                                  color: kWhiteColor,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                                 decoration:
@@ -809,7 +816,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                   ),
                                                   child: Icon(
                                                     Icons.add,
-                                                    color: zBlack,
+                                                    color: kWhiteColor,
                                                     size: screenWidth * 0.05,
                                                   ),
                                                 ),
@@ -854,14 +861,15 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                             borderRadius: BorderRadius.circular(
                                               15,
                                             ),
-                                            gradient: const LinearGradient(
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                              colors: [
-                                                Color(0xFFFF3B30),
-                                                Color(0xFFFF3B30),
-                                              ],
-                                            ),
+                                            color: Color(0xffd00000),
+                                            // gradient: const LinearGradient(
+                                            //   begin: Alignment.topLeft,
+                                            //   end: Alignment.bottomRight,
+                                            //   colors: [
+                                            //     Color(0xFFFF3B30),
+                                            //     Color(0xFFFF3B30),
+                                            //   ],
+                                            // ),
                                             // boxShadow: [
                                             //   BoxShadow(
                                             //     color: const Color(0xFFFF3B30)
@@ -938,7 +946,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     ),
                                                     const SizedBox(height: 4),
                                                     Text(
-                                                      "₹${formatDoubleNumber(record.lastSell.price)}",
+                                                      "₹${formatDoubleNumber(record.ohlc.salePrice)}",
                                                     ).textStyleH1W(),
                                                   ],
                                                 ),
@@ -974,14 +982,15 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                             borderRadius: BorderRadius.circular(
                                               15,
                                             ),
-                                            gradient: const LinearGradient(
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                              colors: [
-                                                Color(0xFF34C759),
-                                                Color(0xFF34C759),
-                                              ],
-                                            ),
+                                            color: Color(0xff208b3a),
+                                            // gradient: const LinearGradient(
+                                            //   begin: Alignment.topLeft,
+                                            //   end: Alignment.bottomRight,
+                                            //   colors: [
+                                            //     Colors.green,
+                                            //     Colors.green,
+                                            //   ],
+                                            // ),
                                             // boxShadow: [
                                             //   BoxShadow(
                                             //     color: const Color(0xFF34C759)
@@ -1058,7 +1067,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     ),
                                                     const SizedBox(height: 4),
                                                     Text(
-                                                      "₹${formatDoubleNumber(record.lastBuy.price)}",
+                                                      "₹${formatDoubleNumber(record.ohlc.buyPrice)}",
                                                     ).textStyleH1W(),
                                                   ],
                                                 ),
@@ -1098,8 +1107,9 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           Container(
-                                            height: screenHeight * 0.08,
-                                            width: screenWidth * 0.28,
+                                            height: 60,
+                                            margin: EdgeInsets.only(right: 4.w),
+                                            width: screenWidth * 0.20,
                                             decoration: BoxDecoration(
                                               borderRadius:
                                                   BorderRadius.circular(12),
@@ -1112,11 +1122,27 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
                                               children: [
-                                                const Text('Bid').textStyleH2(),
+                                                Text(
+                                                  'Sell Price',
+                                                  style: TextStyle(
+                                                    color: zBlack,
+                                                    fontSize:
+                                                        screenWidth * 0.03,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
                                                 SizedBox(height: 4.h),
                                                 Text(
                                                   ohlc.salePrice.toString(),
-                                                ).textStyleH1(),
+                                                  style: TextStyle(
+                                                    color: zBlack,
+                                                    fontSize:
+                                                        screenWidth * 0.035,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: 'JetBrainsMono',
+                                                    letterSpacing: 0.5,
+                                                  ),
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -1126,8 +1152,9 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                           //     screenWidth,
                                           //     screenHeight),
                                           Container(
-                                            height: screenHeight * 0.08,
-                                            width: screenWidth * 0.28,
+                                            height: 60,
+                                            // margin: EdgeInsets.only(right: 4.w),
+                                            width: screenWidth * 0.20,
                                             decoration: BoxDecoration(
                                               borderRadius:
                                                   BorderRadius.circular(12),
@@ -1140,11 +1167,27 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
                                               children: [
-                                                const Text('Ask').textStyleH2(),
+                                                Text(
+                                                  'Buy Price',
+                                                  style: TextStyle(
+                                                    color: zBlack,
+                                                    fontSize:
+                                                        screenWidth * 0.03,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
                                                 SizedBox(height: 4.h),
                                                 Text(
                                                   ohlc.buyPrice.toString(),
-                                                ).textStyleH1(),
+                                                  style: TextStyle(
+                                                    color: zBlack,
+                                                    fontSize:
+                                                        screenWidth * 0.035,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: 'JetBrainsMono',
+                                                    letterSpacing: 0.5,
+                                                  ),
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -1236,7 +1279,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                           ),
                                           Container(
                                             height: screenHeight * 0.08,
-                                            width: screenWidth * 0.28,
+                                            width: screenWidth * 0.20,
                                             child: Column(
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
@@ -1310,7 +1353,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                     SizedBox(height: screenHeight * 0.03),
                                     Padding(
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
+                                        horizontal: 22,
                                       ),
                                       child: Row(
                                         mainAxisAlignment:
@@ -1351,21 +1394,13 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                 margin: const EdgeInsets.symmetric(vertical: 8),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(15),
-                                  color: kWhiteColor,
+                                  color: orderColor,
                                 ),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      "Unit",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: screenWidth * 0.045,
-                                        color: zBlack,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
+                                    const Text("UNIT").textStyleH11(),
                                     ValueListenableBuilder<int>(
                                       valueListenable: lotsNotifierLmt,
                                       builder: (context, lots, child) {
@@ -1390,7 +1425,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                   ),
                                                   child: Icon(
                                                     Icons.remove,
-                                                    color: zBlack,
+                                                    color: kWhiteColor,
                                                     size: screenWidth * 0.05,
                                                   ),
                                                 ),
@@ -1420,7 +1455,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     TextInputType.number,
                                                 style: TextStyle(
                                                   fontSize: screenWidth * 0.045,
-                                                  color: zBlack,
+                                                  color: kWhiteColor,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                                 decoration:
@@ -1489,7 +1524,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                   ),
                                                   child: Icon(
                                                     Icons.add,
-                                                    color: zBlack,
+                                                    color: kWhiteColor,
                                                     size: screenWidth * 0.05,
                                                   ),
                                                 ),
@@ -1509,7 +1544,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                               //   color: Colors.white,
                               // ),
                               Container(
-                                width: screenWidth * 0.9,
+                                width: MediaQuery.of(context).size.width,
                                 margin: const EdgeInsets.symmetric(vertical: 8),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(15),
@@ -1518,25 +1553,37 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                 child: TextFormField(
                                   controller: _usernameController,
                                   style: TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontFamily: 'JetBrainsMono',
+                                    fontSize: 18,
                                     color: zBlack,
-                                    fontSize: screenWidth * 0.04,
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.5,
+                                    letterSpacing: 2,
                                   ),
                                   inputFormatters: [
                                     FilteringTextInputFormatter.digitsOnly,
                                   ],
                                   decoration: InputDecoration(
-                                    labelText: "Price",
-                                    labelStyle: TextStyle(
-                                      color: Colors.grey[400],
-                                      fontSize: screenWidth * 0.04,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    prefixIcon: Icon(
-                                      Icons.price_change_outlined,
-                                      color: zBlack,
-                                      size: screenWidth * 0.06,
+                                    // labelText: "Price",
+                                    // labelStyle: TextStyle(
+                                    //   color: Colors.grey[400],
+                                    //   fontSize: screenWidth * 0.04,
+                                    //   fontWeight: FontWeight.w500,
+                                    // ),
+                                    prefixIcon: Padding(
+                                      padding: const EdgeInsets.only(
+                                        top: 10.0,
+                                        left: 16,
+                                      ),
+                                      child: Text(
+                                        'Price :  ',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          fontFamily: 'JetBrainsMono',
+                                          fontSize: 18,
+                                          color: zBlack,
+                                          letterSpacing: 2,
+                                        ),
+                                      ),
                                     ),
                                     floatingLabelStyle: TextStyle(
                                       color: const Color(0xFF00C853),
@@ -1585,18 +1632,19 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                             borderRadius: BorderRadius.circular(
                                               15,
                                             ),
-                                            gradient: LinearGradient(
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                              colors: [
-                                                const Color(
-                                                  0xFFFF3B30,
-                                                ).withOpacity(0.8),
-                                                const Color(
-                                                  0xFFFF3B30,
-                                                ).withOpacity(0.6),
-                                              ],
-                                            ),
+                                            color: Color(0xffd00000),
+                                            // gradient: LinearGradient(
+                                            //   begin: Alignment.topLeft,
+                                            //   end: Alignment.bottomRight,
+                                            //   colors: [
+                                            //     const Color(
+                                            //       0xFFFF3B30,
+                                            //     ).withOpacity(0.8),
+                                            //     const Color(
+                                            //       0xFFFF3B30,
+                                            //     ).withOpacity(0.6),
+                                            //   ],
+                                            // ),
                                             // boxShadow: [
                                             //   BoxShadow(
                                             //     color: const Color(0xFFFF3B30)
@@ -1748,18 +1796,19 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                             borderRadius: BorderRadius.circular(
                                               15,
                                             ),
-                                            gradient: LinearGradient(
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                              colors: [
-                                                const Color(
-                                                  0xFF34C759,
-                                                ).withOpacity(0.8),
-                                                const Color(
-                                                  0xFF34C759,
-                                                ).withOpacity(0.6),
-                                              ],
-                                            ),
+                                            color: Color(0xff208b3a),
+                                            // gradient: LinearGradient(
+                                            //   begin: Alignment.topLeft,
+                                            //   end: Alignment.bottomRight,
+                                            //   colors: [
+                                            //     const Color(
+                                            //       0xFF34C759,
+                                            //     ).withOpacity(0.8),
+                                            //     const Color(
+                                            //       0xFF34C759,
+                                            //     ).withOpacity(0.6),
+                                            //   ],
+                                            // ),
                                             // boxShadow: [
                                             //   BoxShadow(
                                             //     color: const Color(0xFF34C759)
@@ -1949,7 +1998,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                   MainAxisAlignment.center,
                                               children: [
                                                 Text(
-                                                  'Bid',
+                                                  'Sell Price',
                                                   style: TextStyle(
                                                     color: zBlack,
                                                     fontSize:
@@ -1994,7 +2043,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                   MainAxisAlignment.center,
                                               children: [
                                                 Text(
-                                                  'Ask',
+                                                  'Buy Price',
                                                   style: TextStyle(
                                                     color: zBlack,
                                                     fontSize:
@@ -2108,15 +2157,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                             screenHeight,
                                           ),
                                           Container(
-                                            height: 60,
-                                            width: screenWidth * 0.28,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                              color: Colors.white.valueColor(
-                                                record.change,
-                                              ),
-                                            ),
+                                            height: screenHeight * 0.08,
+                                            width: screenWidth * 0.20,
                                             child: Column(
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
@@ -2124,9 +2166,13 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                 Text(
                                                   'Change',
                                                   style: TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize:
-                                                        screenWidth * 0.03,
+                                                    color:
+                                                        record.change
+                                                            .toString()
+                                                            .contains('-')
+                                                        ? Colors.red
+                                                        : Colors.green,
+                                                    fontSize: 14,
                                                     fontWeight: FontWeight.w500,
                                                   ),
                                                 ),
@@ -2134,9 +2180,13 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                 Text(
                                                   record.change.toString(),
                                                   style: TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize:
-                                                        screenWidth * 0.035,
+                                                    color:
+                                                        record.change
+                                                            .toString()
+                                                            .contains('-')
+                                                        ? Colors.red
+                                                        : Colors.green,
+                                                    fontSize: 15,
                                                     fontWeight: FontWeight.bold,
                                                     fontFamily: 'JetBrainsMono',
                                                     letterSpacing: 0.5,
@@ -2182,7 +2232,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                     SizedBox(height: screenHeight * 0.03),
                                     Padding(
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
+                                        horizontal: 22,
                                       ),
                                       child: Row(
                                         mainAxisAlignment:
@@ -2222,7 +2272,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
 
     return Container(
       height: screenHeight * 0.08,
-      width: screenWidth * 0.28,
+      width: screenWidth * 0.20,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

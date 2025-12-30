@@ -8,6 +8,7 @@ import 'package:suproxu/Assets/assets.dart';
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/constants/apis/api_urls.dart';
+import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/features/auth/login/loginPage.dart';
 import 'package:http/http.dart' as http;
 import 'package:suproxu/features/navbar/wishlist/wishlist.dart';
@@ -21,12 +22,27 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat();
+    _animation = Tween<double>(begin: -1.0, end: 1.0).animate(_controller);
     // userExists();
     userNavigator();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   Future<bool> userExists() async {
@@ -40,11 +56,14 @@ class _SplashScreenState extends State<SplashScreen> {
       DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
 
-      final response = await http.post(url, body: {
-        "activity": "device-check",
-        "deviceID": androidInfo.id.toString(),
-        "userKey": userKey.toString()
-      });
+      final response = await http.post(
+        url,
+        body: {
+          "activity": "device-check",
+          "deviceID": androidInfo.id.toString(),
+          "userKey": userKey.toString(),
+        },
+      );
 
       if (!mounted) return false;
 
@@ -93,12 +112,18 @@ class _SplashScreenState extends State<SplashScreen> {
             context.goNamed(WishList.routeName);
           }
         } else {
+          if (!mounted) return;
           if (context.mounted) {
+            await Future.delayed(const Duration(seconds: 3));
+
             context.goNamed(LoginPages.routeName);
           }
         }
       } else {
+        if (!mounted) return;
         if (context.mounted) {
+          await Future.delayed(const Duration(seconds: 3));
+
           context.goNamed(LoginPages.routeName);
         }
       }
@@ -114,16 +139,15 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     // final connectivity = context.watch<ConnectivityService>();
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: zBlack,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Logo
-
           Center(
             child: Image.asset(
-              Assets.assetsImagesSuproxulogo,
-              width: 200,
+              Assets.assetsImagesSuproxuBullFaceLogo,
+              width: 300,
               // color: Colors.white,
             ),
           ),

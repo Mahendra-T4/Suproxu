@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
@@ -8,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lottie/lottie.dart';
+import 'package:suproxu/Assets/assets.dart';
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/constants/apis/api_urls.dart';
@@ -212,11 +213,19 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.check_circle_outlined,
-                    color: Colors.green,
-                    size: 48,
-                  ),
+                  jsonResponse['status'] == 1
+                      ? Lottie.asset(
+                          Assets.assetsImagesSupertradeGreenAnimation,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.contain,
+                        )
+                      : Lottie.asset(
+                          Assets.assetsImagesSupertradeFailedGreenAnimation,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.contain,
+                        ),
                   SizedBox(height: 16.h),
                   Text(
                     buySaleEntity.message.toString(),
@@ -311,11 +320,19 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.check_circle_outlined,
-                    color: Colors.green,
-                    size: 48,
-                  ),
+                  jsonResponse['status'] == 1
+                      ? Lottie.asset(
+                          Assets.assetsImagesSupertradeRedAnimation,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.contain,
+                        )
+                      : Lottie.asset(
+                          Assets.assetsImagesSupertradeFailedRedAnimation,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.contain,
+                        ),
                   SizedBox(height: 16.h),
                   Text(
                     buySaleEntity.message.toString(),
@@ -479,12 +496,12 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
               margin: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
-                color: kWhiteColor,
+                color: marketColor,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text("Lots").textStyleH1(),
+                  const Text("LOT'S").textStyleH11(),
                   ValueListenableBuilder<int>(
                     valueListenable: lotsNotifierMrk,
                     builder: (context, lots, child) {
@@ -504,7 +521,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                 ),
                                 child: Icon(
                                   Icons.remove,
-                                  color: zBlack,
+                                  color: kWhiteColor,
                                   size: screenWidth * 0.05,
                                 ),
                               ),
@@ -526,7 +543,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                               ],
                               style: TextStyle(
                                 fontSize: screenWidth * 0.045,
-                                color: zBlack,
+                                color: kWhiteColor,
                                 fontWeight: FontWeight.bold,
                               ),
                               decoration: const InputDecoration(
@@ -561,7 +578,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                 ),
                                 child: Icon(
                                   Icons.add,
-                                  color: zBlack,
+                                  color: kWhiteColor,
                                   size: screenWidth * 0.05,
                                 ),
                               ),
@@ -605,7 +622,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                           width: screenWidth / 2.5,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
-                            color: Colors.red,
+                            color: Color(0xffd00000),
                             // gradient: const LinearGradient(
                             //   begin: Alignment.topLeft,
                             //   end: Alignment.bottomRight,
@@ -690,7 +707,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      "₹${formatDoubleNumber(response.lastSell.price)}",
+                                      "₹${formatDoubleNumber(response.ohlc.salePrice)}",
                                     ).textStyleH1W(),
                                   ],
                                 ),
@@ -723,7 +740,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                           width: screenWidth / 2.5,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
-                            color: Colors.green,
+                            color: Color(0xff208b3a),
                             // gradient: const LinearGradient(
                             //   begin: Alignment.topLeft,
                             //   end: Alignment.bottomRight,
@@ -787,7 +804,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      "₹${formatDoubleNumber(response.lastBuy.price)}",
+                                      "₹${formatDoubleNumber(response.ohlc.buyPrice)}",
                                     ).textStyleH1W(),
                                   ],
                                 ),
@@ -817,14 +834,14 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
                           height: 60,
                           margin: EdgeInsets.only(right: 4.w),
-                          width: screenWidth * 0.25,
+                          width: screenWidth * 0.20,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             color: Colors.white.blink(
@@ -835,16 +852,16 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text("Bid").textStyleH2S(),
+                              const Text("Sell Price").textStyleH2S(),
                               const SizedBox(height: 4),
                               Text(
-                                ohlc.buyPrice.toString(),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 15,
-                                  color: ohlc.buyPrice > ohlc.lastPrice
-                                      ? Colors.white
-                                      : kGoldenBraunColor,
+                                ohlc.salePrice.toString(),
+                                style: const TextStyle(
+                                  color: zBlack,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  fontFamily: 'JetBrainsMono',
+                                  letterSpacing: 0.5,
                                 ),
                               ),
                             ],
@@ -856,7 +873,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                         Container(
                           height: 60,
                           // margin: EdgeInsets.only(right: 4.w),
-                          width: screenWidth * 0.25,
+                          width: screenWidth * 0.20,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             color: Colors.white.blink(
@@ -867,16 +884,16 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text("Ask").textStyleH2S(),
+                              const Text("Buy Price").textStyleH2S(),
                               const SizedBox(height: 4),
                               Text(
-                                response.lastBuy.price.toString(),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 15,
-                                  color: ohlc.buyPrice > ohlc.lastPrice
-                                      ? Colors.white
-                                      : kGoldenBraunColor,
+                                response.ohlc.buyPrice.toString(),
+                                style: const TextStyle(
+                                  color: zBlack,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  fontFamily: 'JetBrainsMono',
+                                  letterSpacing: 0.5,
                                 ),
                               ),
                             ],
@@ -886,7 +903,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                         // _buildInfoBox(
                         //     "Ask", ohlc.buyPrice.toString(), screenWidth),
                         _buildInfoBox(
-                          "Last",
+                          "Ltp",
                           ohlc.lastPrice.toString(),
                           screenWidth,
                         ),
@@ -896,36 +913,29 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.03),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildInfoBox(
-                          "Open",
-                          ohlc.open.toString(),
-                          screenWidth,
-                        ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildInfoBox("Open", ohlc.open.toString(), screenWidth),
 
-                        _buildInfoBox(
-                          "Close",
-                          ohlc.close.toString().toString(),
-                          screenWidth,
-                        ),
+                      _buildInfoBox(
+                        "Close",
+                        ohlc.close.toString().toString(),
+                        screenWidth,
+                      ),
 
-                        _buildInfoBox(
-                          "Atp",
-                          response.averageTradePrice.toString(),
-                          screenWidth,
-                        ),
+                      _buildInfoBox(
+                        "Atp",
+                        response.averageTradePrice.toString(),
+                        screenWidth,
+                      ),
 
-                        // _buildInfoBox("CLOSE", ohlc.close.toString(), screenWidth),
-                      ],
-                    ),
+                      // _buildInfoBox("CLOSE", ohlc.close.toString(), screenWidth),
+                    ],
                   ),
                   SizedBox(height: screenHeight * 0.03),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -949,7 +959,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                   ),
                   SizedBox(height: screenHeight * 0.03),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -967,7 +977,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
 
                         Container(
                           height: 60,
-                          width: screenWidth * 0.28,
+                          width: screenWidth * 0.20,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             color: Colors.white.valueColor(response.change),
@@ -1007,7 +1017,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                   ),
                   SizedBox(height: screenHeight * 0.03),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -1083,19 +1093,19 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
               margin: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
-                color: kWhiteColor,
+                color: orderColor,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Lots",
+                    "LOT'S",
                     style: TextStyle(
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w900,
                       fontFamily: 'JetBrainsMono',
-                      fontSize: screenWidth * 0.045,
-                      color: zBlack,
-                      letterSpacing: 0.5,
+                      fontSize: 18,
+                      color: kWhiteColor,
+                      letterSpacing: 2,
                     ),
                   ),
                   ValueListenableBuilder<int>(
@@ -1123,7 +1133,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                 ),
                                 child: Icon(
                                   Icons.remove,
-                                  color: zBlack,
+                                  color: kWhiteColor,
                                   size: screenWidth * 0.05,
                                 ),
                               ),
@@ -1145,7 +1155,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                               ],
                               style: TextStyle(
                                 fontSize: screenWidth * 0.045,
-                                color: zBlack,
+                                color: kWhiteColor,
                                 fontWeight: FontWeight.bold,
                               ),
                               decoration: const InputDecoration(
@@ -1185,7 +1195,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                 ),
                                 child: Icon(
                                   Icons.add,
-                                  color: zBlack,
+                                  color: kWhiteColor,
                                   size: screenWidth * 0.05,
                                 ),
                               ),
@@ -1199,7 +1209,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
               ),
             ),
             Container(
-              width: screenWidth * 0.9,
+              width: MediaQuery.of(context).size.width,
               margin: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
@@ -1209,21 +1219,29 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                 controller: usernameController,
                 style: TextStyle(
                   color: zBlack,
-                  fontSize: screenWidth * 0.04,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 0.5,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
                 ),
                 decoration: InputDecoration(
-                  labelText: "Price",
+                  // labelText: "Price",
                   labelStyle: TextStyle(
                     color: zBlack,
                     fontSize: screenWidth * 0.04,
                     fontWeight: FontWeight.w500,
                   ),
-                  prefixIcon: Icon(
-                    Icons.price_change_outlined,
-                    color: zBlack,
-                    size: screenWidth * 0.06,
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.only(top: 10.0, left: 16),
+                    child: Text(
+                      'Price :  ',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontFamily: 'JetBrainsMono',
+                        fontSize: 20,
+                        color: zBlack,
+                        letterSpacing: 2,
+                      ),
+                    ),
                   ),
                   floatingLabelStyle: TextStyle(
                     color: const Color(0xFF00C853),
@@ -1328,7 +1346,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                               // }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
+                              backgroundColor: Color(0xffd00000),
                               padding: EdgeInsets.symmetric(
                                 vertical: screenHeight * 0.02,
                               ),
@@ -1336,22 +1354,40 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: Text(
-                              (() {
-                                final double price =
-                                    double.tryParse(usernameController.text) ??
-                                    0.0;
-                                // final int lots = lotsNotifierLmt.value;
-                                // final double total = price * lots;
-                                return 'SALE ${price.toStringAsFixed(2)}';
-                              })(),
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: screenWidth * 0.045,
-                                fontFamily: 'JetBrainsMono',
-                                fontWeight: FontWeight.w800,
-                              ),
-                              textAlign: TextAlign.center,
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.sell,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text("SELL").textStyleH1W(),
+                                  ],
+                                ),
+                                Text(
+                                  (() {
+                                    final double price =
+                                        double.tryParse(
+                                          usernameController.text,
+                                        ) ??
+                                        0.0;
+                                    // final int lots = lotsNotifierLmt.value;
+                                    // final double total = price * lots;
+                                    return '${price.toStringAsFixed(2)}';
+                                  })(),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: screenWidth * 0.045,
+                                    fontFamily: 'JetBrainsMono',
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -1422,30 +1458,48 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                               //     response.lotSize;
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
+                              backgroundColor: Color(0xff208b3a),
                               padding: EdgeInsets.symmetric(
                                 vertical: screenHeight * 0.02,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: Text(
-                              (() {
-                                final double price =
-                                    double.tryParse(usernameController.text) ??
-                                    0.0;
-                                // final int lots = lotsNotifierLmt.value;
-                                // final double total = price * lots;
-                                return 'BUY ${price.toStringAsFixed(2)}';
-                              })(),
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: screenWidth * 0.045,
-                                fontFamily: 'JetBrainsMono',
-                                fontWeight: FontWeight.w800,
-                              ),
-                              textAlign: TextAlign.center,
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.shopping_cart,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text("BUY").textStyleH1W(),
+                                  ],
+                                ),
+                                Text(
+                                  (() {
+                                    final double price =
+                                        double.tryParse(
+                                          usernameController.text,
+                                        ) ??
+                                        0.0;
+                                    // final int lots = lotsNotifierLmt.value;
+                                    // final double total = price * lots;
+                                    return '${price.toStringAsFixed(2)}';
+                                  })(),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: screenWidth * 0.045,
+                                    fontFamily: 'JetBrainsMono',
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -1478,7 +1532,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                         Container(
                           height: 60,
                           margin: EdgeInsets.only(right: 4.w),
-                          width: screenWidth * 0.25,
+                          width: screenWidth * 0.20,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             color: Colors.white.blink(
@@ -1490,17 +1544,18 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const Text(
-                                "Bid",
+                                "Sell Price",
                                 style: const TextStyle(
                                   color: zBlack,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
+                                  fontFamily: 'JetBrainsMono',
                                   letterSpacing: 0.5,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                response.lastSell.price.toString(),
+                                response.ohlc.salePrice.toString(),
                                 style: const TextStyle(
                                   color: zBlack,
                                   fontSize: 14,
@@ -1530,7 +1585,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const Text(
-                                "Ask",
+                                "Buy Price",
                                 style: const TextStyle(
                                   color: zBlack,
                                   fontSize: 12,
@@ -1540,7 +1595,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                response.lastBuy.price.toString(),
+                                response.ohlc.buyPrice.toString(),
                                 style: const TextStyle(
                                   color: zBlack,
                                   fontSize: 14,
@@ -1554,7 +1609,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                         ),
 
                         _buildInfoBox(
-                          "Last",
+                          "Ltp",
                           ohlc.lastPrice.toString(),
                           screenWidth,
                         ),
@@ -1635,7 +1690,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
 
                         Container(
                           height: 60,
-                          width: screenWidth * 0.28,
+                          width: screenWidth * 0.20,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             color: Colors.white.valueColor(response.change),
@@ -1732,7 +1787,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
   Widget _buildInfoBox(String label, dynamic value, double screenWidth) {
     return Container(
       height: 60,
-      width: screenWidth * 0.28,
+      width: screenWidth * 0.20,
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

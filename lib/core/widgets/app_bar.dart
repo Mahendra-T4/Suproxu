@@ -7,6 +7,7 @@ import 'package:suproxu/core/logout/logout.dart';
 import 'package:suproxu/features/navbar/Portfolio/portfolio.dart';
 import 'package:suproxu/features/navbar/TradeScreen/tradeTab.dart';
 import 'package:suproxu/features/navbar/profile/notification/notificationScreen.dart';
+import 'package:suproxu/features/navbar/profile/roles/superoxu_rules.dart';
 
 enum MenuOptions {
   portfolio('Portfolio', Icons.wallet),
@@ -186,7 +187,7 @@ void _handleMenuSelection(MenuOptions option, BuildContext context) {
       break;
     case MenuOptions.roles:
       // Navigate to Roles
-      // GoRouter.of(context).pushNamed(RolesScreen.routeName);
+      GoRouter.of(context).pushNamed(SuproxuRulesPage.routeName);
       break;
     case MenuOptions.logout:
       // Logout logic

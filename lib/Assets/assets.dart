@@ -13,8 +13,11 @@ class Assets {
   static const String assetsImagesSuproxulogo =
       "assets/images/suproxu-logo.jpeg";
 
+  static const String assetsImagesSuproxuSplashlogo =
+      "assets/images/Suproxu-png-logo.png";
+
   static const String assetsImageSuproxuTraderLogo =
-      "assets/images/suproxu-trader-logo.jpeg";
+      "assets/images/Suproxu-logo-new.jpg";
 
   static const String assetsImagesSuperTradeAddWishlist =
       "assets/images/addwishlist.png";
@@ -33,4 +36,22 @@ class Assets {
 
   static const String assetsImagesSupertradeRemoveWishlistIcon =
       "assets/images/bookmark-remove-f.svg";
+
+  static const String assetsImagesSupertradeGreenAnimation =
+      "assets/animation/green_animation.json";
+
+  static const String assetsImagesSupertradeRedAnimation =
+      "assets/animation/red_animation.json";
+
+  static const String assetsImagesSupertradeFailedRedAnimation =
+      "assets/animation/close-red.json";
+
+  static const String assetsImagesSupertradeFailedGreenAnimation =
+      "assets/animation/close-green.json";
+
+  static const String assetsImagesSuproxuBullFaceLogo =
+      "assets/images/Bull-face-logo.png";
+
+  static const String assetsImagesSuproxuSplash =
+      "assets/images/suproxsplash.png";
 }

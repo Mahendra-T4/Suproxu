@@ -21,7 +21,7 @@ class NFOWatchListWebSocketService {
 
   // Use correct activity name as per backend
   static const String _activity = 'get-wishlist-stocks';
-  static const Duration _emitInterval = Duration(milliseconds: 400);
+  static const Duration _emitInterval = Duration(milliseconds: 200);
 
   NFOWatchListWebSocketService({
     required this.onNFODataReceived,
@@ -49,8 +49,10 @@ class NFOWatchListWebSocketService {
         return;
       }
 
-      final wsUrl =
-          WebSocketConfig.socketUrl.replaceFirst('https://', 'wss://');
+      final wsUrl = WebSocketConfig.socketUrl.replaceFirst(
+        'https://',
+        'wss://',
+      );
 
       // Build socket with proper options
       final socket = IO.io(

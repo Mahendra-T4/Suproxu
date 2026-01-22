@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:suproxu/Assets/assets.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/logout/logout.dart';
+import 'package:suproxu/core/util/suproxu_logo.dart';
 import 'package:suproxu/features/navbar/Portfolio/portfolio.dart';
 import 'package:suproxu/features/navbar/TradeScreen/tradeTab.dart';
 import 'package:suproxu/features/navbar/profile/notification/notificationScreen.dart';
@@ -87,11 +88,7 @@ Widget _buildModernDropdownButton(BuildContext context) {
             //   width: 1.5,
             // ),
           ),
-          child: Image.asset(
-            Assets.assetsImagesSuproxulogo,
-            height: 65.h,
-            width: 65.w,
-          ),
+          child: SuproxuLogo(width: 65.w),
         ),
       ),
     ),

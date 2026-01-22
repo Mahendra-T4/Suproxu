@@ -55,150 +55,155 @@ class _LodgeComplaintScreenState extends State<LodgeComplaintScreen>
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<bool>(
-        stream: InternetConnectionService().connectionStream,
-        builder: (context, snapshot) {
-          if (snapshot.data == false) {
-            return NoInternetConnection(); // Show your offline UI
-          }
-          return Container(
-            color: greyColor,
-            child: SafeArea(
-              child: Scaffold(
-                backgroundColor: zBlack,
-                appBar: customAppBarWithTitle(
-                    context: context, title: 'Complaint', isShowNotify: true),
-                body: SingleChildScrollView(
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 20),
-                          // Form Container
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Column(
-                              children: [
-                                _buildTextField(
-                                  controller: _subjectController,
-                                  label: 'Subject',
-                                  icon: Icons.message,
-                                ),
-                                const SizedBox(height: 24),
-                                _buildTextField(
-                                  controller: _complaintController,
-                                  label: 'Complaint',
-                                  maxLines: 5,
-                                  icon: Icons.note,
-                                ),
-                              ],
-                            ),
+      stream: InternetConnectionService().connectionStream,
+      builder: (context, snapshot) {
+        if (snapshot.data == false) {
+          return NoInternetConnection(); // Show your offline UI
+        }
+        return Container(
+          color: greyColor,
+          child: SafeArea(
+            child: Scaffold(
+              backgroundColor: kWhiteColor,
+              appBar: customAppBarWithTitle(
+                context: context,
+                title: 'Complaint',
+                isShowNotify: true,
+              ),
+              body: SingleChildScrollView(
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+                        // Form Container
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          const SizedBox(height: 40),
-                          // Submit Button
-                          BlocConsumer(
-                              bloc: _profileBloc,
-                              listener: (context, state) {
-                                if (state is LedgeComplaintLoadedSuccessState) {
-                                  if (state.ledgeComplaintEntity.status == 1) {
-                                    _showSuccessDialog(
-                                        state.ledgeComplaintEntity.message!);
-                                  }
-                                }
-                              },
-                              builder: (context, state) {
-                                if (state is ProfileLoadingState) {
-                                  return flag
-                                      ? const Center(
-                                          child: CircularProgressIndicator
-                                              .adaptive(),
-                                        )
-                                      : Center(
-                                          child: Container(
-                                            width: double.infinity,
-                                            margin: const EdgeInsets.symmetric(
-                                                horizontal: 20),
-                                            child: ElevatedButton(
-                                              onPressed: () {},
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor:
-                                                    kGoldenBraunColor,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                ),
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 40,
-                                                        vertical: 16),
-                                              ),
-                                              child: const Text(
-                                                'SUBMITTING...',
-                                              ).textStyleH1W(),
+                          child: Column(
+                            children: [
+                              _buildTextField(
+                                controller: _subjectController,
+                                label: 'Subject',
+                                icon: Icons.message,
+                              ),
+                              const SizedBox(height: 24),
+                              _buildTextField(
+                                controller: _complaintController,
+                                label: 'Complaint',
+                                maxLines: 5,
+                                icon: Icons.note,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        // Submit Button
+                        BlocConsumer(
+                          bloc: _profileBloc,
+                          listener: (context, state) {
+                            if (state is LedgeComplaintLoadedSuccessState) {
+                              if (state.ledgeComplaintEntity.status == 1) {
+                                _showSuccessDialog(
+                                  state.ledgeComplaintEntity.message!,
+                                );
+                              }
+                            }
+                          },
+                          builder: (context, state) {
+                            if (state is ProfileLoadingState) {
+                              return flag
+                                  ? const Center(
+                                      child:
+                                          CircularProgressIndicator.adaptive(),
+                                    )
+                                  : Center(
+                                      child: Container(
+                                        width: double.infinity,
+                                        margin: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                        ),
+                                        child: ElevatedButton(
+                                          onPressed: () {},
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: kGoldenBraunColor,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 40,
+                                              vertical: 16,
                                             ),
                                           ),
-                                        );
-                                }
-                                if (state is LedgeComplaintFailedErrorState) {
-                                  return Center(
-                                    child: Text(
-                                      state.error,
-                                      style: const TextStyle(
-                                        color: Colors.redAccent,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  );
-                                }
-                                return Center(
-                                  child: Container(
-                                    width: double.infinity,
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 20),
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        _profileBloc.add(
-                                          LedgeUserComplaintEvent(
-                                            subject:
-                                                _subjectController.text.trim(),
-                                            complaint: _complaintController.text
-                                                .trim(),
-                                          ),
-                                        );
-                                        flag = false; // Reset flag for loading
-                                        _subjectController.clear();
-                                        _complaintController.clear();
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: kGoldenBraunColor,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
+                                          child: const Text(
+                                            'SUBMITTING...',
+                                          ).textStyleH1W(),
                                         ),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 40, vertical: 16),
                                       ),
-                                      child: const Text(
-                                        'SUBMIT',
-                                      ).textStyleH1W(),
+                                    );
+                            }
+                            if (state is LedgeComplaintFailedErrorState) {
+                              return Center(
+                                child: Text(
+                                  state.error,
+                                  style: const TextStyle(
+                                    color: Colors.redAccent,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              );
+                            }
+                            return Center(
+                              child: Container(
+                                width: double.infinity,
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                ),
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    _profileBloc.add(
+                                      LedgeUserComplaintEvent(
+                                        subject: _subjectController.text.trim(),
+                                        complaint: _complaintController.text
+                                            .trim(),
+                                      ),
+                                    );
+                                    flag = false; // Reset flag for loading
+                                    _subjectController.clear();
+                                    _complaintController.clear();
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: kGoldenBraunColor,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 40,
+                                      vertical: 16,
                                     ),
                                   ),
-                                );
-                              }),
-                        ],
-                      ),
+                                  child: const Text('SUBMIT').textStyleH1W(),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildTextField({
@@ -215,12 +220,12 @@ class _LodgeComplaintScreenState extends State<LodgeComplaintScreen>
         labelText: label,
         labelStyle: TextStyle(
           fontSize: 18,
-          color: kWhiteColor,
+          color: zBlack,
           fontWeight: FontWeight.w500,
           // fontFamily: 'JetBrainsMono',
         ),
         filled: true,
-        fillColor: Colors.grey,
+        fillColor: Colors.grey.withOpacity(.3),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -234,8 +239,10 @@ class _LodgeComplaintScreenState extends State<LodgeComplaintScreen>
           borderSide: const BorderSide(color: Colors.blueAccent, width: 2.0),
         ),
         suffixIcon: Icon(icon, color: zBlack),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
     );
   }
@@ -249,17 +256,11 @@ class _LodgeComplaintScreenState extends State<LodgeComplaintScreen>
           'Success',
           style: TextStyle(color: Colors.greenAccent),
         ),
-        content: Text(
-          message,
-          style: const TextStyle(color: Colors.white),
-        ),
+        content: Text(message, style: const TextStyle(color: Colors.white)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'OK',
-              style: TextStyle(color: Colors.blueAccent),
-            ),
+            child: const Text('OK', style: TextStyle(color: Colors.blueAccent)),
           ),
         ],
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

@@ -85,117 +85,120 @@ class _PaymentScreenState extends State<PaymentScreen>
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<bool>(
-        stream: InternetConnectionService().connectionStream,
-        builder: (context, snapshot) {
-          if (snapshot.data == false) {
-            return NoInternetConnection(); // Show your offline UI
-          }
-          return Container(
-            color: greyColor,
-            child: SafeArea(
-              child: Scaffold(
-                  backgroundColor: zBlack,
-                  appBar: customAppBarWithTitle(
-                      context: context, title: 'Payment', isShowNotify: true),
-                  body: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: BlocBuilder(
-                            bloc: _profileBloc,
-                            builder: (_, state) {
-                              switch (state.runtimeType) {
-                                case const (ProfileLoadingState):
-                                  return const Center(
-                                    child: CircularProgressIndicator.adaptive(),
-                                  );
-                                case const (TransactionListSuccessfulLoadedState):
-                                  final snapshot = state
-                                      as TransactionListSuccessfulLoadedState;
-                                  return snapshot
-                                              .transRequestListEntity.status ==
-                                          1
-                                      ? ListView.builder(
-                                          padding: const EdgeInsets.only(
-                                              top: 10, left: 10, right: 10),
-                                          itemCount: snapshot
-                                              .transRequestListEntity
-                                              .record!
-                                              .length,
-                                          itemBuilder: (context, index) {
-                                            final transaction = snapshot
-                                                .transRequestListEntity
-                                                .record![index];
-                                            return TransactionItem(
-                                              transactionId: transaction
-                                                  .utrNumber
-                                                  .toString(),
-                                              date: transaction.transactionDate
-                                                  .toString(),
-                                              status: transaction
-                                                  .transactionStatus
-                                                  .toString(),
-                                              amount: transaction
-                                                  .transactionAmount!
-                                                  .toDouble(),
-                                            );
-                                          },
-                                        )
-                                      : Center(
-                                          child: Text(
-                                            snapshot
-                                                .transRequestListEntity.message
-                                                .toString(),
-                                          ).textStyleH2(),
+      stream: InternetConnectionService().connectionStream,
+      builder: (context, snapshot) {
+        if (snapshot.data == false) {
+          return NoInternetConnection(); // Show your offline UI
+        }
+        return Container(
+          color: greyColor,
+          child: SafeArea(
+            child: Scaffold(
+              backgroundColor: kWhiteColor,
+              appBar: customAppBarWithTitle(
+                context: context,
+                title: 'Payment',
+                isShowNotify: true,
+              ),
+              body: FadeTransition(
+                opacity: _fadeAnimation,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: BlocBuilder(
+                        bloc: _profileBloc,
+                        builder: (_, state) {
+                          switch (state.runtimeType) {
+                            case const (ProfileLoadingState):
+                              return const Center(
+                                child: CircularProgressIndicator.adaptive(),
+                              );
+                            case const (TransactionListSuccessfulLoadedState):
+                              final snapshot =
+                                  state as TransactionListSuccessfulLoadedState;
+                              return snapshot.transRequestListEntity.status == 1
+                                  ? ListView.builder(
+                                      padding: const EdgeInsets.only(
+                                        top: 10,
+                                        left: 10,
+                                        right: 10,
+                                      ),
+                                      itemCount: snapshot
+                                          .transRequestListEntity
+                                          .record!
+                                          .length,
+                                      itemBuilder: (context, index) {
+                                        final transaction = snapshot
+                                            .transRequestListEntity
+                                            .record![index];
+                                        return TransactionItem(
+                                          transactionId: transaction.utrNumber
+                                              .toString(),
+                                          date: transaction.transactionDate
+                                              .toString(),
+                                          status: transaction.transactionStatus
+                                              .toString(),
+                                          amount: transaction.transactionAmount!
+                                              .toDouble(),
                                         );
-                                case const (TransactionListFailedErrorState):
-                                  return const SizedBox.shrink();
-                                default:
-                                  return const Center(
-                                    child: Text('State Not found'),
-                                  );
-                              }
-                            },
-                          ),
-                        ),
-
-                        // Footer Buttons
-                        Container(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 20),
-                          height: 50,
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              context.pushNamed(DepositScreen.routeName);
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //     builder: (context) => const DepositScreen(),
-                              //   ),
-                              // );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: kGoldenBraunColor,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              elevation: 4,
-                              shadowColor: Colors.black.withOpacity(0.3),
-                            ),
-                            child: const Text(
-                              "DEPOSIT",
-                            ).textStyleH1W(),
-                          ),
-                        ),
-                      ],
+                                      },
+                                    )
+                                  : Center(
+                                      child: Text(
+                                        snapshot.transRequestListEntity.message
+                                            .toString(),
+                                        style: TextStyle(color: zBlack),
+                                      ),
+                                    );
+                            case const (TransactionListFailedErrorState):
+                              return const SizedBox.shrink();
+                            default:
+                              return const Center(
+                                child: Text('State Not found'),
+                              );
+                          }
+                        },
+                      ),
                     ),
-                  )),
+
+                    // Footer Buttons
+                    Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 20,
+                      ),
+                      height: 50,
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          context.pushNamed(DepositScreen.routeName);
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //     builder: (context) => const DepositScreen(),
+                          //   ),
+                          // );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: kGoldenBraunColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          elevation: 4,
+                          shadowColor: Colors.black.withOpacity(0.3),
+                        ),
+                        child: const Text("DEPOSIT").textStyleH1W(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -220,7 +223,9 @@ class TransactionItem extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12), color: kWhiteColor),
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey.withOpacity(.6),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

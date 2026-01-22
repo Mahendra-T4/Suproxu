@@ -42,7 +42,10 @@ class _PortfoliocloseState extends State<Portfolioclose>
     // Ensure autoLogoutUser is imported from core/logout/logout.dart
     autoLogoutUser(context, mounted);
     tabController = TabController(
-        length: 2, vsync: this, initialIndex: widget.showCloseTab ? 1 : 0);
+      length: 2,
+      vsync: this,
+      initialIndex: widget.showCloseTab ? 1 : 0,
+    );
   }
 
   @override
@@ -54,56 +57,62 @@ class _PortfoliocloseState extends State<Portfolioclose>
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<bool>(
-        stream: InternetConnectionService().connectionStream,
-        builder: (context, snapshot) {
-          if (snapshot.data == false) {
-            return const NoInternetConnection(); // Show your offline UI
-          }
-          return Container(
-            color: greyColor,
-            child: SafeArea(
-              child: Scaffold(
-                backgroundColor: zBlack,
-                appBar: customAppBar(context: context, isShowNotify: true),
-                body: Column(
-                  children: [
-                    Container(
-                      color: zBlack,
-                      child: TabBar(
-                        controller: tabController,
-                        dividerColor: Colors.transparent,
-                        indicator: UnderlineTabIndicator(
-                          borderSide:
-                              BorderSide(width: 4.0, color: kGoldenBraunColor),
-                          insets: const EdgeInsets.symmetric(horizontal: 16.0),
+      stream: InternetConnectionService().connectionStream,
+      builder: (context, snapshot) {
+        if (snapshot.data == false) {
+          return const NoInternetConnection(); // Show your offline UI
+        }
+        return Container(
+          color: greyColor,
+          child: SafeArea(
+            child: Scaffold(
+              backgroundColor: kWhiteColor,
+              appBar: customAppBar(context: context, isShowNotify: true),
+              body: Column(
+                children: [
+                  Container(
+                    color: zBlack,
+                    child: TabBar(
+                      controller: tabController,
+                      dividerColor: Colors.transparent,
+                      indicator: UnderlineTabIndicator(
+                        borderSide: BorderSide(
+                          width: 4.0,
+                          color: kGoldenBraunColor,
                         ),
-                        labelStyle: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 16.sp),
-                        unselectedLabelStyle:
-                            const TextStyle(fontWeight: FontWeight.w500),
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        labelColor: kGoldenBraunColor,
-                        unselectedLabelColor: kGoldenBraunColor,
-                        tabs: const [
-                          Tab(text: 'Active'),
-                          Tab(text: 'Closed'),
-                        ],
+                        insets: const EdgeInsets.symmetric(horizontal: 16.0),
                       ),
-                    ),
-                    Expanded(
-                      child: TabBarView(
-                        controller: tabController,
-                        children: const [
-                          PortfolioActiveTab(),
-                          PortfolioCloseTab(),
-                        ],
+                      labelStyle: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16.sp,
                       ),
+                      unselectedLabelStyle: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                      ),
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      labelColor: kGoldenBraunColor,
+                      unselectedLabelColor: kGoldenBraunColor,
+                      tabs: const [
+                        Tab(text: 'Active'),
+                        Tab(text: 'Closed'),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      controller: tabController,
+                      children: const [
+                        PortfolioActiveTab(),
+                        PortfolioCloseTab(),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 }

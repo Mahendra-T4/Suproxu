@@ -45,7 +45,7 @@ class _TradeTabsScreenState extends State<TradeTabsScreen> {
                 color: greyColor,
                 child: SafeArea(
                   child: Scaffold(
-                    backgroundColor: zBlack,
+                    backgroundColor: kWhiteColor,
                     appBar: customAppBar(context: context, isShowNotify: true),
                     body: Column(
                       children: [

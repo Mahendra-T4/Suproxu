@@ -67,7 +67,7 @@ class _PendingTabState extends State<PendingTab>
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: zBlack,
+        backgroundColor: kWhiteColor,
         // appBar: _buildAppBar(),
         body: FadeTransition(
           opacity: _fadeAnimation,
@@ -269,7 +269,7 @@ class _PendingTabState extends State<PendingTab>
                         child: Text(
                           pendingTradeEntity.message.toString(),
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: zBlack,
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
                           ),

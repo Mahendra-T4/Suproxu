@@ -28,7 +28,7 @@ class _UserWalletPageState extends State<UserWalletPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: zBlack,
+      backgroundColor: kWhiteColor,
       appBar: customAppBarWithTitle(
         context: context,
         title: 'User Wallet',
@@ -38,9 +38,7 @@ class _UserWalletPageState extends State<UserWalletPage> {
         bloc: _profileBloc,
         builder: (context, state) {
           if (state is ProfileLoadingState) {
-            return const Center(
-              child: CircularProgressIndicator.adaptive(),
-            );
+            return const Center(child: CircularProgressIndicator.adaptive());
           } else if (state is FetchingBalanceLogSuccessStatus) {
             return state.balanceLogModel.status == 1
                 ? ListView.builder(
@@ -58,7 +56,9 @@ class _UserWalletPageState extends State<UserWalletPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              state.balanceLogModel.record![index]
+                              state
+                                  .balanceLogModel
+                                  .record![index]
                                   .transactionDate
                                   .toString(),
                               style: const TextStyle(
@@ -68,7 +68,9 @@ class _UserWalletPageState extends State<UserWalletPage> {
                               ),
                             ),
                             Text(
-                              state.balanceLogModel.record![index]
+                              state
+                                  .balanceLogModel
+                                  .record![index]
                                   .transactionAmount
                                   .toString(),
                               style: TextStyle(
@@ -85,7 +87,7 @@ class _UserWalletPageState extends State<UserWalletPage> {
                 : Center(
                     child: Text(
                       state.balanceLogModel.message.toString(),
-                      style: TextStyle(fontSize: 16, color: kGoldenBraunColor),
+                      style: TextStyle(fontSize: 16, color: zBlack),
                     ),
                   );
           } else if (state is FetchingBalanceLogFailedStatus) {

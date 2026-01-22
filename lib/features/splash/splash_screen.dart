@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,7 @@ import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/constants/apis/api_urls.dart';
 import 'package:suproxu/core/constants/color.dart';
+import 'package:suproxu/core/util/suproxu_logo.dart';
 import 'package:suproxu/features/auth/login/loginPage.dart';
 import 'package:http/http.dart' as http;
 import 'package:suproxu/features/navbar/wishlist/wishlist.dart';
@@ -144,13 +146,7 @@ class _SplashScreenState extends State<SplashScreen>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Logo
-          Center(
-            child: Image.asset(
-              Assets.assetsImagesSuproxuBullFaceLogo,
-              width: 300,
-              // color: Colors.white,
-            ),
-          ),
+          Center(child: SuproxuLogo()),
           // if (child != null) child!, // Include additional content if provided
         ],
       ),

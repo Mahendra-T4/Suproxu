@@ -58,12 +58,15 @@ class _DepositScreenState extends State<DepositScreen> {
     }
 
     // Make API call without requiring the file
-    _profileBloc.add(MakeTransactionRequestFromServerEvent(
+    _profileBloc.add(
+      MakeTransactionRequestFromServerEvent(
         utrNumber: _utrNumberController.text,
         transDate: _transactionDateController.text,
         transAmount: _amountController.text,
         file: null, // Make file parameter null by default
-        context: context));
+        context: context,
+      ),
+    );
   }
 
   Future<void> _pickFiles() async {
@@ -85,15 +88,15 @@ class _DepositScreenState extends State<DepositScreen> {
 
       // Show success message
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('File selected: ${file.name}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('File selected: ${file.name}')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking file: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error picking file: $e')));
       }
     }
   }
@@ -107,8 +110,9 @@ class _DepositScreenState extends State<DepositScreen> {
     );
     if (picked != null) {
       setState(() {
-        _transactionDateController.text =
-            DateFormat('yyyy-MM-dd').format(picked);
+        _transactionDateController.text = DateFormat(
+          'yyyy-MM-dd',
+        ).format(picked);
       });
       print('Date =>> $_transactionDateController');
     }
@@ -121,332 +125,339 @@ class _DepositScreenState extends State<DepositScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return StreamBuilder<bool>(
-        stream: InternetConnectionService().connectionStream,
-        builder: (context, snapshot) {
-          if (snapshot.data == false) {
-            return NoInternetConnection(); // Show your offline UI
-          }
-          return Container(
-            color: greyColor,
-            child: SafeArea(
-              child: Scaffold(
-                backgroundColor: zBlack,
-                appBar: customAppBarWithTitle(
-                    context: context, title: 'Deposit', isShowNotify: true),
-                body: SafeArea(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.05, // Responsive padding
-                        vertical: 20,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          TextField(
-                            controller: _amountController,
-                            maxLines: 1,
-                            style: const TextStyle(color: zBlack),
-                            decoration: InputDecoration(
-                              labelText: 'Amount',
-                              labelStyle: const TextStyle(
-                                color: zBlack,
-                                fontWeight: FontWeight.w500,
+      stream: InternetConnectionService().connectionStream,
+      builder: (context, snapshot) {
+        if (snapshot.data == false) {
+          return NoInternetConnection(); // Show your offline UI
+        }
+        return Container(
+          color: greyColor,
+          child: SafeArea(
+            child: Scaffold(
+              backgroundColor: kWhiteColor,
+              appBar: customAppBarWithTitle(
+                context: context,
+                title: 'Deposit',
+                isShowNotify: true,
+              ),
+              body: SafeArea(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.05, // Responsive padding
+                      vertical: 20,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextField(
+                          controller: _amountController,
+                          maxLines: 1,
+                          style: const TextStyle(color: zBlack),
+                          decoration: InputDecoration(
+                            labelText: 'Amount',
+                            labelStyle: const TextStyle(
+                              color: zBlack,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey.withOpacity(.5),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                color: Colors.green,
+                                width: 2,
                               ),
-                              filled: true,
-                              fillColor: kWhiteColor,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide.none,
+                            ),
+                            suffixIcon: Icon(
+                              Icons.credit_card_outlined,
+                              color: Colors.white.withOpacity(0.7),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 16,
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: screenHeight * 0.03),
+
+                        TextField(
+                          controller: _utrNumberController,
+                          maxLines: 1,
+                          style: const TextStyle(color: zBlack),
+                          decoration: InputDecoration(
+                            labelText: 'UTR Number',
+                            labelStyle: const TextStyle(
+                              color: zBlack,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey.withOpacity(.5),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                color: Colors.green,
+                                width: 2,
                               ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: Colors.green,
-                                  width: 2,
+                            ),
+                            suffixIcon: const Icon(
+                              Icons.numbers,
+                              color: zBlack,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 16,
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: screenHeight * 0.03),
+                        TextField(
+                          controller: _transactionDateController,
+                          readOnly: true,
+                          onTap: () => _selectDate(context),
+                          style: const TextStyle(color: zBlack),
+                          decoration: InputDecoration(
+                            labelText: 'Transaction Date',
+                            labelStyle: const TextStyle(
+                              color: zBlack,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey.withOpacity(.5),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                color: Colors.green,
+                                width: 2,
+                              ),
+                            ),
+                            suffixIcon: const Icon(
+                              Icons.date_range,
+                              color: zBlack,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 16,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: screenHeight * 0.02),
+                        ElevatedButton.icon(
+                          onPressed: _pickFiles,
+                          icon: const Icon(
+                            Icons.attach_file,
+                            color: Colors.white,
+                          ),
+                          label: const Text(
+                            'Add Attachment',
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                            backgroundColor: Colors.green.shade600,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        // Display Selected Files
+                        if (_selectedFiles != null)
+                          Card(
+                            color: Colors.grey.shade900,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: ListTile(
+                              leading: _getFileIcon(_selectedFiles!.path),
+                              title: Text(
+                                _selectedFiles!.path.split('/').last,
+                                style: const TextStyle(color: Colors.white),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
                                 ),
-                              ),
-                              suffixIcon: Icon(
-                                Icons.credit_card_outlined,
-                                color: Colors.white.withOpacity(0.7),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 16,
+                                onPressed: () {
+                                  setState(() {
+                                    _selectedFiles = null;
+                                  });
+                                },
                               ),
                             ),
                           ),
+                        SizedBox(height: screenHeight * 0.05),
+                        BlocConsumer(
+                          bloc: _profileBloc,
+                          listener: (context, state) {
+                            if (state is TransactionRequestLoadedSuccessState) {
+                              successToastMsg(
+                                context,
+                                state.transRequestEntity.message.toString(),
+                              );
 
-                          SizedBox(height: screenHeight * 0.03),
-
-                          TextField(
-                            controller: _utrNumberController,
-                            maxLines: 1,
-                            style: const TextStyle(color: zBlack),
-                            decoration: InputDecoration(
-                              labelText: 'UTR Number',
-                              labelStyle: const TextStyle(
-                                color: zBlack,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              filled: true,
-                              fillColor: kWhiteColor,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: Colors.green,
-                                  width: 2,
-                                ),
-                              ),
-                              suffixIcon: const Icon(
-                                Icons.numbers,
-                                color: zBlack,
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 16,
-                              ),
-                            ),
-                          ),
-
-                          SizedBox(height: screenHeight * 0.03),
-                          TextField(
-                            controller: _transactionDateController,
-                            readOnly: true,
-                            onTap: () => _selectDate(context),
-                            style: const TextStyle(color: zBlack),
-                            decoration: InputDecoration(
-                              labelText: 'Transaction Date',
-                              labelStyle: const TextStyle(
-                                color: zBlack,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              filled: true,
-                              fillColor: kWhiteColor,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: Colors.green,
-                                  width: 2,
-                                ),
-                              ),
-                              suffixIcon: const Icon(
-                                Icons.date_range,
-                                color: zBlack,
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 16,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: screenHeight * 0.02),
-                          ElevatedButton.icon(
-                            onPressed: _pickFiles,
-                            icon: const Icon(Icons.attach_file,
-                                color: Colors.white),
-                            label: const Text(
-                              'Add Attachment',
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.white),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 12),
-                              backgroundColor: Colors.green.shade600,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          // Display Selected Files
-                          if (_selectedFiles != null)
-                            Card(
-                              color: Colors.grey.shade900,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: ListTile(
-                                leading: _getFileIcon(_selectedFiles!.path),
-                                title: Text(
-                                  _selectedFiles!.path.split('/').last,
-                                  style: const TextStyle(color: Colors.white),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () {
-                                    setState(() {
-                                      _selectedFiles = null;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          SizedBox(height: screenHeight * 0.05),
-                          BlocConsumer(
-                            bloc: _profileBloc,
-                            listener: (context, state) {
-                              if (state
-                                  is TransactionRequestLoadedSuccessState) {
-                                successToastMsg(
-                                    context,
-                                    state.transRequestEntity.message
-                                        .toString());
-
-                                // Clear form after successful submission
-                                setState(() {
-                                  _amountController.clear();
-                                  _utrNumberController.clear();
-                                  _transactionDateController.clear();
-                                  _selectedFiles = null;
-                                });
-                              }
-                              if (state is TransactionRequestFailedErrorState) {
-                                Center(
-                                  child: Text(state.error),
-                                );
-                              }
-                            },
-                            builder: (context, state) {
-                              if (state is ProfileLoadingState) {
-                                return isLoading
-                                    ? const Center(
-                                        child: CircularProgressIndicator
-                                            .adaptive())
-                                    : Center(
-                                        child: Container(
-                                          margin: const EdgeInsets.symmetric(
-                                            horizontal: 20,
-                                          ),
-                                          width:
-                                              MediaQuery.sizeOf(context).width,
-                                          child: ElevatedButton(
-                                            onPressed: () {},
-                                            style: ElevatedButton.styleFrom(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                horizontal: 20,
-                                                vertical: 15,
-                                              ),
-                                              backgroundColor:
-                                                  kGoldenBraunColor,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(15),
-                                              ),
-                                              // elevation: 8,
-                                              // shadowColor: Colors.green.shade200,
+                              // Clear form after successful submission
+                              setState(() {
+                                _amountController.clear();
+                                _utrNumberController.clear();
+                                _transactionDateController.clear();
+                                _selectedFiles = null;
+                              });
+                            }
+                            if (state is TransactionRequestFailedErrorState) {
+                              Center(child: Text(state.error));
+                            }
+                          },
+                          builder: (context, state) {
+                            if (state is ProfileLoadingState) {
+                              return isLoading
+                                  ? const Center(
+                                      child:
+                                          CircularProgressIndicator.adaptive(),
+                                    )
+                                  : Center(
+                                      child: Container(
+                                        margin: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                        ),
+                                        width: MediaQuery.sizeOf(context).width,
+                                        child: ElevatedButton(
+                                          onPressed: () {},
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 20,
+                                              vertical: 15,
                                             ),
-                                            child: Text(
-                                              'PROCESSING...',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                color: kWhiteColor,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                            backgroundColor: kGoldenBraunColor,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(15),
+                                            ),
+                                            // elevation: 8,
+                                            // shadowColor: Colors.green.shade200,
+                                          ),
+                                          child: Text(
+                                            'PROCESSING...',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: kWhiteColor,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ),
-                                      );
-                              }
-                              return Center(
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    if (_amountController.text.isEmpty) {
-                                      waringToast(
-                                          context, 'Please enter amount');
-                                      return;
-                                    }
-                                    if (_utrNumberController.text.isEmpty) {
-                                      waringToast(
-                                          context, 'Please enter UTR number');
-                                      return;
-                                    }
-                                    if (_transactionDateController
-                                        .text.isEmpty) {
-                                      waringToast(context,
-                                          'Please select transaction date');
-                                      return;
-                                    }
+                                      ),
+                                    );
+                            }
+                            return Center(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  if (_amountController.text.isEmpty) {
+                                    waringToast(context, 'Please enter amount');
+                                    return;
+                                  }
+                                  if (_utrNumberController.text.isEmpty) {
+                                    waringToast(
+                                      context,
+                                      'Please enter UTR number',
+                                    );
+                                    return;
+                                  }
+                                  if (_transactionDateController.text.isEmpty) {
+                                    waringToast(
+                                      context,
+                                      'Please select transaction date',
+                                    );
+                                    return;
+                                  }
 
-                                    // if (_selectedFiles == null) {
-                                    //   waringToast(context,
-                                    //       'Please add Attachment File');
-                                    //   return;
-                                    // }
+                                  // if (_selectedFiles == null) {
+                                  //   waringToast(context,
+                                  //       'Please add Attachment File');
+                                  //   return;
+                                  // }
 
-                                    // Don't use null coalescing when already null
-                                    _profileBloc.add(
-                                        MakeTransactionRequestFromServerEvent(
-                                            utrNumber:
-                                                _utrNumberController.text,
-                                            transDate:
-                                                _transactionDateController.text,
-                                            transAmount: _amountController.text,
-                                            file:
-                                                _selectedFiles, // File is already nullable
-                                            context: context));
-                                    if (mounted) {
-                                      setState(() {
-                                        isLoading = false;
-                                      });
-                                    }
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: screenWidth * 0.35,
-                                      vertical: 15,
+                                  // Don't use null coalescing when already null
+                                  _profileBloc.add(
+                                    MakeTransactionRequestFromServerEvent(
+                                      utrNumber: _utrNumberController.text,
+                                      transDate:
+                                          _transactionDateController.text,
+                                      transAmount: _amountController.text,
+                                      file:
+                                          _selectedFiles, // File is already nullable
+                                      context: context,
                                     ),
-                                    backgroundColor: kGoldenBraunColor,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                    ),
-                                    // elevation: 8,
-                                    // shadowColor: Colors.green.shade200,
+                                  );
+                                  if (mounted) {
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: screenWidth * 0.35,
+                                    vertical: 15,
                                   ),
-                                  child: Text(
-                                    'Submit',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: kWhiteColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  backgroundColor: kGoldenBraunColor,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  // elevation: 8,
+                                  // shadowColor: Colors.green.shade200,
+                                ),
+                                child: Text(
+                                  'Submit',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: kWhiteColor,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                floatingActionButton: FloatingActionButton(
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      builder: (context) => qrCodeWidget(context),
-                      isScrollControlled: true,
-                    );
-                  },
-                  backgroundColor: Colors.green.shade600,
-                  child: const Icon(Icons.qr_code, color: Colors.white),
-                ),
+              ),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) => qrCodeWidget(context),
+                    isScrollControlled: true,
+                  );
+                },
+                backgroundColor: Colors.green.shade600,
+                child: const Icon(Icons.qr_code, color: Colors.white),
               ),
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
   Widget qrCodeWidget(BuildContext context) {
@@ -679,8 +690,7 @@ class _DepositScreenState extends State<DepositScreen> {
                 ),
               );
             default:
-              return const SizedBox
-                  .shrink(); // Return an empty widget if no state matches
+              return const SizedBox.shrink(); // Return an empty widget if no state matches
           }
         },
       ),

@@ -100,7 +100,7 @@ class _NseFutureState extends State<NseFuture> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: zBlack,
+      backgroundColor: kWhiteColor,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
@@ -128,8 +128,10 @@ class _NseFutureState extends State<NseFuture> {
                                 setState(() {
                                   errorMessage = null;
                                 });
-                                nfoWebSocket.dispose();
-                                initState();
+                                try {
+                                  nfoWebSocket.disconnect();
+                                } catch (_) {}
+                                nfoWebSocket.connect();
                               },
                               child: const Text('Retry Connection'),
                             ),

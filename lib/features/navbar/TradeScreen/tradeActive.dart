@@ -183,7 +183,7 @@ class _TradeactiveState extends State<Tradeactive>
       child: DefaultTabController(
         length: 3,
         child: Scaffold(
-          backgroundColor: zBlack,
+          backgroundColor: kWhiteColor,
           // appBar: _buildAppBar(),
           body: FadeTransition(
             opacity: _fadeAnimation,
@@ -647,7 +647,7 @@ class _TradeactiveState extends State<Tradeactive>
                                       child: Text(
                                         activeTradeEntity.message.toString(),
                                         style: const TextStyle(
-                                          color: Colors.white,
+                                          color: zBlack,
                                           fontSize: 15,
                                           fontWeight: FontWeight.w500,
                                         ),

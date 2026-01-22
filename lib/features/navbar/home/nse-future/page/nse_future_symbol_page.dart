@@ -2283,28 +2283,4 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
       ),
     );
   }
-
-  Widget _buildInfoRow(
-    String label,
-    String value,
-    double screenWidth,
-    double screenHeight,
-  ) {
-    return Container(
-      height: 40,
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        color: Colors.white,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
-  }
 }

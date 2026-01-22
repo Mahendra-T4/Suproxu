@@ -158,7 +158,7 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: zBlack,
+      backgroundColor: kWhiteColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -180,7 +180,7 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                     return Center(
                       child: Text(
                         errorMessage ?? 'Data not available',
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: zBlack),
                         textAlign: TextAlign.center,
                       ),
                     );
@@ -298,7 +298,7 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                               top: 10,
                             ),
                             decoration: BoxDecoration(
-                              color: zBlack,
+                              color: kWhiteColor,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Column(

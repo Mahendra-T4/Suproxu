@@ -3,19 +3,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:suproxu/Assets/assets.dart';
-import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/constants/widget/toast.dart';
 import 'package:suproxu/core/error/error_widget.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
 import 'package:suproxu/core/service/page/not_connected.dart';
+import 'package:suproxu/core/util/suproxu_logo.dart';
 import 'package:suproxu/core/widgets/trade_warning.dart';
 import 'package:suproxu/features/Rules/rulesPage.dart';
 import 'package:suproxu/features/auth/bloc/auth_bloc.dart';
 import 'package:suproxu/features/auth/forgot-pass/forgetPassword.dart';
-import 'package:suproxu/features/navbar/wishlist/wishlist.dart';
+
 
 class LoginPages extends StatefulWidget {
   @override
@@ -109,18 +108,12 @@ class _LoginPagesState extends State<LoginPages> {
                 children: [
                   // Logo
                   // SizedBox(height: 50),
-                  Center(
-                    child: Image.asset(
-                      Assets.assetsImageSuproxuTraderLogo,
-                      width: 200,
-                      // color: zBlack,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+                  Center(child: SuproxuLogo(width: 200)),
+                  // const SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 50,
-                      vertical: 20,
+                      // vertical: 20,
                     ),
                     child: Form(
                       key: _formKey,

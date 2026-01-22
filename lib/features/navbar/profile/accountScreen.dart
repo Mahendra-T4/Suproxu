@@ -64,8 +64,10 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
     final userID = await databaseService.getUserData(key: userIDKey);
     final url = Uri.parse(superTradeBaseApiEndPointUrl);
     try {
-      final response = await http
-          .post(url, body: {'activity': 'get-statics', 'userKey': userID});
+      final response = await http.post(
+        url,
+        body: {'activity': 'get-statics', 'userKey': userID},
+      );
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         balanceEntity = BalanceEntity.fromJson(jsonData);
@@ -83,10 +85,12 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
     final uemail = await databaseService.getUserData(key: userEmailIDKey);
     final activeTrade = await databaseService.getUserData(key: activeTradeKey);
     final closeTrade = await databaseService.getUserData(key: closeTradeKey);
-    final pendingTrade =
-        await databaseService.getUserData(key: pendingTradeKey);
-    final profitAndLoss =
-        await databaseService.getUserData(key: profitAndLossKey);
+    final pendingTrade = await databaseService.getUserData(
+      key: pendingTradeKey,
+    );
+    final profitAndLoss = await databaseService.getUserData(
+      key: profitAndLossKey,
+    );
     final userBalance = await databaseService.getUserData(key: userBalanceKey);
     setState(() {
       uFName = fName;
@@ -113,10 +117,7 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
     // Ensure autoLogoutUser is imported from core/logout/logout.dart
     autoLogoutUser(context, mounted);
     _profileBloc.add(LoadUserWalletDataEvent());
-    timer = Timer.periodic(
-      const Duration(seconds: 1),
-      (timer) => userWallet(),
-    );
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) => userWallet());
     userWallet();
     _animationController = AnimationController(
       vsync: this,
@@ -152,7 +153,7 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
           color: greyColor,
           child: SafeArea(
             child: Scaffold(
-              backgroundColor: zBlack,
+              backgroundColor: kWhiteColor,
               appBar: customAppBar(context: context, isShowNotify: true),
               body: FadeTransition(
                 opacity: _fadeAnimation,
@@ -164,10 +165,16 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
                       children: [
                         SizedBox(height: padding),
                         _buildProfileContainer(
-                            screenWidth, avatarRadius, isLargeScreen),
+                          screenWidth,
+                          avatarRadius,
+                          isLargeScreen,
+                        ),
                         SizedBox(height: padding * 1.5),
                         _buildOptionsList(
-                            screenWidth, screenHeight, isLargeScreen),
+                          screenWidth,
+                          screenHeight,
+                          isLargeScreen,
+                        ),
                       ],
                     ),
                   ),
@@ -182,7 +189,10 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
   }
 
   Widget _buildProfileContainer(
-      double screenWidth, double avatarRadius, bool isLargeScreen) {
+    double screenWidth,
+    double avatarRadius,
+    bool isLargeScreen,
+  ) {
     return Container(
       padding: EdgeInsets.all(screenWidth * 0.05),
       decoration: BoxDecoration(
@@ -217,8 +227,11 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
             child: CircleAvatar(
               radius: avatarRadius,
               backgroundColor: Colors.indigo.shade800,
-              child: Icon(Icons.person,
-                  size: avatarRadius * 1.2, color: Colors.white),
+              child: Icon(
+                Icons.person,
+                size: avatarRadius * 1.2,
+                color: Colors.white,
+              ),
             ),
           ),
           SizedBox(height: screenWidth * 0.03),
@@ -241,9 +254,11 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.email,
-                  color: Colors.cyanAccent,
-                  size: isLargeScreen ? 20 : screenWidth * 0.045),
+              Icon(
+                Icons.email,
+                color: Colors.cyanAccent,
+                size: isLargeScreen ? 20 : screenWidth * 0.045,
+              ),
               const SizedBox(width: 8),
               Text(
                 uEmail?.isNotEmpty == true ? uEmail! : 'No email',
@@ -275,14 +290,13 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           modernStatCard2(
-                              icon: Icons.account_balance_wallet_rounded,
-                              label: "Balance",
-                              value: wallet.record?.first.availableBalance ?? 0,
-                              color: Colors.greenAccent,
-                              screenWidth: screenWidth),
-                          WalletWidget(
+                            icon: Icons.account_balance_wallet_rounded,
+                            label: "Balance",
+                            value: wallet.record?.first.availableBalance ?? 0,
+                            color: Colors.greenAccent,
                             screenWidth: screenWidth,
-                          )
+                          ),
+                          WalletWidget(screenWidth: screenWidth),
                         ],
                       ),
                       Row(
@@ -292,35 +306,38 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
                             child: GestureDetector(
                               onTap: () {
                                 GoRouter.of(context).goNamed(
-                                    Portfolioclose.routeName,
-                                    extra: {'showCloseTab': false});
+                                  Portfolioclose.routeName,
+                                  extra: {'showCloseTab': false},
+                                );
                               },
                               child: modernStatCard(
-                                  icon: Icons.trending_up_rounded,
-                                  label: "Active",
-                                  value: wallet.record?.first.activeTrade ?? 0,
-                                  color: Colors.orangeAccent,
-                                  screenWidth: screenWidth),
+                                icon: Icons.trending_up_rounded,
+                                label: "Active",
+                                value: wallet.record?.first.activeTrade ?? 0,
+                                color: Colors.orangeAccent,
+                                screenWidth: screenWidth,
+                              ),
                             ),
                           ),
-                          const SizedBox(
-                            width: 10,
-                          ),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: InkWell(
                               onTap: () {
                                 // Navigate with both the nav index and showCloseTab parameter
                                 GoRouter.of(context).goNamed(
-                                    Portfolioclose.routeName,
-                                    extra: {'showCloseTab': true});
+                                  Portfolioclose.routeName,
+                                  extra: {'showCloseTab': true},
+                                );
                               },
                               child: modernStatCard(
-                                  icon: Icons.trending_up_rounded,
-                                  label: "Close",
-                                  value: wallet.record?.first.closeTrade ??
-                                      0.toString(),
-                                  color: Colors.redAccent,
-                                  screenWidth: screenWidth),
+                                icon: Icons.trending_up_rounded,
+                                label: "Close",
+                                value:
+                                    wallet.record?.first.closeTrade ??
+                                    0.toString(),
+                                color: Colors.redAccent,
+                                screenWidth: screenWidth,
+                              ),
                             ),
                           ),
                           // InkWell(
@@ -346,7 +363,7 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
                   return const Text('State Not Found');
               }
             },
-          )
+          ),
         ],
       ),
     );
@@ -363,7 +380,9 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
     return Container(
       width: screenWidth * 0.25,
       padding: EdgeInsets.symmetric(
-          vertical: screenWidth * 0.03, horizontal: screenWidth * 0.02),
+        vertical: screenWidth * 0.03,
+        horizontal: screenWidth * 0.02,
+      ),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.07),
         borderRadius: BorderRadius.circular(16),
@@ -381,15 +400,9 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
         children: [
           Icon(icon, color: color, size: screenWidth * 0.08),
           SizedBox(height: screenWidth * 0.01),
-          Text(
-            value.toString(),
-            textAlign: TextAlign.center,
-          ).textStyleH1W(),
+          Text(value.toString(), textAlign: TextAlign.center).textStyleH1W(),
           SizedBox(height: screenWidth * 0.005),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-          ).textStyleH2W(),
+          Text(label, textAlign: TextAlign.center).textStyleH2W(),
         ],
       ),
     );
@@ -405,7 +418,9 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
     return Container(
       // width: screenWidth * 0.25,
       padding: EdgeInsets.symmetric(
-          vertical: screenWidth * 0.03, horizontal: screenWidth * 0.02),
+        vertical: screenWidth * 0.03,
+        horizontal: screenWidth * 0.02,
+      ),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.07),
         borderRadius: BorderRadius.circular(16),
@@ -434,17 +449,18 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
             textAlign: TextAlign.center,
           ),
           SizedBox(height: screenWidth * 0.005),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-          ).textStyleH2W(),
+          Text(label, textAlign: TextAlign.center).textStyleH2W(),
         ],
       ),
     );
   }
 
   Widget _buildStatItem(
-      String label, String value, Color color, double screenWidth) {
+    String label,
+    String value,
+    Color color,
+    double screenWidth,
+  ) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: screenWidth * 0.015),
       child: Column(
@@ -459,47 +475,92 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
             ),
           ),
           SizedBox(height: screenWidth * 0.01),
-          Text(
-            label,
-          ).textStyleH2W(),
+          Text(label).textStyleH2W(),
         ],
       ),
     );
   }
 
   Widget _buildOptionsList(
-      double screenWidth, double screenHeight, bool isLargeScreen) {
+    double screenWidth,
+    double screenHeight,
+    bool isLargeScreen,
+  ) {
     return SizedBox(
       height: isLargeScreen ? screenHeight * 0.6 : null,
       child: ListView(
         shrinkWrap: true,
         physics: const ClampingScrollPhysics(),
         children: [
-          _buildListItem(Icons.person_outline_rounded, "Profile",
-              ProfileInfo.routeName, Colors.blueAccent, screenWidth),
-          _buildListItem(Icons.money, "Withdraw", WithdrawPage.routeName,
-              Colors.deepPurpleAccent, screenWidth),
-          _buildListItem(Icons.wallet, "Wallet", UserWalletPage.routeName,
-              kGoldenBraunColor, screenWidth),
-          _buildListItem(Icons.sticky_note_2_outlined, "Ledger Report",
-              LedgerReportScreen.routeName, Colors.greenAccent, screenWidth),
-          _buildListItem(Icons.credit_card_outlined, "Payment",
-              PaymentScreen.routeName, Colors.orangeAccent, screenWidth),
-          _buildListItem(Icons.quiz_outlined, "Lodge Complaint",
-              LodgeComplaintScreen.routeName, Colors.tealAccent, screenWidth),
-          _buildListItem(Icons.password_outlined, "Change Password",
-              ChangePasswordScreen.routeName, Colors.redAccent, screenWidth),
+          _buildListItem(
+            Icons.person_outline_rounded,
+            "Profile",
+            ProfileInfo.routeName,
+            Colors.blueAccent,
+            screenWidth,
+          ),
+          _buildListItem(
+            Icons.money,
+            "Withdraw",
+            WithdrawPage.routeName,
+            Colors.deepPurpleAccent,
+            screenWidth,
+          ),
+          _buildListItem(
+            Icons.wallet,
+            "Wallet",
+            UserWalletPage.routeName,
+            kGoldenBraunColor,
+            screenWidth,
+          ),
+          _buildListItem(
+            Icons.sticky_note_2_outlined,
+            "Ledger Report",
+            LedgerReportScreen.routeName,
+            Colors.greenAccent,
+            screenWidth,
+          ),
+          _buildListItem(
+            Icons.credit_card_outlined,
+            "Payment",
+            PaymentScreen.routeName,
+            Colors.orangeAccent,
+            screenWidth,
+          ),
+          _buildListItem(
+            Icons.quiz_outlined,
+            "Lodge Complaint",
+            LodgeComplaintScreen.routeName,
+            Colors.tealAccent,
+            screenWidth,
+          ),
+          _buildListItem(
+            Icons.password_outlined,
+            "Change Password",
+            ChangePasswordScreen.routeName,
+            Colors.redAccent,
+            screenWidth,
+          ),
           // _buildListItem(Icons.password_outlined, "MCX", MCXStockPage.routeName,
           //     Colors.redAccent, screenWidth),
           _buildLogoutItem(
-              Icons.logout, "Logout", Colors.deepPurple, screenWidth),
+            Icons.logout,
+            "Logout",
+            Colors.deepPurple,
+            screenWidth,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildListItem(IconData icon, String title, String routeName,
-      Color accentColor, double screenWidth) {
+  Widget _buildListItem(
+    IconData icon,
+    String title,
+    String routeName,
+    Color accentColor,
+    double screenWidth,
+  ) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: screenWidth * 0.02),
       child: GestureDetector(
@@ -508,20 +569,17 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
           // height: screenWidth * 0.18,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(15)),
           child: Row(
             children: [
               Icon(icon, color: accentColor, size: screenWidth * 0.07),
               SizedBox(width: screenWidth * 0.04),
-              Expanded(
-                child: Text(
-                  title,
-                ).textStyleH1(),
+              Expanded(child: Text(title).textStyleH1P()),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: screenWidth * 0.025,
+                color: Colors.grey[500],
               ),
-              Icon(Icons.arrow_forward_ios,
-                  size: screenWidth * 0.025, color: Colors.grey[500]),
               SizedBox(width: screenWidth * 0.03),
             ],
           ),
@@ -531,7 +589,11 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
   }
 
   Widget _buildLogoutItem(
-      IconData icon, String title, Color accentColor, double screenWidth) {
+    IconData icon,
+    String title,
+    Color accentColor,
+    double screenWidth,
+  ) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: screenWidth * 0.02),
       child: GestureDetector(
@@ -550,13 +612,12 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
               // SizedBox(width: screenWidth * 0.03),
               Icon(icon, color: accentColor, size: screenWidth * 0.07),
               SizedBox(width: screenWidth * 0.04),
-              Expanded(
-                child: Text(
-                  title,
-                ).textStyleH1(),
+              Expanded(child: Text(title).textStyleH1P()),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: screenWidth * 0.025,
+                color: Colors.grey[500],
               ),
-              Icon(Icons.arrow_forward_ios,
-                  size: screenWidth * 0.025, color: Colors.grey[500]),
               SizedBox(width: screenWidth * 0.03),
             ],
           ),

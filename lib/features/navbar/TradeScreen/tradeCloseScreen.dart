@@ -274,7 +274,7 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
                     child: Text(
                       closedTrade.message.toString(),
                       style: TextStyle(
-                        color: kWhiteColor,
+                        color: zBlack,
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),

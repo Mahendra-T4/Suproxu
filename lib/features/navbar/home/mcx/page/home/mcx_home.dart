@@ -124,7 +124,7 @@ class _McxHomeState extends State<McxHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: zBlack,
+      backgroundColor: kWhiteColor,
       // appBar: AppBar(
       //   title: const Text('MCX'),
       // ),
@@ -194,7 +194,7 @@ class _McxHomeState extends State<McxHome> {
                               _currentSearchQuery.isEmpty
                                   ? 'No data available'
                                   : 'No results found for "$_currentSearchQuery"',
-                              style: TextStyle(color: kGoldenBraunColor),
+                              style: TextStyle(color: zBlack),
                             ),
                           )
                         : ListView.builder(
@@ -219,7 +219,7 @@ class _McxHomeState extends State<McxHome> {
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 10,
                                   ),
-                                  color: zBlack,
+                                  color: kWhiteColor,
                                   child: Column(
                                     children: [
                                       Row(

@@ -36,10 +36,7 @@ class NoInternetConnection extends StatelessWidget {
               // Description
               Text(
                 'Please check your internet connection and try again',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.white),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 32),

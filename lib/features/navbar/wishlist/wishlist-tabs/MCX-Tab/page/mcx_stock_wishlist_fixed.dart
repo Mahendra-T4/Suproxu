@@ -269,7 +269,7 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
     return Container(
       margin: const EdgeInsets.only(left: 10, right: 10, top: 10),
       decoration: BoxDecoration(
-        color: zBlack,
+        color: kWhiteColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -425,7 +425,7 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: zBlack,
+      backgroundColor: kWhiteColor,
       body: Column(
         children: [
           const SizedBox(height: 8),
@@ -442,7 +442,7 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
                   return Center(
                     child: Text(
                       errorMessage ?? 'Data not available',
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: zBlack),
                       textAlign: TextAlign.center,
                     ),
                   );

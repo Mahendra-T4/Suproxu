@@ -157,7 +157,7 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
   Widget build(BuildContext context) {
     final activeProvider = ref.watch(activePortfolioProvider);
     return Scaffold(
-      backgroundColor: zBlack,
+      backgroundColor: kWhiteColor,
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: SingleChildScrollView(
@@ -629,7 +629,7 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
                                   child: Text(
                                     data.message.toString(),
                                     style: TextStyle(
-                                      color: kWhiteColor,
+                                      color: zBlack,
                                       fontSize: 15,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -687,7 +687,8 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
                   width: double.infinity,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20.r),
-                    color: Colors.white,
+                    color: Colors.grey[200]!.withOpacity(0.7),
+                    border: Border.all(color: Colors.black, width: 1),
                     // boxShadow: [
                     //   BoxShadow(
                     //     color: Colors.black.withOpacity(0.1),
@@ -717,6 +718,11 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
                                       .toString(),
                                   textColor: Colors.black87,
                                 ),
+                                Container(
+                                  height: 40.h,
+                                  width: 1.w,
+                                  color: Colors.black,
+                                ),
                                 _buildWalletInfoColumn(
                                   'Available Margin',
                                   status == 1
@@ -728,7 +734,8 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
                                 ),
                               ],
                             ),
-                            SizedBox(height: 16.h),
+                            Divider(height: 30.h, color: Colors.black),
+                            // SizedBox(height: 16.h),
                             // Divider(
                             //     height: 1, color: Colors.grey.withOpacity(0.2)),
                             // SizedBox(height: 16.h),
@@ -741,6 +748,12 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
                                   textColor: profitLoss >= 0
                                       ? Colors.green
                                       : Colors.red,
+                                ),
+                                Container(
+                                  margin: const EdgeInsets.only(left: 30),
+                                  height: 40.h,
+                                  width: 1.w,
+                                  color: Colors.black,
                                 ),
                                 _buildWalletInfoColumn(
                                   'M 2 M                   ',

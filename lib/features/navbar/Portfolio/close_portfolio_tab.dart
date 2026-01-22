@@ -78,7 +78,8 @@ class _PortfolioCloseTabState extends State<PortfolioCloseTab> {
             width: double.infinity,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20.r),
-              color: Colors.white,
+              color: Colors.grey[200]!.withOpacity(.7),
+              border: Border.all(width: 1, color: Colors.black),
               // boxShadow: [
               //   BoxShadow(
               //     color: Colors.black.withOpacity(0.1),
@@ -109,6 +110,7 @@ class _PortfolioCloseTabState extends State<PortfolioCloseTab> {
                                 .toString(),
                             color: Colors.greenAccent,
                           ),
+                          Container(height: 40, width: 1, color: zBlack),
                           _statTile(
                             // icon: Icons.show_chart_rounded,
                             label: 'Profit & Loss      ',
@@ -122,7 +124,8 @@ class _PortfolioCloseTabState extends State<PortfolioCloseTab> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 18),
+                      Divider(color: zBlack, thickness: 1, height: 25.h),
+                      // const SizedBox(height: 18),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -131,6 +134,12 @@ class _PortfolioCloseTabState extends State<PortfolioCloseTab> {
                             label: 'Total Brokerage',
                             value: wallet.record!.first.brokerageValue
                                 .toString(),
+                            color: zBlack,
+                          ),
+                          Container(
+                            margin: const EdgeInsets.only(left: 37),
+                            height: 40,
+                            width: 1,
                             color: zBlack,
                           ),
                           _statTile(
@@ -457,21 +466,22 @@ class OrderCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.grey[900]!.withOpacity(0.95),
-            Colors.grey[850]!.withOpacity(0.95),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        // gradient: LinearGradient(
+        //   colors: [
+        //     Colors.grey[900]!.withOpacity(0.95),
+        //     Colors.grey[850]!.withOpacity(0.95),
+        //   ],
+        //   begin: Alignment.topLeft,
+        //   end: Alignment.bottomRight,
+        // ),
+        color: Colors.grey.withOpacity(0.5),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.grey[800]!, width: 1),
+        border: Border.all(color: Colors.black, width: 1),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16.r),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
           child: Padding(
             padding: EdgeInsets.all(16.r),
             child: Column(

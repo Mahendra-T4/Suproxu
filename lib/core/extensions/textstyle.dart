@@ -9,7 +9,23 @@ extension TextStyleX on Text {
       style: TextStyle(
         fontWeight: FontWeight.w800,
         fontSize: 15,
-        color: kGoldenBraunColor,
+        color: zBlack,
+      ),
+      textAlign: textAlign,
+      maxLines: maxLines,
+      overflow: overflow,
+      softWrap: softWrap,
+      textDirection: textDirection,
+    );
+  }
+
+  Text textStyleH1P() {
+    return Text(
+      data ?? '',
+      style: TextStyle(
+        fontWeight: FontWeight.w800,
+        fontSize: 15,
+        color: zBlack,
       ),
       textAlign: textAlign,
       maxLines: maxLines,
@@ -214,7 +230,7 @@ extension TextStyleX on Text {
     return Text(
       data ?? '',
       style: TextStyle(
-        color: kGoldenBraunColor,
+        color: zBlack,
         fontWeight: FontWeight.w600,
         fontSize: 13,
       ),

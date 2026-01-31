@@ -11,6 +11,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:suproxu/Assets/assets.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/constants/apis/api_urls.dart';
@@ -18,7 +19,6 @@ import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/constants/extensions/double_etx.dart';
 import 'package:suproxu/core/constants/widget/toast.dart';
 import 'package:suproxu/core/extensions/color_ext.dart';
-import 'package:suproxu/core/extensions/neg-pos-tracker.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
 import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/features/navbar/home/model/buy_sale_entity.dart';
@@ -292,7 +292,10 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                   Text(
                     buySaleEntity.message.toString(),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontFamily: FontFamily.globalFontFamily,
+                    ),
                   ),
                 ],
               ),
@@ -304,7 +307,11 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                     },
                     child: const Text(
                       "OK",
-                      style: TextStyle(color: Colors.black, fontSize: 20),
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontFamily: FontFamily.globalFontFamily,
+                        fontSize: 20,
+                      ),
                     ),
                   ),
                 ),
@@ -471,7 +478,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-      backgroundColor: zBlack,
+      // backgroundColor: zBlack,
       appBar: AppBar(
         backgroundColor: Colors.black,
         leading: IconButton(
@@ -503,7 +510,10 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                 children: [
                   Text(
                     _stockRecord.message.toString(),
-                    style: const TextStyle(color: Colors.red),
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontFamily: FontFamily.globalFontFamily,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -511,18 +521,21 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
             );
           }
 
-          if (_stockRecord.response.isEmpty && errorMessage == null) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Connecting to server...'),
-                ],
-              ),
-            );
-          }
+          // if (_stockRecord.response.isEmpty && errorMessage == null) {
+          //   return const Center(
+          //     child: Column(
+          //       mainAxisAlignment: MainAxisAlignment.center,
+          //       children: [
+          //         CircularProgressIndicator(),
+          //         SizedBox(height: 16),
+          //         Text(
+          //           'Connecting to server...',
+          //           style: TextStyle(fontFamily: FontFamily.globalFontFamily),
+          //         ),
+          //       ],
+          //     ),
+          //   );
+          // }
 
           final record = _stockRecord.response.first;
           final ohlc = record.ohlc;
@@ -534,7 +547,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  color: kWhiteColor,
+                  color: lvoryWhiteColor,
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(8),
@@ -550,29 +563,10 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                               vertical: screenHeight * 0.018,
                             ),
                             decoration: BoxDecoration(
-                              // color: selecteddTab == 16
-                              //     ? Colors.green
-                              //     : Colors.transparent,
-                              gradient: selecteddTab == 0
-                                  ? LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [marketColor, marketColor],
-                                    )
+                              color: selecteddTab == 0
+                                  ? aquaGreyColor.withOpacity(.6)
                                   : null,
                               borderRadius: BorderRadius.circular(12),
-                              boxShadow: selecteddTab == 0
-                                  ? [
-                                      BoxShadow(
-                                        color: const Color(
-                                          0xFF00C853,
-                                        ).withOpacity(0.3),
-                                        spreadRadius: 1,
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ]
-                                  : null,
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -580,8 +574,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                 Icon(
                                   Icons.show_chart,
                                   color: selecteddTab == 0
-                                      ? Colors.white
-                                      : zBlack,
+                                      ? Colors.black
+                                      : aquaGreyColor,
                                   size: 20,
                                 ),
                                 SizedBox(width: 8.h),
@@ -589,10 +583,11 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                   "MARKET",
                                   style: TextStyle(
                                     color: selecteddTab == 0
-                                        ? Colors.white
-                                        : Colors.black,
+                                        ? Colors.black
+                                        : aquaGreyColor,
                                     fontWeight: FontWeight.w900,
                                     fontSize: 18,
+                                    fontFamily: FontFamily.globalFontFamily,
                                     // fontFamily: 'JetBrainsMono',
                                     letterSpacing: 2,
                                   ),
@@ -614,28 +609,9 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                             ),
                             decoration: BoxDecoration(
                               color: selecteddTab == 1
-                                  ? const Color(0xFF2C2C2E)
-                                  : Colors.transparent,
+                                  ? aquaGreyColor.withOpacity(.6)
+                                  : null,
                               borderRadius: BorderRadius.circular(12),
-                              gradient: selecteddTab == 1
-                                  ? LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [orderColor, orderColor],
-                                    )
-                                  : null,
-                              boxShadow: selecteddTab == 1
-                                  ? [
-                                      BoxShadow(
-                                        color: const Color(
-                                          0xFF00C853,
-                                        ).withOpacity(0.3),
-                                        spreadRadius: 1,
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ]
-                                  : null,
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -643,8 +619,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                 Icon(
                                   Icons.receipt_long,
                                   color: selecteddTab == 1
-                                      ? Colors.white
-                                      : zBlack,
+                                      ? Colors.black
+                                      : aquaGreyColor,
                                   size: 20,
                                 ),
                                 SizedBox(width: 8.h),
@@ -652,11 +628,11 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                   "ORDER",
                                   style: TextStyle(
                                     color: selecteddTab == 1
-                                        ? Colors.white
-                                        : zBlack,
+                                        ? Colors.black
+                                        : aquaGreyColor,
                                     fontWeight: FontWeight.w900,
                                     fontSize: 18,
-                                    fontFamily: 'JetBrainsMono',
+                                    fontFamily: FontFamily.globalFontFamily,
                                     letterSpacing: 2,
                                   ),
                                 ),
@@ -686,13 +662,13 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                 margin: const EdgeInsets.symmetric(vertical: 8),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(15),
-                                  color: marketColor,
+                                  color: lvoryWhiteColor,
                                 ),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text("UNIT").textStyleH11(),
+                                    const Text("UNIT").textStyleH11Color(),
                                     ValueListenableBuilder<int>(
                                       valueListenable: lotsNotifierMrk,
                                       builder: (context, lots, child) {
@@ -712,12 +688,12 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                   ),
                                                   decoration: BoxDecoration(
                                                     shape: BoxShape.circle,
-                                                    color: Colors.grey
-                                                        .withOpacity(0.2),
+                                                    color: aquaGreyColor
+                                                        .withOpacity(0.6),
                                                   ),
                                                   child: Icon(
                                                     Icons.remove,
-                                                    color: kWhiteColor,
+                                                    color: zBlack,
                                                     size: screenWidth * 0.05,
                                                   ),
                                                 ),
@@ -732,9 +708,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                               decoration: BoxDecoration(
                                                 borderRadius:
                                                     BorderRadius.circular(12),
-                                                color: Colors.grey.withOpacity(
-                                                  0.2,
-                                                ),
+                                                color: aquaGreyColor
+                                                    .withOpacity(0.6),
                                               ),
                                               child: TextField(
                                                 controller: _lotsMktController,
@@ -747,7 +722,9 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                 ],
                                                 style: TextStyle(
                                                   fontSize: screenWidth * 0.045,
-                                                  color: kWhiteColor,
+                                                  color: zBlack,
+                                                  fontFamily: FontFamily
+                                                      .globalFontFamily,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                                 decoration:
@@ -773,31 +750,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                 },
                                               ),
                                             ),
-                                            // Container(
-                                            //   width: screenWidth * 0.15,
-                                            //   margin:
-                                            //       const EdgeInsets.symmetric(
-                                            //           horizontal: 16),
-                                            //   padding:
-                                            //       const EdgeInsets.symmetric(
-                                            //           vertical: 8,
-                                            //           horizontal: 12),
-                                            //   decoration: BoxDecoration(
-                                            //     borderRadius:
-                                            //         BorderRadius.circular(12),
-                                            //     color: Colors.grey
-                                            //         .withOpacity(0.2),
-                                            //   ),
-                                            //   child: Text(
-                                            //     "$lots",
-                                            //     style: TextStyle(
-                                            //       fontSize: screenWidth * 0.045,
-                                            //       color: zBlack,
-                                            //       fontWeight: FontWeight.bold,
-                                            //     ),
-                                            //     textAlign: TextAlign.center,
-                                            //   ),
-                                            // ),
+
                                             Material(
                                               color: Colors.transparent,
                                               child: InkWell(
@@ -811,12 +764,12 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                   ),
                                                   decoration: BoxDecoration(
                                                     shape: BoxShape.circle,
-                                                    color: Colors.grey
-                                                        .withOpacity(0.2),
+                                                    color: aquaGreyColor
+                                                        .withOpacity(0.6),
                                                   ),
                                                   child: Icon(
                                                     Icons.add,
-                                                    color: kWhiteColor,
+                                                    color: zBlack,
                                                     size: screenWidth * 0.05,
                                                   ),
                                                 ),
@@ -862,23 +815,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                               15,
                                             ),
                                             color: Color(0xffd00000),
-                                            // gradient: const LinearGradient(
-                                            //   begin: Alignment.topLeft,
-                                            //   end: Alignment.bottomRight,
-                                            //   colors: [
-                                            //     Color(0xFFFF3B30),
-                                            //     Color(0xFFFF3B30),
-                                            //   ],
-                                            // ),
-                                            // boxShadow: [
-                                            //   BoxShadow(
-                                            //     color: const Color(0xFFFF3B30)
-                                            //         .withOpacity(0.3),
-                                            //     spreadRadius: 1,
-                                            //     blurRadius: 8,
-                                            //     offset: const Offset(0, 4),
-                                            //   ),
-                                            // ],
+
                                             border: Border.all(
                                               color: Colors.red.withOpacity(
                                                 0.3,
@@ -904,19 +841,6 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                       .value
                                                       .toString(),
                                                 );
-                                                // if (isMarketOpen) {
-
-                                                // } else {
-                                                //   showDialog(
-                                                //     context: context,
-                                                //     builder: (context) =>
-                                                //         const WarningAlertBox(
-                                                //       title: 'Warning',
-                                                //       message:
-                                                //           'Market Closed You Cant Sale Stocks!',
-                                                //     ),
-                                                //   );
-                                                // }
                                               },
                                               child: Container(
                                                 padding: EdgeInsets.symmetric(
@@ -983,23 +907,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                               15,
                                             ),
                                             color: Color(0xff208b3a),
-                                            // gradient: const LinearGradient(
-                                            //   begin: Alignment.topLeft,
-                                            //   end: Alignment.bottomRight,
-                                            //   colors: [
-                                            //     Colors.green,
-                                            //     Colors.green,
-                                            //   ],
-                                            // ),
-                                            // boxShadow: [
-                                            //   BoxShadow(
-                                            //     color: const Color(0xFF34C759)
-                                            //         .withOpacity(0.3),
-                                            //     spreadRadius: 1,
-                                            //     blurRadius: 8,
-                                            //     offset: const Offset(0, 4),
-                                            //   ),
-                                            // ],
+
                                             border: Border.all(
                                               color: Colors.green.withOpacity(
                                                 0.3,
@@ -1025,19 +933,6 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                       .value
                                                       .toString(),
                                                 );
-                                                // if (isMarketOpen) {
-
-                                                // } else {
-                                                //   showDialog(
-                                                //     context: context,
-                                                //     builder: (context) =>
-                                                //         const WarningAlertBox(
-                                                //       title: 'Warning',
-                                                //       message:
-                                                //           'Market Closed You Cant Buy Stocks!',
-                                                //     ),
-                                                //   );
-                                                // }
                                               },
                                               child: Container(
                                                 padding: EdgeInsets.symmetric(
@@ -1087,14 +982,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                 // width: double.infinity,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20.r),
-                                  color: Colors.white,
-                                  // boxShadow: [
-                                  //   BoxShadow(
-                                  //     color: Colors.black.withOpacity(0.1),
-                                  //     blurRadius: 10,
-                                  //     offset: const Offset(0, 5),
-                                  //   ),
-                                  // ],
+                                  color: lvoryWhiteColor,
                                 ),
                                 child: Column(
                                   children: [
@@ -1126,6 +1014,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                   'Sell Price',
                                                   style: TextStyle(
                                                     color: zBlack,
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
                                                     fontSize:
                                                         screenWidth * 0.03,
                                                     fontWeight: FontWeight.w500,
@@ -1139,7 +1029,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     fontSize:
                                                         screenWidth * 0.035,
                                                     fontWeight: FontWeight.bold,
-                                                    fontFamily: 'JetBrainsMono',
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
                                                     letterSpacing: 0.5,
                                                   ),
                                                 ),
@@ -1171,6 +1062,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                   'Buy Price',
                                                   style: TextStyle(
                                                     color: zBlack,
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
                                                     fontSize:
                                                         screenWidth * 0.03,
                                                     fontWeight: FontWeight.w500,
@@ -1184,7 +1077,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     fontSize:
                                                         screenWidth * 0.035,
                                                     fontWeight: FontWeight.bold,
-                                                    fontFamily: 'JetBrainsMono',
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
                                                     letterSpacing: 0.5,
                                                   ),
                                                 ),
@@ -1224,7 +1118,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                             screenHeight,
                                           ),
                                           _buildInfoBox(
-                                            "Atp\n${record.averageTradePrice}",
+                                            "ATP\n${record.averageTradePrice}",
                                             screenWidth,
                                             screenHeight,
                                           ),
@@ -1294,6 +1188,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                         ? Colors.red
                                                         : Colors.green,
                                                     fontSize: 14,
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
                                                     fontWeight: FontWeight.w500,
                                                   ),
                                                 ),
@@ -1309,17 +1205,14 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                         : Colors.green,
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.bold,
-                                                    fontFamily: 'JetBrainsMono',
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
                                                     letterSpacing: 0.5,
                                                   ),
                                                 ),
                                               ],
                                             ),
                                           ),
-                                          // _buildInfoBox(
-                                          //     "Change\n${record.change}",
-                                          //     screenWidth,
-                                          //     screenHeight),
                                         ],
                                       ),
                                     ),
@@ -1359,10 +1252,6 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
-                                          // _buildInfoBox("Buyer\nN/A",
-                                          //     screenWidth, screenHeight),
-                                          // _buildInfoBox("Seller\nN/A",
-                                          //     screenWidth, screenHeight),
                                           _buildInfoBox(
                                             "Open Interest\n${record.openInterest}",
                                             screenWidth,
@@ -1394,13 +1283,13 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                 margin: const EdgeInsets.symmetric(vertical: 8),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(15),
-                                  color: orderColor,
+                                  color: lvoryWhiteColor,
                                 ),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text("UNIT").textStyleH11(),
+                                    const Text("UNIT").textStyleH11Color(),
                                     ValueListenableBuilder<int>(
                                       valueListenable: lotsNotifierLmt,
                                       builder: (context, lots, child) {
@@ -1420,12 +1309,12 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                   ),
                                                   decoration: BoxDecoration(
                                                     shape: BoxShape.circle,
-                                                    color: Colors.grey
-                                                        .withOpacity(0.2),
+                                                    color: aquaGreyColor
+                                                        .withOpacity(0.6),
                                                   ),
                                                   child: Icon(
                                                     Icons.remove,
-                                                    color: kWhiteColor,
+                                                    color: zBlack,
                                                     size: screenWidth * 0.05,
                                                   ),
                                                 ),
@@ -1440,9 +1329,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                               decoration: BoxDecoration(
                                                 borderRadius:
                                                     BorderRadius.circular(12),
-                                                color: Colors.grey.withOpacity(
-                                                  0.2,
-                                                ),
+                                                color: aquaGreyColor
+                                                    .withOpacity(0.6),
                                               ),
                                               child: TextField(
                                                 controller: _lotsOdrController,
@@ -1455,7 +1343,9 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     TextInputType.number,
                                                 style: TextStyle(
                                                   fontSize: screenWidth * 0.045,
-                                                  color: kWhiteColor,
+                                                  fontFamily: FontFamily
+                                                      .globalFontFamily,
+                                                  color: zBlack,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                                 decoration:
@@ -1481,31 +1371,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                 },
                                               ),
                                             ),
-                                            // Container(
-                                            //   width: screenWidth * 0.15,
-                                            //   margin:
-                                            //       const EdgeInsets.symmetric(
-                                            //           horizontal: 16),
-                                            //   padding:
-                                            //       const EdgeInsets.symmetric(
-                                            //           vertical: 8,
-                                            //           horizontal: 12),
-                                            //   decoration: BoxDecoration(
-                                            //     borderRadius:
-                                            //         BorderRadius.circular(12),
-                                            //     color: Colors.grey
-                                            //         .withOpacity(0.2),
-                                            //   ),
-                                            //   child: Text(
-                                            //     "$lots",
-                                            //     style: TextStyle(
-                                            //       fontSize: screenWidth * 0.045,
-                                            //       color: zBlack,
-                                            //       fontWeight: FontWeight.bold,
-                                            //     ),
-                                            //     textAlign: TextAlign.center,
-                                            //   ),
-                                            // ),
+
                                             Material(
                                               color: Colors.transparent,
                                               child: InkWell(
@@ -1519,12 +1385,12 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                   ),
                                                   decoration: BoxDecoration(
                                                     shape: BoxShape.circle,
-                                                    color: Colors.grey
-                                                        .withOpacity(0.2),
+                                                    color: aquaGreyColor
+                                                        .withOpacity(0.6),
                                                   ),
                                                   child: Icon(
                                                     Icons.add,
-                                                    color: kWhiteColor,
+                                                    color: zBlack,
                                                     size: screenWidth * 0.05,
                                                   ),
                                                 ),
@@ -1548,13 +1414,13 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                 margin: const EdgeInsets.symmetric(vertical: 8),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(15),
-                                  color: kWhiteColor,
+                                  color: lvoryWhiteColor,
                                 ),
                                 child: TextFormField(
                                   controller: _usernameController,
                                   style: TextStyle(
                                     fontWeight: FontWeight.w900,
-                                    fontFamily: 'JetBrainsMono',
+                                    fontFamily: FontFamily.globalFontFamily,
                                     fontSize: 18,
                                     color: zBlack,
                                     letterSpacing: 2,
@@ -1563,12 +1429,6 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                     FilteringTextInputFormatter.digitsOnly,
                                   ],
                                   decoration: InputDecoration(
-                                    // labelText: "Price",
-                                    // labelStyle: TextStyle(
-                                    //   color: Colors.grey[400],
-                                    //   fontSize: screenWidth * 0.04,
-                                    //   fontWeight: FontWeight.w500,
-                                    // ),
                                     prefixIcon: Padding(
                                       padding: const EdgeInsets.only(
                                         top: 10.0,
@@ -1578,7 +1438,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                         'Price :  ',
                                         style: TextStyle(
                                           fontWeight: FontWeight.w900,
-                                          fontFamily: 'JetBrainsMono',
+                                          fontFamily:
+                                              FontFamily.globalFontFamily,
                                           fontSize: 18,
                                           color: zBlack,
                                           letterSpacing: 2,
@@ -1588,6 +1449,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                     floatingLabelStyle: TextStyle(
                                       color: const Color(0xFF00C853),
                                       fontSize: screenWidth * 0.035,
+                                      fontFamily: FontFamily.globalFontFamily,
                                       fontWeight: FontWeight.w600,
                                     ),
                                     contentPadding: const EdgeInsets.symmetric(
@@ -1613,7 +1475,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                       ),
                                     ),
                                     filled: true,
-                                    fillColor: kWhiteColor,
+                                    fillColor: lvoryWhiteColor,
                                   ),
                                   keyboardType: TextInputType.number,
                                   cursorColor: const Color(0xFF00C853),
@@ -1633,27 +1495,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                               15,
                                             ),
                                             color: Color(0xffd00000),
-                                            // gradient: LinearGradient(
-                                            //   begin: Alignment.topLeft,
-                                            //   end: Alignment.bottomRight,
-                                            //   colors: [
-                                            //     const Color(
-                                            //       0xFFFF3B30,
-                                            //     ).withOpacity(0.8),
-                                            //     const Color(
-                                            //       0xFFFF3B30,
-                                            //     ).withOpacity(0.6),
-                                            //   ],
-                                            // ),
-                                            // boxShadow: [
-                                            //   BoxShadow(
-                                            //     color: const Color(0xFFFF3B30)
-                                            //         .withOpacity(0.3),
-                                            //     spreadRadius: 1,
-                                            //     blurRadius: 8,
-                                            //     offset: const Offset(0, 4),
-                                            //   ),
-                                            // ],
+
                                             border: Border.all(
                                               color: Colors.red.withOpacity(
                                                 0.3,
@@ -1702,19 +1544,6 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     'You Cant Sale Stock Your Price is not in Range!',
                                                   );
                                                 }
-                                                // if (isMarketOpen) {
-
-                                                // } else {
-                                                //   showDialog(
-                                                //     context: context,
-                                                //     builder: (context) =>
-                                                //         const WarningAlertBox(
-                                                //       title: 'Warning',
-                                                //       message:
-                                                //           'Market Closed You Cant Sale Stocks!',
-                                                //     ),
-                                                //   );
-                                                // }
                                               },
                                               child: Container(
                                                 padding: EdgeInsets.symmetric(
@@ -1746,8 +1575,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                                 0.04,
                                                             fontWeight:
                                                                 FontWeight.w600,
-                                                            fontFamily:
-                                                                'JetBrainsMono',
+                                                            fontFamily: FontFamily
+                                                                .globalFontFamily,
                                                             letterSpacing: 0.5,
                                                           ),
                                                         ),
@@ -1776,8 +1605,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                             screenWidth * 0.045,
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        fontFamily:
-                                                            'JetBrainsMono',
+                                                        fontFamily: FontFamily
+                                                            .globalFontFamily,
                                                         letterSpacing: 0.5,
                                                       ),
                                                     ),
@@ -1797,27 +1626,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                               15,
                                             ),
                                             color: Color(0xff208b3a),
-                                            // gradient: LinearGradient(
-                                            //   begin: Alignment.topLeft,
-                                            //   end: Alignment.bottomRight,
-                                            //   colors: [
-                                            //     const Color(
-                                            //       0xFF34C759,
-                                            //     ).withOpacity(0.8),
-                                            //     const Color(
-                                            //       0xFF34C759,
-                                            //     ).withOpacity(0.6),
-                                            //   ],
-                                            // ),
-                                            // boxShadow: [
-                                            //   BoxShadow(
-                                            //     color: const Color(0xFF34C759)
-                                            //         .withOpacity(0.3),
-                                            //     spreadRadius: 1,
-                                            //     blurRadius: 8,
-                                            //     offset: const Offset(0, 4),
-                                            //   ),
-                                            // ],
+
                                             border: Border.all(
                                               color: Colors.green.withOpacity(
                                                 0.3,
@@ -1865,19 +1674,6 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     'You Cant Buy Stock Your Price is not in Range!',
                                                   );
                                                 }
-                                                // if (isMarketOpen) {
-
-                                                // } else {
-                                                //   showDialog(
-                                                //     context: context,
-                                                //     builder: (context) =>
-                                                //         const WarningAlertBox(
-                                                //       title: 'Warning',
-                                                //       message:
-                                                //           'Market Closed You Cant Buy Stocks!',
-                                                //     ),
-                                                //   );
-                                                // }
                                               },
                                               child: Container(
                                                 padding: EdgeInsets.symmetric(
@@ -1909,8 +1705,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                                 0.04,
                                                             fontWeight:
                                                                 FontWeight.w600,
-                                                            fontFamily:
-                                                                'JetBrainsMono',
+                                                            fontFamily: FontFamily
+                                                                .globalFontFamily,
                                                             letterSpacing: 0.5,
                                                           ),
                                                         ),
@@ -1939,8 +1735,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                             screenWidth * 0.045,
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        fontFamily:
-                                                            'JetBrainsMono',
+                                                        fontFamily: FontFamily
+                                                            .globalFontFamily,
                                                         letterSpacing: 0.5,
                                                       ),
                                                     ),
@@ -1962,7 +1758,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                 // width: double.infinity,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20.r),
-                                  color: Colors.white,
+                                  color: lvoryWhiteColor,
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.black.withOpacity(0.1),
@@ -2003,6 +1799,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     color: zBlack,
                                                     fontSize:
                                                         screenWidth * 0.03,
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
                                                     fontWeight: FontWeight.w500,
                                                   ),
                                                 ),
@@ -2014,7 +1812,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     fontSize:
                                                         screenWidth * 0.035,
                                                     fontWeight: FontWeight.bold,
-                                                    fontFamily: 'JetBrainsMono',
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
                                                     letterSpacing: 0.5,
                                                   ),
                                                 ),
@@ -2046,6 +1845,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                   'Buy Price',
                                                   style: TextStyle(
                                                     color: zBlack,
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
                                                     fontSize:
                                                         screenWidth * 0.03,
                                                     fontWeight: FontWeight.w500,
@@ -2059,7 +1860,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     fontSize:
                                                         screenWidth * 0.035,
                                                     fontWeight: FontWeight.bold,
-                                                    fontFamily: 'JetBrainsMono',
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
                                                     letterSpacing: 0.5,
                                                   ),
                                                 ),
@@ -2067,14 +1869,6 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                             ),
                                           ),
 
-                                          // _buildInfoBox(
-                                          //     "Bid\n${ohlc.lastPrice}",
-                                          //     screenWidth,
-                                          //     screenHeight),
-                                          // _buildInfoBox(
-                                          //     "Ask\n${ohlc.lastPrice}",
-                                          //     screenWidth,
-                                          //     screenHeight),
                                           _buildInfoBox(
                                             "Last\n${ohlc.lastPrice}",
                                             screenWidth,
@@ -2103,7 +1897,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                             screenHeight,
                                           ),
                                           _buildInfoBox(
-                                            "Atp\n${record.averageTradePrice}",
+                                            "ATP\n${record.averageTradePrice}",
                                             screenWidth,
                                             screenHeight,
                                           ),
@@ -2173,6 +1967,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                         ? Colors.red
                                                         : Colors.green,
                                                     fontSize: 14,
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
                                                     fontWeight: FontWeight.w500,
                                                   ),
                                                 ),
@@ -2188,17 +1984,14 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                         : Colors.green,
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.bold,
-                                                    fontFamily: 'JetBrainsMono',
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
                                                     letterSpacing: 0.5,
                                                   ),
                                                 ),
                                               ],
                                             ),
                                           ),
-                                          // _buildInfoBox(
-                                          //     "Change\n${record.change}",
-                                          //     screenWidth,
-                                          //     screenHeight),
                                         ],
                                       ),
                                     ),
@@ -2238,10 +2031,6 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
-                                          // _buildInfoBox("Buyer\nN/A",
-                                          //     screenWidth, screenHeight),
-                                          // _buildInfoBox("Seller\nN/A",
-                                          //     screenWidth, screenHeight),
                                           _buildInfoBox(
                                             "Open Interest\n${record.openInterest}",
                                             screenWidth,
@@ -2276,9 +2065,9 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(label).textStyleH2(),
+          Text(label).textStyleH2b(),
           SizedBox(height: 4.h),
-          Text(value).textStyleH1(),
+          Text(value).textStyleH2b(),
         ],
       ),
     );

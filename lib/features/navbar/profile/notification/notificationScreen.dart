@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/constants/widget/toast.dart';
 import 'package:suproxu/core/service/Auth/auto_logout.dart';
@@ -155,6 +156,8 @@ class _NotificationScreenState extends State<NotificationScreen>
                                                   style: const TextStyle(
                                                     fontSize: 15,
                                                     color: zBlack,
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
                                                     fontWeight: FontWeight.w500,
                                                   ),
                                                   maxLines: 2,
@@ -170,6 +173,8 @@ class _NotificationScreenState extends State<NotificationScreen>
                                                       .toString(),
                                                   style: const TextStyle(
                                                     fontSize: 12,
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
                                                     color: zBlack,
                                                   ),
                                                 ),
@@ -190,6 +195,7 @@ class _NotificationScreenState extends State<NotificationScreen>
                                 style: TextStyle(
                                   color: zBlack,
                                   fontSize: 15,
+                                  fontFamily: FontFamily.globalFontFamily,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -197,7 +203,14 @@ class _NotificationScreenState extends State<NotificationScreen>
                     case const (ProfileFailedErrorStateForNotification):
                       return const SizedBox.shrink();
                     default:
-                      return const Center(child: Text("State not found"));
+                      return const Center(
+                        child: Text(
+                          "State not found",
+                          style: TextStyle(
+                            fontFamily: FontFamily.globalFontFamily,
+                          ),
+                        ),
+                      );
                   }
                 },
               ),

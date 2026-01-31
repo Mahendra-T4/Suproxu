@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/service/Auth/auto_logout.dart';
 import 'package:suproxu/core/widgets/app_bar.dart';
@@ -7,6 +8,7 @@ import 'package:suproxu/features/navbar/profile/bloc/profile_bloc.dart';
 
 class ProfileInfo extends StatefulWidget {
   const ProfileInfo({super.key});
+
   static const String routeName = '/profile-info';
 
   @override
@@ -15,6 +17,7 @@ class ProfileInfo extends StatefulWidget {
 
 class _ProfileInfoState extends State<ProfileInfo> {
   late ProfileBloc _profileBloc;
+
   @override
   void initState() {
     _profileBloc = ProfileBloc();
@@ -28,7 +31,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: zBlack,
+      // backgroundColor: zBlack,
       appBar: customAppBarWithTitle(
         context: context,
         title: 'Profile Info',
@@ -55,7 +58,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
                               width: double.infinity,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
-                                color: Colors.white,
+                                color: lvoryWhiteColor,
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,6 +69,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
+                                      fontFamily: FontFamily.globalFontFamily,
                                     ),
                                   ),
                                   Column(
@@ -78,12 +82,18 @@ class _ProfileInfoState extends State<ProfileInfo> {
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                           color: kGoldenBraunColor,
+                                          fontFamily:
+                                              FontFamily.globalFontFamily,
                                         ),
                                       ),
                                       Text(
                                         successState.nseDetails!.nseBrokerage
                                             .toString(),
-                                        style: const TextStyle(fontSize: 16),
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontFamily:
+                                              FontFamily.globalFontFamily,
+                                        ),
                                       ),
                                       Divider(color: kGoldenBraunColor),
                                     ],
@@ -98,12 +108,18 @@ class _ProfileInfoState extends State<ProfileInfo> {
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                           color: kGoldenBraunColor,
+                                          fontFamily:
+                                              FontFamily.globalFontFamily,
                                         ),
                                       ),
                                       Text(
                                         successState.nseDetails!.nseInterday
                                             .toString(),
-                                        style: const TextStyle(fontSize: 16),
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontFamily:
+                                              FontFamily.globalFontFamily,
+                                        ),
                                       ),
                                       Divider(color: kGoldenBraunColor),
                                     ],
@@ -117,6 +133,8 @@ class _ProfileInfoState extends State<ProfileInfo> {
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
+                                          fontFamily:
+                                              FontFamily.globalFontFamily,
                                           color: kGoldenBraunColor,
                                         ),
                                       ),
@@ -148,6 +166,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
                                     'MCX Trade Enabled',
                                     style: TextStyle(
                                       fontSize: 18,
+                                      fontFamily: FontFamily.globalFontFamily,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -162,13 +181,19 @@ class _ProfileInfoState extends State<ProfileInfo> {
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                           color: kGoldenBraunColor,
+                                          fontFamily:
+                                              FontFamily.globalFontFamily,
                                         ),
                                       ),
                                       Text(
                                         state
                                             .profileJsonData!['mcxDetails']['mcxBrokerage']
                                             .toString(),
-                                        style: const TextStyle(fontSize: 16),
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontFamily:
+                                              FontFamily.globalFontFamily,
+                                        ),
                                       ),
                                       Divider(color: kGoldenBraunColor),
                                     ],
@@ -180,6 +205,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                       color: kGoldenBraunColor,
+                                      fontFamily: FontFamily.globalFontFamily,
                                     ),
                                   ),
                                   SizedBox(
@@ -195,6 +221,7 @@ class _ProfileInfoState extends State<ProfileInfo> {
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                       color: kGoldenBraunColor,
+                                      fontFamily: FontFamily.globalFontFamily,
                                     ),
                                   ),
                                   SizedBox(
@@ -212,16 +239,20 @@ class _ProfileInfoState extends State<ProfileInfo> {
                   : Center(
                       child: Text(
                         successState.message.toString(),
-                        style:  TextStyle(
+                        style: TextStyle(
                           color: kWhiteColor,
                           fontSize: 15,
+                          fontFamily: FontFamily.globalFontFamily,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     );
             case FetchUserProfileInfoFailedStatus:
               final error = (state as FetchUserProfileInfoFailedStatus).error;
-              return Text(error);
+              return Text(
+                error,
+                style: TextStyle(fontFamily: FontFamily.globalFontFamily),
+              );
 
             default:
               return const SizedBox.shrink();

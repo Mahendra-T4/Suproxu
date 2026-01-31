@@ -15,7 +15,6 @@ import 'package:suproxu/features/Rules/rulesPage.dart';
 import 'package:suproxu/features/auth/bloc/auth_bloc.dart';
 import 'package:suproxu/features/auth/forgot-pass/forgetPassword.dart';
 
-
 class LoginPages extends StatefulWidget {
   @override
   _LoginPagesState createState() => _LoginPagesState();
@@ -51,16 +50,6 @@ class _LoginPagesState extends State<LoginPages> {
     super.dispose();
   }
 
-  // userAuthentication() {
-  //   if (_emailController.text == '' && _emailController.text.isEmpty ||
-  //       _passwordController.text == '' && _passwordController.text.isEmpty) {
-  //     failedToast(context, 'Please Enter Required Fields');
-  //   } else {
-  //     _authBloc.add(AuthUserLoginEvent(
-  //         uEmail: _emailController.text, uPassword: _passwordController.text));
-  //   }
-  // }
-
   Future<void> _checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
@@ -72,23 +61,6 @@ class _LoginPagesState extends State<LoginPages> {
       );
     }
   }
-
-  // Future<void> _login() async {
-  //   if (_formKey.currentState!.validate()) {
-  //     _formKey.currentState!.save();
-  //     if (_emailController.text == "trading@gmail.com" &&
-  //         _passwordController.text == "Super@trade#123") {
-  //       final prefs = await SharedPreferences.getInstance();
-  //       await prefs.setBool(loginKey, true); // Save login status
-  //       Navigator.pushReplacement(
-  //           context, MaterialPageRoute(builder: (context) => Rulespage()));
-  //     } else {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text('Invalid email or password')),
-  //       );
-  //     }
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -241,9 +213,10 @@ class _LoginPagesState extends State<LoginPages> {
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter your password';
-                                  } else if (value.length < 6) {
-                                    return 'Password too short (min 6 chars)';
                                   }
+                                  // else if (value.length < 6) {
+                                  //   return 'Password too short (min 6 chars)';
+                                  // }
                                   return null;
                                 },
                               ),
@@ -273,7 +246,13 @@ class _LoginPagesState extends State<LoginPages> {
                             context,
                             state.loginModel.message.toString(),
                           );
-                          _authBloc.add(NavigateToGlobalNavbarEvent());
+                          GoRouter.of(context).goNamed(
+                            TradeWarning.routeName,
+                            extra: state.loginModel.record!.updatePassword
+                                .toString(),
+                          );
+
+                          // _authBloc.add(NavigateToGlobalNavbarEvent());
                         } else {
                           failedToast(
                             context,
@@ -282,12 +261,13 @@ class _LoginPagesState extends State<LoginPages> {
                         }
                       } else if (state is AuthFailedErrorStateForUserLogin) {
                         ErrorPage(errorMessage: state.error);
-                      } else if (state
-                          is NavigateToGlobalNavBarAuthActionState) {
-                        GoRouter.of(context).goNamed(TradeWarning.routeName);
-                        // Navigator.pushReplacementNamed(
-                        //     context, GlobalNavBar.routeName);
                       }
+                      //  else if (state
+                      //     is NavigateToGlobalNavBarAuthActionState) {
+                      //   GoRouter.of(context).goNamed(TradeWarning.routeName);
+                      //   // Navigator.pushReplacementNamed(
+                      //   //     context, GlobalNavBar.routeName);
+                      // }
                     },
                     builder: (_, state) {
                       if (state is AuthLoadingState) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
 import 'package:suproxu/core/service/Auth/auto_logout.dart';
@@ -222,7 +223,7 @@ class _LodgeComplaintScreenState extends State<LodgeComplaintScreen>
           fontSize: 18,
           color: zBlack,
           fontWeight: FontWeight.w500,
-          // fontFamily: 'JetBrainsMono',
+          fontFamily: FontFamily.globalFontFamily,
         ),
         filled: true,
         fillColor: Colors.grey.withOpacity(.3),
@@ -254,13 +255,28 @@ class _LodgeComplaintScreenState extends State<LodgeComplaintScreen>
         backgroundColor: Colors.grey[900],
         title: const Text(
           'Success',
-          style: TextStyle(color: Colors.greenAccent),
+          style: TextStyle(
+            color: Colors.greenAccent,
+            fontFamily: FontFamily.globalFontFamily,
+          ),
         ),
-        content: Text(message, style: const TextStyle(color: Colors.white)),
+        content: Text(
+          message,
+          style: const TextStyle(
+            color: Colors.white,
+            fontFamily: FontFamily.globalFontFamily,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK', style: TextStyle(color: Colors.blueAccent)),
+            child: const Text(
+              'OK',
+              style: TextStyle(
+                color: Colors.blueAccent,
+                fontFamily: FontFamily.globalFontFamily,
+              ),
+            ),
           ),
         ],
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

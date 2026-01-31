@@ -66,12 +66,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(AuthLoadingState());
     try {
-      final changePass = await AuthRepository.changePasswordEntity(
+      final changePass = await AuthRepository.changePassword(
         currentPass: event.currentPass,
         newPassword: event.newPassword,
         confirmPassword: event.confirmPassword,
       );
-      AuthChangeUserPasswordSuccessState(changePasswordEntity: changePass);
+      emit(
+        AuthChangeUserPasswordSuccessState(changePasswordEntity: changePass),
+      );
     } catch (e) {
       print(e);
       emit(AuthChangePasswordFailedErrorState(error: e.toString()));

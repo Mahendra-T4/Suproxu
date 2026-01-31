@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:ui';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/features/navbar/home/mcx/page/symbol/mcx_symbol.dart';
 import 'package:suproxu/features/navbar/home/nse-future/page/nse_future_symbol_page.dart';
 import 'package:suproxu/features/navbar/home/repository/buy_sale_repo.dart';
@@ -188,6 +189,7 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
                             data.status!,
                             m2m,
                             availebleMargin,
+                            data.activeStatics?.requiredHoldingMargin ?? 0.0,
                           ),
                         ),
                       ),
@@ -297,6 +299,8 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
                                                     })(),
                                                     style: TextStyle(
                                                       fontSize: 14,
+                                                      fontFamily: FontFamily
+                                                          .globalFontFamily,
                                                       fontWeight:
                                                           FontWeight.w500,
                                                       // fontFamily:
@@ -330,6 +334,8 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
                                                             .profitLoss
                                                             .toString(),
                                                         style: TextStyle(
+                                                          fontFamily: FontFamily
+                                                              .globalFontFamily,
                                                           color:
                                                               data
                                                                   .response![index]
@@ -397,8 +403,12 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
                                                                   12.r,
                                                                 ),
                                                           ),
-                                                          child: const Text(
+                                                          child: Text(
                                                             'Processing...',
+                                                            style: TextStyle(
+                                                              fontFamily: FontFamily
+                                                                  .globalFontFamily,
+                                                            ),
                                                           ),
                                                         )
                                                       : InkWell(
@@ -631,6 +641,7 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
                                     style: TextStyle(
                                       color: zBlack,
                                       fontSize: 15,
+                                      fontFamily: FontFamily.globalFontFamily,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -664,6 +675,7 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
     int status,
     dynamic m2m,
     dynamic availableMargin,
+    dynamic requiredHoldingMargin,
   ) => BlocConsumer(
     bloc: _profileBloc,
     listener: (context, state) {
@@ -697,77 +709,124 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
                     //   ),
                     // ],
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 22,
-                          horizontal: 10,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 22,
+                              horizontal: 10,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                _buildWalletInfoColumn(
-                                  'Ledger Balance',
-                                  wallet.record!.first.availableBalance
-                                      .toString(),
-                                  textColor: Colors.black87,
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    _buildWalletInfoColumn(
+                                      'Ledger Balance',
+                                      wallet.record!.first.availableBalance
+                                          .toString(),
+                                      textColor: Colors.black87,
+                                    ),
+                                    Container(
+                                      height: 40.h,
+                                      width: 1.w,
+                                      color: Colors.black,
+                                    ),
+                                    _buildWalletInfoColumn(
+                                      'Available Margin',
+                                      status == 1
+                                          ? availableMargin
+                                                .toStringAsFixed(2)
+                                                .toString()
+                                          : wallet
+                                                .record!
+                                                .first
+                                                .availableBalance,
+                                      textColor: Colors.black87,
+                                    ),
+                                  ],
                                 ),
-                                Container(
-                                  height: 40.h,
-                                  width: 1.w,
-                                  color: Colors.black,
-                                ),
-                                _buildWalletInfoColumn(
-                                  'Available Margin',
-                                  status == 1
-                                      ? availableMargin
-                                            .toStringAsFixed(2)
-                                            .toString()
-                                      : wallet.record!.first.availableBalance,
-                                  textColor: Colors.black87,
+                                Divider(height: 30.h, color: Colors.black),
+                                // SizedBox(height: 16.h),
+                                // Divider(
+                                //     height: 1, color: Colors.grey.withOpacity(0.2)),
+                                // SizedBox(height: 16.h),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    _buildWalletInfoColumnPL(
+                                      'Active P&L',
+                                      profitLoss.toStringAsFixed(2).toString(),
+                                      textColor: profitLoss >= 0
+                                          ? Colors.green
+                                          : Colors.red,
+                                    ),
+                                    Container(
+                                      margin: const EdgeInsets.only(left: 30),
+                                      height: 40.h,
+                                      width: 1.w,
+                                      color: Colors.black,
+                                    ),
+                                    _buildWalletInfoColumn(
+                                      'M 2 M                   ',
+                                      status == 1
+                                          ? m2m.toStringAsFixed(2).toString()
+                                          : wallet
+                                                .record!
+                                                .first
+                                                .availableBalance,
+                                      textColor: Colors.black87,
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                            Divider(height: 30.h, color: Colors.black),
-                            // SizedBox(height: 16.h),
-                            // Divider(
-                            //     height: 1, color: Colors.grey.withOpacity(0.2)),
-                            // SizedBox(height: 16.h),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                _buildWalletInfoColumnPL(
-                                  'Active P&L',
-                                  profitLoss.toStringAsFixed(2).toString(),
-                                  textColor: profitLoss >= 0
-                                      ? Colors.green
-                                      : Colors.red,
-                                ),
-                                Container(
-                                  margin: const EdgeInsets.only(left: 30),
-                                  height: 40.h,
-                                  width: 1.w,
-                                  color: Colors.black,
-                                ),
-                                _buildWalletInfoColumn(
-                                  'M 2 M                   ',
-                                  status == 1
-                                      ? m2m.toStringAsFixed(2).toString()
-                                      : wallet.record!.first.availableBalance,
-                                  textColor: Colors.black87,
-                                ),
-                              ],
+                          ),
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 8,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: aquaGreyColor.withOpacity(.4),
+                        ),
+                        child: Row(
+                          // spacing: 10,
+                          children: [
+                            Text(
+                              'Required Holding Margin : ',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                fontFamily: FontFamily.globalFontFamily,
+                              ),
+                            ),
+                            Text(
+                              requiredHoldingMargin.toString(),
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                fontFamily: FontFamily.globalFontFamily,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 )
               : Center(

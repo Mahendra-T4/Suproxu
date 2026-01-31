@@ -4,13 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
 import 'package:suproxu/features/navbar/TradeScreen/bloc/trade_bloc.dart';
-import 'package:suproxu/features/navbar/home/mcx/McxSymbolsScreen.dart';
+
 import 'package:suproxu/features/navbar/home/mcx/page/symbol/mcx_symbol.dart';
-import 'package:suproxu/features/navbar/home/nse-future/fnoSymbolScreen.dart'
-    hide SymbolScreenParams;
 import 'package:suproxu/features/navbar/home/nse-future/page/nse_future_symbol_page.dart';
 
 import '../home/model/symbol_page_param.dart';
@@ -130,7 +129,7 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
                                             fontSize: 13,
                                             fontWeight: FontWeight.w600,
 
-                                            // fontFamily: 'JetBrainsMono',
+                                            fontFamily: FontFamily.globalFontFamily,
                                             color:
                                                 closedTrade
                                                     .record![index]
@@ -162,7 +161,7 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w600,
-                                            // fontFamily: 'JetBrainsMono',
+                                            fontFamily: FontFamily.globalFontFamily,
                                             color: Colors.green,
                                           ),
                                         ),
@@ -183,7 +182,7 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
                                         style: TextStyle(
                                           fontWeight: FontWeight.w600,
                                           color: kGoldenBraunColor,
-                                          // fontFamily: 'JetBrainsMono',
+                                           fontFamily: FontFamily.globalFontFamily,
                                           fontSize: 12,
                                         ),
                                       ),
@@ -207,7 +206,7 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.bold,
-                                            // fontFamily: 'JetBrainsMono',
+                                             fontFamily: FontFamily.globalFontFamily,
                                             color: Colors.redAccent,
                                           ),
                                         ),
@@ -241,6 +240,7 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
                                             fontWeight: FontWeight.bold,
                                             // fontFamily: 'JetBrainsMono',
                                             color: Colors.green,
+                                             fontFamily: FontFamily.globalFontFamily,
                                           ),
                                         ),
                                       ),
@@ -276,6 +276,7 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
                       style: TextStyle(
                         color: zBlack,
                         fontSize: 15,
+                         fontFamily: FontFamily.globalFontFamily,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -284,14 +285,14 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
             return Center(
               child: Text(
                 (state as ClosedTradeFailedErrorState).error,
-                style: TextStyle(color: Colors.red, fontSize: 16.sp),
+                style: TextStyle(color: Colors.red, fontFamily: FontFamily.globalFontFamily, fontSize: 16.sp),
               ),
             );
           default:
             return const Center(
               child: Text(
                 'State not found',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.white, fontFamily: FontFamily.globalFontFamily,),
               ),
             );
         }
@@ -368,6 +369,7 @@ class OrderCard extends StatelessWidget {
                             color: Colors.white,
                             fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
+                             fontFamily: FontFamily.globalFontFamily,
                           ),
                         ),
                         Text(
@@ -375,6 +377,7 @@ class OrderCard extends StatelessWidget {
                           style: TextStyle(
                             color: kGoldenBraunColor,
                             fontSize: 12.sp,
+                             fontFamily: FontFamily.globalFontFamily,
                           ),
                         ),
                       ],
@@ -421,6 +424,7 @@ class OrderCard extends StatelessWidget {
         style: TextStyle(
           color: Colors.green,
           fontSize: 12.sp,
+           fontFamily: FontFamily.globalFontFamily,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -463,7 +467,11 @@ class OrderCard extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(color: Colors.grey[400], fontSize: 12.sp),
+          style: TextStyle(
+            color: Colors.grey[400],
+            fontFamily: FontFamily.globalFontFamily,
+            fontSize: 12.sp,
+          ),
         ),
         SizedBox(height: 4.h),
         Text(
@@ -472,6 +480,7 @@ class OrderCard extends StatelessWidget {
             color: color,
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,
+            fontFamily: FontFamily.globalFontFamily,
           ),
         ),
       ],
@@ -484,7 +493,11 @@ class OrderCard extends StatelessWidget {
       children: [
         Text(
           "Close Margin",
-          style: TextStyle(color: kGoldenBraunColor, fontSize: 14.sp),
+          style: TextStyle(
+            color: kGoldenBraunColor,
+            fontFamily: FontFamily.globalFontFamily,
+            fontSize: 14.sp,
+          ),
         ),
         Text(
           parseDigits(closeMargin),
@@ -492,6 +505,7 @@ class OrderCard extends StatelessWidget {
             color: closeMargin.contains('-') ? Colors.redAccent : Colors.green,
             fontSize: 16.sp,
             fontWeight: FontWeight.bold,
+            fontFamily: FontFamily.globalFontFamily,
           ),
         ),
       ],
@@ -504,7 +518,11 @@ class OrderCard extends StatelessWidget {
       children: [
         Text(
           "Brokerage",
-          style: TextStyle(color: kGoldenBraunColor, fontSize: 14.sp),
+          style: TextStyle(
+            color: kGoldenBraunColor,
+            fontFamily: FontFamily.globalFontFamily,
+            fontSize: 14.sp,
+          ),
         ),
         Text(
           brockrage.toString(),
@@ -512,6 +530,7 @@ class OrderCard extends StatelessWidget {
             color: closeMargin.contains('-') ? Colors.redAccent : Colors.green,
             fontSize: 16.sp,
             fontWeight: FontWeight.bold,
+            fontFamily: FontFamily.globalFontFamily,
           ),
         ),
       ],

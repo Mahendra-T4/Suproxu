@@ -16,10 +16,11 @@ abstract class WishlistRepository {
   static final client = http.Client();
   static final url = Uri.parse(superTradeBaseApiEndPointUrl);
 
-  static Future<bool> addToWishlist(
-      {required String category,
-      required String symbolKey,
-      required BuildContext context}) async {
+  static Future<bool> addToWishlist({
+    required String category,
+    required String symbolKey,
+    required BuildContext context,
+  }) async {
     final url = Uri.parse(superTradeBaseApiEndPointUrl);
     DatabaseService databaseService = DatabaseService();
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
@@ -27,13 +28,16 @@ abstract class WishlistRepository {
     final deviceID = androidInfo.id.toString();
     final uKey = await databaseService.getUserData(key: userIDKey);
     try {
-      final response = await http.post(url, body: {
-        'activity': 'add-wishlist',
-        'userKey': uKey,
-        'symbolKey': symbolKey,
-        "deviceID": deviceID.toString(),
-        'dataRelatedTo': category
-      });
+      final response = await http.post(
+        url,
+        body: {
+          'activity': 'add-wishlist',
+          'userKey': uKey,
+          'symbolKey': symbolKey,
+          "deviceID": deviceID.toString(),
+          'dataRelatedTo': category,
+        },
+      );
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
         log('Wishlist Response =>> ${jsonResponse['message']}');
@@ -56,12 +60,15 @@ abstract class WishlistRepository {
     final deviceID = androidInfo.id.toString();
     final uKey = await databaseService.getUserData(key: userIDKey);
     try {
-      final response = await client.post(url, body: {
-        'activity': 'wishlist',
-        'userKey': uKey,
-        "deviceID": deviceID.toString(),
-        'dataRelatedTo': 'NSE'
-      });
+      final response = await client.post(
+        url,
+        body: {
+          'activity': 'wishlist',
+          'userKey': uKey,
+          "deviceID": deviceID.toString(),
+          'dataRelatedTo': 'NSE',
+        },
+      );
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
         nseWishlistEntity = NSEWishlistEntity.fromJson(jsonResponse);
@@ -83,12 +90,15 @@ abstract class WishlistRepository {
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
     final deviceID = androidInfo.id.toString();
     try {
-      final response = await client.post(url, body: {
-        'activity': 'wishlist',
-        'userKey': uKey.tos,
-        "deviceID": deviceID.toString(),
-        'dataRelatedTo': 'MCX'
-      });
+      final response = await client.post(
+        url,
+        body: {
+          'activity': 'wishlist',
+          'userKey': uKey.tos,
+          "deviceID": deviceID.toString(),
+          'dataRelatedTo': 'MCX',
+        },
+      );
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
         mcxWishlistEntity = MCXWishlistEntity.fromJson(jsonResponse);
@@ -111,12 +121,15 @@ abstract class WishlistRepository {
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
     final deviceID = androidInfo.id.toString();
     try {
-      final response = await client.post(url, body: {
-        'activity': 'wishlist',
-        'userKey': uKey,
-        "deviceID": deviceID.toString(),
-        'dataRelatedTo': 'NFO'
-      });
+      final response = await client.post(
+        url,
+        body: {
+          'activity': 'wishlist',
+          'userKey': uKey,
+          "deviceID": deviceID.toString(),
+          'dataRelatedTo': 'NFO',
+        },
+      );
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
         wishlistStocksEntity = NFOWishlistEntity.fromJson(jsonResponse);
@@ -140,13 +153,16 @@ abstract class WishlistRepository {
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
     final deviceID = androidInfo.id.toString();
     try {
-      final response = await client.post(url, body: {
-        'activity': 'remove-wishlist',
-        'userKey': uKey,
-        'symbolKey': symbolKey,
-        "deviceID": deviceID.toString(),
-        'dataRelatedTo': category
-      });
+      final response = await client.post(
+        url,
+        body: {
+          'activity': 'remove-wishlist',
+          'userKey': uKey,
+          'symbolKey': symbolKey,
+          "deviceID": deviceID.toString(),
+          'dataRelatedTo': category,
+        },
+      );
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
@@ -160,8 +176,39 @@ abstract class WishlistRepository {
     }
   }
 
-  static Future<SymbolSortModel> symbolSorting(
-      {required SortListParam param}) async {
+  static Future<bool> clearWatchListSymbols({required String category}) async {
+    DatabaseService databaseService = DatabaseService();
+    final uKey = await databaseService.getUserData(key: userIDKey);
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    final deviceID = androidInfo.id.toString();
+    try {
+      final response = await client.post(
+        url,
+        body: {
+          'activity': 'remove-wishlist',
+          'userKey': uKey,
+          'clearList': '1',
+          "deviceID": deviceID.toString(),
+          'dataRelatedTo': category,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        log('Remove Wishlist Response =>> ${jsonResponse['message']}');
+        return true;
+      }
+      return false;
+    } catch (err) {
+      log('Remove Wishlist Error =>> $err');
+      return false;
+    }
+  }
+
+  static Future<SymbolSortModel> symbolSorting({
+    required SortListParam param,
+  }) async {
     SymbolSortModel symbolSortModel = SymbolSortModel();
 
     DatabaseService databaseService = DatabaseService();
@@ -170,17 +217,16 @@ abstract class WishlistRepository {
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
     final deviceID = androidInfo.id.toString();
     try {
-      // Convert List<String> to comma-separated strings
-      // final symbolKeyString = param.symbolKey.join(',');
-      // final symbolOrderString = param.symbolOrder.join(',');
-
-      final response = await client.post(url, body: {
-        'activity': 'sort-stocks',
-        'userKey': uKey.toString(),
-        'symbolKey': param.symbolKey,
-        'symbolOrder': param.symbolOrder,
-        'deviceID': deviceID.toString(),
-      });
+      final response = await client.post(
+        url,
+        body: {
+          'activity': 'sort-stocks',
+          'userKey': uKey.toString(),
+          'symbolKey': param.symbolKey,
+          'symbolOrder': param.symbolOrder,
+          'deviceID': deviceID.toString(),
+        },
+      );
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);

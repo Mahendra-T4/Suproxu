@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
@@ -34,13 +33,13 @@ class AuthRepository {
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
     final deviceID = androidInfo.id.toString();
     final url = Uri.parse(loginApiEndPointUrl);
-    var userDeviceID;
-    DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
-    AndroidDeviceInfo _androidInfo = await _deviceInfo.androidInfo;
+    // var userDeviceID;
+    // DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
+    // AndroidDeviceInfo _androidInfo = await _deviceInfo.androidInfo;
 
-    if (Platform.isAndroid) {
-      userDeviceID = _androidInfo.id.toString();
-    }
+    // if (Platform.isAndroid) {
+    //   userDeviceID = _androidInfo.id.toString();
+    // }
     try {
       final response = await client.post(
         url,
@@ -57,6 +56,11 @@ class AuthRepository {
         // successToastMsg(context, message);
         log('User Key =>>${loginModel.record!.userKey.toString()}');
         log('User Login Json Response =>>${response.body}');
+
+        if (loginModel.record?.updatePassword == 1) {
+          //* save user login token
+          pref.setBool(loginToken, true);
+        }
 
         //* save user first name
         dbService.saveUserData(
@@ -135,9 +139,6 @@ class AuthRepository {
           key: agentQRKey,
           value: loginModel.record!.agentQR.toString(),
         );
-
-        //* save user login token
-        pref.setBool(loginToken, true);
       } else {
         log('data not found something want wrong');
       }
@@ -190,7 +191,7 @@ class AuthRepository {
 
   //! change password
 
-  static Future<ChangePasswordEntity> changePasswordEntity({
+  static Future<ChangePasswordEntity> changePassword({
     required String currentPass,
     required String newPassword,
     required String confirmPassword,
@@ -217,6 +218,8 @@ class AuthRepository {
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
         changePasswordEntity = ChangePasswordEntity.fromJson(jsonResponse);
+        log('Change Password Json Response =>> ${response.body}');
+        log('Change Password Status =>> ${changePasswordEntity.message}');
       } else {
         log('Failed to load api data');
       }

@@ -27,18 +27,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     // on<SearchStockBySymbolEvent>(searchStockBySymbolEvent);
   }
 
-  // FutureOr<void> mcxDataSuccessfulFetchingEvent(
-  //     MCXDataSuccessfulFetchingEvent event, Emitter<HomeState> emit) async {
-  //   emit(HomeLoadingState());
-  //   try {
-  //     // await Future.delayed(Duration(milliseconds: 800));
-  //     final mcxTrade = await TradeRepository.mcxTradeDataLoader();
-  //     emit(HomeSuccessStateForMCXTrading(mcxDataEntity: mcxTrade));
-  //   } catch (e) {
-  //     emit(HomeFailedErrorStateForMCXTrading(error: e.toString()));
-  //     log('MCX BLOC ERROR =>> $e');
-  //   }
-  // }
+
 
   FutureOr<void> nseDataSuccessfulFetchingEvent(
     NSEDataSuccessfulFetchingEvent event,
@@ -132,16 +121,5 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
   }
 
-  // FutureOr<void> searchStockBySymbolEvent(
-  //     SearchStockBySymbolEvent event, Emitter<HomeState> emit) async {
-  //   emit(HomeLoadingState());
-  //   try {
-  //     final searchStockEntity = await SearchRepository.searchStock(
-  //         query: event.query, stockName: event.stockName);
-  //     emit(SearchStockByNameSuccessState(searchStockEntity: searchStockEntity));
-  //   } catch (e) {
-  //     log('Search Stock Bloc Error : $e');
-  //     emit(SearchStockByNameFailedErrorState(error: e.toString()));
-  //   }
-  // }
+  
 }

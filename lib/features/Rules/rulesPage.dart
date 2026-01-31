@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/features/Rules/provider/rules_provider.dart';
 
 class Rulespage extends ConsumerStatefulWidget {
   const Rulespage({super.key});
-  
 
   @override
   ConsumerState<Rulespage> createState() => _RulespageState();
@@ -24,7 +24,10 @@ class _RulespageState extends ConsumerState<Rulespage> {
             return Center(
               child: Text(
                 'Error: ${state.errorMessage}',
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontFamily: FontFamily.globalFontFamily,
+                ),
               ),
             );
           } else {
@@ -38,13 +41,18 @@ class _RulespageState extends ConsumerState<Rulespage> {
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
+                      fontFamily: FontFamily.globalFontFamily,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     state.rulesModel.pageDescription ?? 'No Description',
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: FontFamily.globalFontFamily,
+                      fontSize: 16,
+                    ),
                   ),
                 ],
               ),
@@ -52,7 +60,6 @@ class _RulespageState extends ConsumerState<Rulespage> {
           }
         },
       ),
-      
     );
   }
 
@@ -66,7 +73,11 @@ class _RulespageState extends ConsumerState<Rulespage> {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
+              style: const TextStyle(
+                color: Colors.white,
+                fontFamily: FontFamily.globalFontFamily,
+                fontSize: 14,
+              ),
             ),
           ),
         ],

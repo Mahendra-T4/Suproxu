@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:suproxu/Assets/assets.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/constants/apis/api_urls.dart';
@@ -443,6 +444,7 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
             style: TextStyle(
               color: color,
               fontSize: screenWidth * 0.045,
+               fontFamily: FontFamily.globalFontFamily,
               fontWeight: FontWeight.bold,
               // fontFamily: 'JetBrainsMono',
             ),
@@ -470,6 +472,7 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
             style: TextStyle(
               color: color,
               fontSize: screenWidth * 0.05,
+               fontFamily: FontFamily.globalFontFamily,
               fontWeight: FontWeight.bold,
               // fontFamily: 'JetBrainsMono',
             ),

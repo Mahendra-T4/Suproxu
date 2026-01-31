@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/constants/color.dart';
@@ -81,7 +82,7 @@ class _LedgerReportScreenState extends State<LedgerReportScreen>
           color: greyColor,
           child: SafeArea(
             child: Scaffold(
-              backgroundColor: zBlack,
+              // backgroundColor: zBlack,
               appBar: customAppBarWithTitle(
                 context: context,
                 title: 'Ledger',
@@ -117,7 +118,7 @@ class _LedgerReportScreenState extends State<LedgerReportScreen>
                                     vertical: 10,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: kWhiteColor,
+                                    color: lvoryWhiteColor,
                                     borderRadius: BorderRadius.circular(16.r),
                                   ),
                                   child: ClipRRect(
@@ -179,6 +180,7 @@ class _LedgerReportScreenState extends State<LedgerReportScreen>
                                     ledgerEntity.message.toString(),
                                     style: TextStyle(
                                       color: kWhiteColor,
+                                      fontFamily: FontFamily.globalFontFamily,
                                       fontSize: 16.sp,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -189,7 +191,14 @@ class _LedgerReportScreenState extends State<LedgerReportScreen>
                     case const (FetchLedgerRecordFailedStatus):
                       return const SizedBox.shrink();
                     default:
-                      return const Center(child: Text('State not found'));
+                      return Center(
+                        child: Text(
+                          'State not found',
+                          style: TextStyle(
+                            fontFamily: FontFamily.globalFontFamily,
+                          ),
+                        ),
+                      );
                   }
                 },
               ),
@@ -280,6 +289,7 @@ class _LedgerReportScreenState extends State<LedgerReportScreen>
           style: TextStyle(
             color: color,
             fontWeight: FontWeight.bold,
+            fontFamily: FontFamily.globalFontFamily,
             // fontFamily: 'JetBrainsMono',
           ),
         ),

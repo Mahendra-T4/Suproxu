@@ -1,10 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
 import 'package:suproxu/features/navbar/Portfolio/provider/active_port_provider.dart';
-
-import 'package:suproxu/features/navbar/profile/provider/wallet_stream_provider.dart';
 
 class WalletWidget extends StatefulWidget {
   final double screenWidth;
@@ -89,6 +88,7 @@ class _WalletWidgetState extends State<WalletWidget> {
             style: TextStyle(
               color: color,
               fontSize: screenWidth * 0.045,
+               fontFamily: FontFamily.globalFontFamily,
               fontWeight: FontWeight.bold,
               // fontFamily: 'JetBrainsMono',
             ),

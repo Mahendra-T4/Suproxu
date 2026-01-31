@@ -1,5 +1,4 @@
 import 'package:suproxu/features/navbar/wishlist/model/wishlist_entity.dart';
-import 'package:suproxu/features/navbar/wishlist/wishlist-tabs/NFO-Tab/nfo_wishlist.dart';
 
 class NFOWatchlistState {
   final bool isLoading;

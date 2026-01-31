@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/widgets/app_bar.dart';
 import 'package:suproxu/features/Rules/provider/rules_provider.dart';
@@ -44,7 +45,11 @@ class _SuproxuRulesPageState extends ConsumerState<SuproxuRulesPage> {
                     SizedBox(height: 16.h),
                     Text(
                       'Loading rules...',
-                      style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontFamily: FontFamily.globalFontFamily,
+                        fontSize: 14.sp,
+                      ),
                     ),
                   ],
                 ),
@@ -60,7 +65,11 @@ class _SuproxuRulesPageState extends ConsumerState<SuproxuRulesPage> {
                       padding: EdgeInsets.symmetric(horizontal: 16.w),
                       child: Text(
                         'Error: ${state.errorMessage}',
-                        style: TextStyle(color: Colors.red, fontSize: 14.sp),
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontFamily: FontFamily.globalFontFamily,
+                          fontSize: 14.sp,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -80,6 +89,7 @@ class _SuproxuRulesPageState extends ConsumerState<SuproxuRulesPage> {
                         'Retry',
                         style: TextStyle(
                           color: Colors.black,
+                          fontFamily: FontFamily.globalFontFamily,
                           fontSize: 14.sp,
                           fontWeight: FontWeight.bold,
                         ),
@@ -101,6 +111,7 @@ class _SuproxuRulesPageState extends ConsumerState<SuproxuRulesPage> {
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 24.sp,
+                        fontFamily: FontFamily.globalFontFamily,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -209,6 +220,7 @@ class _SuproxuRulesPageState extends ConsumerState<SuproxuRulesPage> {
           style: TextStyle(
             color: Colors.grey.shade300,
             fontSize: 14.sp,
+            fontFamily: FontFamily.globalFontFamily,
             fontWeight: isBoldLine ? FontWeight.w800 : FontWeight.normal,
           ),
         ),
@@ -225,6 +237,7 @@ class _SuproxuRulesPageState extends ConsumerState<SuproxuRulesPage> {
         style: TextStyle(
           color: Colors.grey.shade300,
           fontSize: 13.sp,
+          fontFamily: FontFamily.globalFontFamily,
           height: 1.8,
         ),
       ),

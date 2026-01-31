@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:suproxu/Assets/assets.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/logout/logout.dart';
 import 'package:suproxu/core/util/suproxu_logo.dart';
@@ -9,6 +10,7 @@ import 'package:suproxu/features/navbar/Portfolio/portfolio.dart';
 import 'package:suproxu/features/navbar/TradeScreen/tradeTab.dart';
 import 'package:suproxu/features/navbar/profile/notification/notificationScreen.dart';
 import 'package:suproxu/features/navbar/profile/roles/superoxu_rules.dart';
+import 'package:suproxu/features/navbar/wishlist/repositories/wishlist_repo.dart';
 
 enum MenuOptions {
   portfolio('Portfolio', Icons.wallet),
@@ -27,13 +29,17 @@ enum MenuOptions {
 PreferredSizeWidget customAppBar({
   required BuildContext context,
   required bool isShowNotify,
+  VoidCallback? clearMCX,
+  VoidCallback? clearNFO,
 }) => AppBar(
   automaticallyImplyLeading: false,
   backgroundColor: Colors.black,
   centerTitle: true,
   title: Padding(
     padding: const EdgeInsets.only(bottom: 8),
-    child: Row(children: [_buildModernDropdownButton(context)]),
+    child: Row(
+      children: [_buildModernDropdownButton(context, clearMCX, clearNFO)],
+    ),
   ),
   actions: [
     if (isShowNotify)
@@ -50,30 +56,44 @@ PreferredSizeWidget customAppBar({
   ],
 );
 
-Widget _buildModernDropdownButton(BuildContext context) {
+Widget _buildModernDropdownButton(
+  BuildContext context,
+  VoidCallback? clearMCX,
+  VoidCallback? clearNFO,
+) {
   return PopupMenuButton<MenuOptions>(
     onSelected: (MenuOptions result) {
-      _handleMenuSelection(result, context);
+      _handleMenuSelection(result, context, clearMCX, clearNFO);
     },
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
     color: const Color(0xFF1A1A1A),
     elevation: 12,
     itemBuilder: (BuildContext context) => <PopupMenuEntry<MenuOptions>>[
-      _buildMenuItemWidget(MenuOptions.portfolio, context),
+      _buildMenuItemWidget(MenuOptions.portfolio, context, clearMCX, clearNFO),
       _buildMenuDivider(),
 
-      _buildMenuItemWidget(MenuOptions.trade, context),
+      _buildMenuItemWidget(MenuOptions.trade, context, clearMCX, clearNFO),
       _buildMenuDivider(),
-      _buildMenuItemWidget(MenuOptions.order, context),
+      _buildMenuItemWidget(MenuOptions.order, context, clearMCX, clearNFO),
       _buildMenuDivider(),
-      _buildMenuItemWidget(MenuOptions.clearMcxWishlist, context),
+      _buildMenuItemWidget(
+        MenuOptions.clearMcxWishlist,
+        context,
+        clearMCX,
+        clearNFO,
+      ),
       _buildMenuDivider(),
-      _buildMenuItemWidget(MenuOptions.clearNfoWishlist, context),
+      _buildMenuItemWidget(
+        MenuOptions.clearNfoWishlist,
+        context,
+        clearMCX,
+        clearNFO,
+      ),
       _buildMenuDivider(),
 
-      _buildMenuItemWidget(MenuOptions.roles, context),
+      _buildMenuItemWidget(MenuOptions.roles, context, clearMCX, clearNFO),
       _buildMenuDivider(),
-      _buildMenuItemWidget(MenuOptions.logout, context),
+      _buildMenuItemWidget(MenuOptions.logout, context, clearMCX, clearNFO),
     ],
     child: Padding(
       padding: const EdgeInsets.only(top: 8),
@@ -81,13 +101,7 @@ Widget _buildModernDropdownButton(BuildContext context) {
         cursor: SystemMouseCursors.click,
         child: Container(
           padding: EdgeInsets.all(4.r),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12.r),
-            // border: Border.all(
-            //   color: kGoldenBraunColor.withOpacity(0.3),
-            //   width: 1.5,
-            // ),
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12.r)),
           child: SuproxuLogo(width: 65.w),
         ),
       ),
@@ -99,9 +113,44 @@ PopupMenuDivider _buildMenuDivider() {
   return PopupMenuDivider(height: 1);
 }
 
+Future<void> _clearWishlistWithRefresh(
+  BuildContext context,
+  String category,
+) async {
+  try {
+    await WishlistRepository.clearWatchListSymbols(category: category);
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$category Wishlist Cleared'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      // Trigger refresh by popping and letting pages reinitialize
+      // This will cause the pages' activate() method to be called
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+    }
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error clearing $category Wishlist: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+}
+
 PopupMenuItem<MenuOptions> _buildMenuItemWidget(
   MenuOptions option,
   BuildContext context,
+  VoidCallback? clearMCX,
+  VoidCallback? clearNFO,
 ) {
   return PopupMenuItem<MenuOptions>(
     value: option,
@@ -114,18 +163,23 @@ PopupMenuItem<MenuOptions> _buildMenuItemWidget(
         case MenuOptions.order:
           return;
         case MenuOptions.clearMcxWishlist:
-          return;
+          if (clearMCX != null) {
+            clearMCX();
+          } else {
+            _clearWishlistWithRefresh(context, 'MCX');
+          }
         case MenuOptions.clearNfoWishlist:
-          return;
+          if (clearNFO != null) {
+            clearNFO();
+          } else {
+            _clearWishlistWithRefresh(context, 'NFO');
+          }
         case MenuOptions.roles:
           return;
         case MenuOptions.logout:
           logoutUser(context);
-          // Handled in onSelected callback
           break;
       }
-      // Optional: Add custom logic here before menu closes
-      // For example: analytics tracking, haptic feedback, etc.
     },
     child: Container(
       width: 200.w,
@@ -146,6 +200,7 @@ PopupMenuItem<MenuOptions> _buildMenuItemWidget(
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w500,
+                fontFamily: FontFamily.globalFontFamily,
                 color: option == MenuOptions.logout ? Colors.red : Colors.white,
               ),
             ),
@@ -156,42 +211,35 @@ PopupMenuItem<MenuOptions> _buildMenuItemWidget(
   );
 }
 
-void _handleMenuSelection(MenuOptions option, BuildContext context) {
+void _handleMenuSelection(
+  MenuOptions option,
+  BuildContext context,
+  VoidCallback? clearMCX,
+  VoidCallback? clearNFO,
+) {
   switch (option) {
     case MenuOptions.portfolio:
-      // Navigate to Portfolio
-      // GoRouter.of(context).pushNamed(PortfolioScreen.routeName);
       break;
     case MenuOptions.order:
-      // Navigate to Order
-      // GoRouter.of(context).pushNamed(OrderScreen.routeName);
       break;
     case MenuOptions.clearMcxWishlist:
-      // Clear MCX Wishlist logic
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('MCX Wishlist Cleared')));
       break;
     case MenuOptions.clearNfoWishlist:
-      // Clear NFO Wishlist logic
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('NFO Wishlist Cleared')));
       break;
     case MenuOptions.trade:
-      // Navigate to Trade
-      // GoRouter.of(context).pushNamed(TradeScreen.routeName);
       break;
     case MenuOptions.roles:
-      // Navigate to Roles
       GoRouter.of(context).pushNamed(SuproxuRulesPage.routeName);
       break;
     case MenuOptions.logout:
-      // Logout logic
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Logging out...')));
-      // Perform logout operations here
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Logging out...',
+            style: TextStyle(fontFamily: FontFamily.globalFontFamily),
+          ),
+        ),
+      );
       break;
   }
 }
@@ -200,6 +248,8 @@ PreferredSizeWidget customAppBarWithTitle({
   required BuildContext context,
   required String title,
   required bool isShowNotify,
+  VoidCallback? clearMCX,
+  VoidCallback? clearNFO,
 }) => AppBar(
   automaticallyImplyLeading: false,
   backgroundColor: Colors.black,
@@ -209,12 +259,13 @@ PreferredSizeWidget customAppBarWithTitle({
     child: Row(
       spacing: 10,
       children: [
-        _buildModernDropdownButton(context),
+        _buildModernDropdownButton(context, clearMCX, clearNFO),
         Text(
           title,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
+            fontFamily: FontFamily.globalFontFamily,
             color: kGoldenBraunColor,
           ),
         ),

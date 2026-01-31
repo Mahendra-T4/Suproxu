@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/color_blinker.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
@@ -25,6 +26,15 @@ class _McxHomeState extends State<McxHome> {
   final TextEditingController _searchController = TextEditingController();
   late final SocketService socket;
   MCXDataEntity mcx = MCXDataEntity();
+
+  Future<bool> rWatchList(symbolKey) async {
+    final success = await WishlistRepository.removeWatchListSymbols(
+      category: 'MCX',
+      symbolKey: symbolKey,
+    );
+
+    return success;
+  }
 
   MCXDataEntity filteredMcx = MCXDataEntity();
   String? errorMessage;
@@ -306,15 +316,32 @@ class _McxHomeState extends State<McxHome> {
 
                                           GestureDetector(
                                             onTap: () async {
-                                              final success =
-                                                  await WishlistRepository.addToWishlist(
-                                                    category: 'MCX',
-                                                    symbolKey: mcx
-                                                        .response![index]
-                                                        .symbolKey
-                                                        .toString(),
-                                                    context: context,
-                                                  );
+                                              bool success = false;
+                                              if (mcx
+                                                      .response![index]
+                                                      .watchlist ==
+                                                  1) {
+                                                // Remove from wishlist
+                                                success =
+                                                    await WishlistRepository.removeWatchListSymbols(
+                                                      category: 'MCX',
+                                                      symbolKey: mcx
+                                                          .response![index]
+                                                          .symbolKey
+                                                          .toString(),
+                                                    );
+                                              } else {
+                                                // Add to wishlist
+                                                success =
+                                                    await WishlistRepository.addToWishlist(
+                                                      category: 'MCX',
+                                                      symbolKey: mcx
+                                                          .response![index]
+                                                          .symbolKey
+                                                          .toString(),
+                                                      context: context,
+                                                    );
+                                              }
                                               if (success && mounted) {
                                                 setState(() {
                                                   mcx
@@ -370,6 +397,8 @@ class _McxHomeState extends State<McxHome> {
                                                       ? Colors.red
                                                       : Colors.green,
                                                   fontSize: 11.5,
+                                                  fontFamily: FontFamily
+                                                      .globalFontFamily,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
@@ -383,6 +412,8 @@ class _McxHomeState extends State<McxHome> {
                                                       ? Colors.red
                                                       : Colors.green,
                                                   fontSize: 11.5,
+                                                  fontFamily: FontFamily
+                                                      .globalFontFamily,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),

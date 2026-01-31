@@ -3,16 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:suproxu/Assets/font_family.dart';
 
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/constants/widget/toast.dart';
 import 'package:suproxu/features/navbar/TradeScreen/bloc/trade_bloc.dart';
 import 'package:suproxu/features/navbar/TradeScreen/model/cancel_order_entity.dart';
 import 'package:suproxu/features/navbar/TradeScreen/repositories/trade_repo.dart';
-import 'package:suproxu/features/navbar/home/mcx/McxSymbolsScreen.dart';
+
 import 'package:suproxu/features/navbar/home/mcx/page/symbol/mcx_symbol.dart';
-import 'package:suproxu/features/navbar/home/nse-future/fnoSymbolScreen.dart'
-    hide SymbolScreenParams;
 import 'package:suproxu/features/navbar/home/nse-future/page/nse_future_symbol_page.dart';
 
 import '../home/model/symbol_page_param.dart' show SymbolScreenParams;
@@ -156,7 +155,7 @@ class _PendingTabState extends State<PendingTab>
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w500,
-                                            fontFamily: 'JetBrainsMono',
+                                           fontFamily: FontFamily.globalFontFamily,
                                             color: Colors.redAccent,
                                           ),
                                         ),
@@ -182,7 +181,7 @@ class _PendingTabState extends State<PendingTab>
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w500,
-                                            fontFamily: 'JetBrainsMono',
+                                            fontFamily: FontFamily.globalFontFamily,
                                             color: Colors.redAccent,
                                           ),
                                         ),
@@ -204,7 +203,7 @@ class _PendingTabState extends State<PendingTab>
                                               .toString(),
                                           style: TextStyle(
                                             fontWeight: FontWeight.w800,
-                                            fontFamily: 'JetBrainsMono',
+                                           fontFamily: FontFamily.globalFontFamily,
                                             fontSize: 15,
                                             color: kGoldenBraunColor,
                                           ),
@@ -236,7 +235,7 @@ class _PendingTabState extends State<PendingTab>
                                         })(),
                                         style: TextStyle(
                                           fontWeight: FontWeight.w500,
-                                          fontFamily: 'JetBrainsMono',
+                                          fontFamily: FontFamily.globalFontFamily,
                                           color: kGoldenBraunColor,
                                           fontSize: 12,
                                         ),
@@ -251,9 +250,10 @@ class _PendingTabState extends State<PendingTab>
                                         '${pendingTradeEntity.record![index].currentDate} & ${pendingTradeEntity.record![index].time}',
                                         style: TextStyle(
                                           fontWeight: FontWeight.w500,
-                                          fontFamily: 'JetBrainsMono',
+                                          fontFamily: FontFamily.globalFontFamily,
                                           color: kGoldenBraunColor,
                                           fontSize: 12,
+
                                         ),
                                       ),
                                     ],
@@ -272,11 +272,17 @@ class _PendingTabState extends State<PendingTab>
                             color: zBlack,
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
+                            fontFamily: FontFamily.globalFontFamily,
                           ),
                         ),
                       );
               } else if (state is ActiveTradeFailedErrorState) {
-                return Center(child: Text(state.error));
+                return Center(
+                  child: Text(
+                    state.error,
+                    style: TextStyle(fontFamily: FontFamily.globalFontFamily),
+                  ),
+                );
               } else {
                 return const SizedBox.shrink();
               }

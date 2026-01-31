@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/features/navbar/home/nse-future/widgets/searchbar_widget.dart';
 import 'dart:developer' as developer;
@@ -119,7 +120,10 @@ class _NseFutureState extends State<NseFuture> {
                           children: [
                             Text(
                               'Error: $errorMessage',
-                              style: const TextStyle(color: Colors.red),
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontFamily: FontFamily.globalFontFamily,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 16),
@@ -133,7 +137,12 @@ class _NseFutureState extends State<NseFuture> {
                                 } catch (_) {}
                                 nfoWebSocket.connect();
                               },
-                              child: const Text('Retry Connection'),
+                              child: const Text(
+                                'Retry Connection',
+                                style: TextStyle(
+                                  fontFamily: FontFamily.globalFontFamily,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -147,7 +156,12 @@ class _NseFutureState extends State<NseFuture> {
                           children: [
                             CircularProgressIndicator(),
                             SizedBox(height: 16),
-                            Text('Connecting to server...'),
+                            Text(
+                              'Connecting to server...',
+                              style: TextStyle(
+                                fontFamily: FontFamily.globalFontFamily,
+                              ),
+                            ),
                           ],
                         ),
                       );

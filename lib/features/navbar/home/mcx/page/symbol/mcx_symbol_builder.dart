@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
 import 'package:suproxu/Assets/assets.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/constants/apis/api_urls.dart';
@@ -230,7 +231,10 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                   Text(
                     buySaleEntity.message.toString(),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontFamily: FontFamily.globalFontFamily,
+                    ),
                   ),
                 ],
               ),
@@ -242,7 +246,11 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                     },
                     child: const Text(
                       "OK",
-                      style: TextStyle(color: Colors.black, fontSize: 20),
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontFamily: FontFamily.globalFontFamily,
+                        fontSize: 20,
+                      ),
                     ),
                   ),
                 ),
@@ -337,7 +345,10 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                   Text(
                     buySaleEntity.message.toString(),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontFamily: FontFamily.globalFontFamily,
+                    ),
                   ),
                 ],
               ),
@@ -347,10 +358,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: const Text(
-                      "OK",
-                      style: TextStyle(color: Colors.black, fontSize: 20),
-                    ),
+                    child: const Text("OK"),
                   ),
                 ),
               ],
@@ -496,12 +504,12 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
               margin: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
-                color: marketColor,
+                color: lvoryWhiteColor,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text("LOT'S").textStyleH11(),
+                  const Text("LOT'S").textStyleH11Color(),
                   ValueListenableBuilder<int>(
                     valueListenable: lotsNotifierMrk,
                     builder: (context, lots, child) {
@@ -517,11 +525,11 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Colors.grey.withOpacity(0.2),
+                                  color: aquaGreyColor.withOpacity(0.6),
                                 ),
                                 child: Icon(
                                   Icons.remove,
-                                  color: kWhiteColor,
+                                  color: zBlack,
                                   size: screenWidth * 0.05,
                                 ),
                               ),
@@ -532,18 +540,20 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                             margin: const EdgeInsets.symmetric(horizontal: 16),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
-                              color: Colors.grey.withOpacity(0.2),
+                              color: aquaGreyColor.withOpacity(0.6),
                             ),
                             child: TextField(
                               controller: lotsMktController,
                               textAlign: TextAlign.center,
+
                               keyboardType: TextInputType.number,
                               inputFormatters: [
                                 FilteringTextInputFormatter.digitsOnly,
                               ],
                               style: TextStyle(
                                 fontSize: screenWidth * 0.045,
-                                color: kWhiteColor,
+                                color: zBlack,
+                                fontFamily: FontFamily.globalFontFamily,
                                 fontWeight: FontWeight.bold,
                               ),
                               decoration: const InputDecoration(
@@ -574,11 +584,11 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Colors.grey.withOpacity(0.2),
+                                  color: aquaGreyColor.withOpacity(0.6),
                                 ),
                                 child: Icon(
                                   Icons.add,
-                                  color: kWhiteColor,
+                                  color: zBlack,
                                   size: screenWidth * 0.05,
                                 ),
                               ),
@@ -822,7 +832,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
               // width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20.r),
-                color: Colors.white,
+                color: lvoryWhiteColor,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.1),
@@ -860,7 +870,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                   color: zBlack,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
-                                  fontFamily: 'JetBrainsMono',
+                                  fontFamily: FontFamily.globalFontFamily,
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -892,7 +902,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                   color: zBlack,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
-                                  fontFamily: 'JetBrainsMono',
+                                  fontFamily: FontFamily.globalFontFamily,
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -925,7 +935,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                       ),
 
                       _buildInfoBox(
-                        "Atp",
+                        "ATP",
                         response.averageTradePrice.toString(),
                         screenWidth,
                       ),
@@ -990,6 +1000,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 12,
+                                  fontFamily: FontFamily.globalFontFamily,
                                   fontWeight: FontWeight.w500,
                                   letterSpacing: 0.5,
                                 ),
@@ -1001,7 +1012,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                   color: Colors.black,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
-                                  fontFamily: 'JetBrainsMono',
+                                  fontFamily: FontFamily.globalFontFamily,
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -1093,21 +1104,12 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
               margin: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
-                color: orderColor,
+                color: lvoryWhiteColor,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "LOT'S",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontFamily: 'JetBrainsMono',
-                      fontSize: 18,
-                      color: kWhiteColor,
-                      letterSpacing: 2,
-                    ),
-                  ),
+                  Text("LOT'S").textStyleH11Color(),
                   ValueListenableBuilder<int>(
                     valueListenable: lotsNotifierLmt,
                     builder: (context, lots, child) {
@@ -1129,11 +1131,11 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Colors.grey.withOpacity(0.2),
+                                  color: aquaGreyColor.withOpacity(0.6),
                                 ),
                                 child: Icon(
                                   Icons.remove,
-                                  color: kWhiteColor,
+                                  color: zBlack,
                                   size: screenWidth * 0.05,
                                 ),
                               ),
@@ -1144,7 +1146,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                             margin: const EdgeInsets.symmetric(horizontal: 16),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
-                              color: Colors.grey.withOpacity(0.2),
+                              color: aquaGreyColor.withOpacity(0.6),
                             ),
                             child: TextField(
                               controller: lotsOdrController,
@@ -1155,7 +1157,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                               ],
                               style: TextStyle(
                                 fontSize: screenWidth * 0.045,
-                                color: kWhiteColor,
+                                color: zBlack,
                                 fontWeight: FontWeight.bold,
                               ),
                               decoration: const InputDecoration(
@@ -1191,11 +1193,11 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Colors.grey.withOpacity(0.2),
+                                  color: aquaGreyColor.withOpacity(0.6),
                                 ),
                                 child: Icon(
                                   Icons.add,
-                                  color: kWhiteColor,
+                                  color: zBlack,
                                   size: screenWidth * 0.05,
                                 ),
                               ),
@@ -1213,7 +1215,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
               margin: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
-                color: kWhiteColor,
+                color: aquaGreyColor.withOpacity(0.6),
               ),
               child: TextFormField(
                 controller: usernameController,
@@ -1236,7 +1238,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                       'Price :  ',
                       style: TextStyle(
                         fontWeight: FontWeight.w900,
-                        fontFamily: 'JetBrainsMono',
+                        fontFamily: FontFamily.globalFontFamily,
                         fontSize: 20,
                         color: zBlack,
                         letterSpacing: 2,
@@ -1271,7 +1273,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                     ),
                   ),
                   filled: true,
-                  fillColor: kWhiteColor,
+                  fillColor: lvoryWhiteColor,
                 ),
                 keyboardType: TextInputType.number,
                 cursorColor: const Color(0xFF00C853),
@@ -1302,7 +1304,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: screenWidth * 0.045,
-                                fontFamily: 'JetBrainsMono',
+                                fontFamily: FontFamily.globalFontFamily,
                                 fontWeight: FontWeight.w800,
                               ),
                               textAlign: TextAlign.center,
@@ -1382,7 +1384,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: screenWidth * 0.045,
-                                    fontFamily: 'JetBrainsMono',
+                                    fontFamily: FontFamily.globalFontFamily,
                                     fontWeight: FontWeight.w800,
                                   ),
                                   textAlign: TextAlign.center,
@@ -1411,7 +1413,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: screenWidth * 0.045,
-                                fontFamily: 'JetBrainsMono',
+                                fontFamily: FontFamily.globalFontFamily,
                                 fontWeight: FontWeight.w800,
                               ),
                               textAlign: TextAlign.center,
@@ -1494,7 +1496,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: screenWidth * 0.045,
-                                    fontFamily: 'JetBrainsMono',
+                                    fontFamily: FontFamily.globalFontFamily,
                                     fontWeight: FontWeight.w800,
                                   ),
                                   textAlign: TextAlign.center,
@@ -1513,7 +1515,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
               // width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20.r),
-                color: Colors.white,
+                color: lvoryWhiteColor,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.1),
@@ -1549,7 +1551,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                   color: zBlack,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
-                                  fontFamily: 'JetBrainsMono',
+                                  fontFamily: FontFamily.globalFontFamily,
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -1560,7 +1562,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                   color: zBlack,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
-                                  fontFamily: 'JetBrainsMono',
+                                  fontFamily: FontFamily.globalFontFamily,
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -1589,6 +1591,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                 style: const TextStyle(
                                   color: zBlack,
                                   fontSize: 12,
+                                  fontFamily: FontFamily.globalFontFamily,
                                   fontWeight: FontWeight.w500,
                                   letterSpacing: 0.5,
                                 ),
@@ -1600,7 +1603,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                   color: zBlack,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
-                                  fontFamily: 'JetBrainsMono',
+                                  fontFamily: FontFamily.globalFontFamily,
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -1637,7 +1640,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                         ),
 
                         _buildInfoBox(
-                          "Atp",
+                          "ATP",
                           response.averageTradePrice,
                           screenWidth,
                         ),
@@ -1703,6 +1706,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 12,
+                                  fontFamily: FontFamily.globalFontFamily,
                                   fontWeight: FontWeight.w500,
                                   letterSpacing: 0.5,
                                 ),
@@ -1714,7 +1718,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                   color: Colors.black,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
-                                  fontFamily: 'JetBrainsMono',
+                                  fontFamily: FontFamily.globalFontFamily,
                                   letterSpacing: 0.5,
                                 ),
                               ),

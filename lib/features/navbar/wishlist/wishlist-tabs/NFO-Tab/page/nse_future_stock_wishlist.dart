@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:suproxu/Assets/assets.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/color_blinker.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
@@ -186,33 +187,6 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                     );
                   }
 
-                  // Show empty state
-                  // if (data.nfoWatchlist!.isEmpty) {
-                  //   return Center(
-                  //     child: Column(
-                  //       mainAxisAlignment: MainAxisAlignment.center,
-                  //       children: [
-                  //         Icon(Icons.bookmark_border,
-                  //             size: 48, color: Colors.grey[400]),
-                  //         const SizedBox(height: 16),
-                  //         const Text(
-                  //           'Your watchlist is empty',
-                  //           style: TextStyle(
-                  //             fontSize: 16,
-                  //             color: Colors.grey,
-                  //           ),
-                  //         ),
-                  //         const SizedBox(height: 8),
-                  //         ElevatedButton(
-                  //           onPressed: () {
-                  //             context.pushNamed(NseFuture.routeName);
-                  //           },
-                  //           child: const Text('Add Symbols'),
-                  //         ),
-                  //       ],
-                  //     ),
-                  //   );
-                  // }
 
                   return ReorderableListView.builder(
                     itemCount: data.nfoWatchlist!.length,
@@ -483,6 +457,8 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                                                 ? Colors.red
                                                 : const Color(0xFF00C853),
                                             fontSize: 11,
+                                            fontFamily:
+                                                FontFamily.globalFontFamily,
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
@@ -496,6 +472,8 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                                                 ? Colors.red
                                                 : const Color(0xFF00C853),
                                             fontSize: 11,
+                                            fontFamily:
+                                                FontFamily.globalFontFamily,
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),

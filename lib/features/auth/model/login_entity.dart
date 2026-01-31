@@ -8,8 +8,9 @@ class LoginModel {
   LoginModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     message = json['message'];
-    record =
-        json['record'] != null ? new Record.fromJson(json['record']) : null;
+    record = json['record'] != null
+        ? new Record.fromJson(json['record'])
+        : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -41,25 +42,28 @@ class Record {
   String? agentHolderName;
   String? agentAccountNumber;
   String? agentIFSCCode;
+  int? updatePassword;
 
-  Record(
-      {this.userFirstName,
-      this.userLastName,
-      this.userEmailID,
-      this.userMobileNumber,
-      this.userAlternateNumber,
-      this.userBalance,
-      this.userImage,
-      this.userActiveTrade,
-      this.userCloseTrade,
-      this.userPendingTrade,
-      this.userProfitLoss,
-      this.userKey,
-      this.agentQR,
-      this.agentBankName,
-      this.agentHolderName,
-      this.agentAccountNumber,
-      this.agentIFSCCode});
+  Record({
+    this.userFirstName,
+    this.userLastName,
+    this.userEmailID,
+    this.userMobileNumber,
+    this.userAlternateNumber,
+    this.userBalance,
+    this.userImage,
+    this.userActiveTrade,
+    this.userCloseTrade,
+    this.userPendingTrade,
+    this.userProfitLoss,
+    this.userKey,
+    this.agentQR,
+    this.agentBankName,
+    this.agentHolderName,
+    this.agentAccountNumber,
+    this.agentIFSCCode,
+    this.updatePassword,
+  });
 
   Record.fromJson(Map<String, dynamic> json) {
     userFirstName = json['userFirstName'];
@@ -79,6 +83,7 @@ class Record {
     agentHolderName = json['agentHolderName'];
     agentAccountNumber = json['agentAccountNumber'];
     agentIFSCCode = json['agentIFSCCode'];
+    updatePassword = json['updatePassword'];
   }
 
   Map<String, dynamic> toJson() {
@@ -100,6 +105,7 @@ class Record {
     data['agentHolderName'] = this.agentHolderName;
     data['agentAccountNumber'] = this.agentAccountNumber;
     data['agentIFSCCode'] = this.agentIFSCCode;
+    data['updatePassword'] = this.updatePassword;
     return data;
   }
 }

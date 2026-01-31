@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:intl/intl.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/constants/widget/toast.dart';
 import 'package:suproxu/core/service/Auth/auto_logout.dart';
@@ -153,12 +154,16 @@ class _DepositScreenState extends State<DepositScreen> {
                         TextField(
                           controller: _amountController,
                           maxLines: 1,
-                          style: const TextStyle(color: zBlack),
+                          style: const TextStyle(
+                            color: zBlack,
+                            fontFamily: FontFamily.globalFontFamily,
+                          ),
                           decoration: InputDecoration(
                             labelText: 'Amount',
                             labelStyle: const TextStyle(
                               color: zBlack,
                               fontWeight: FontWeight.w500,
+                              fontFamily: FontFamily.globalFontFamily,
                             ),
                             filled: true,
                             fillColor: Colors.grey.withOpacity(.5),
@@ -189,12 +194,16 @@ class _DepositScreenState extends State<DepositScreen> {
                         TextField(
                           controller: _utrNumberController,
                           maxLines: 1,
-                          style: const TextStyle(color: zBlack),
+                          style: const TextStyle(
+                            color: zBlack,
+                            fontFamily: FontFamily.globalFontFamily,
+                          ),
                           decoration: InputDecoration(
                             labelText: 'UTR Number',
                             labelStyle: const TextStyle(
                               color: zBlack,
                               fontWeight: FontWeight.w500,
+                              fontFamily: FontFamily.globalFontFamily,
                             ),
                             filled: true,
                             fillColor: Colors.grey.withOpacity(.5),
@@ -225,12 +234,16 @@ class _DepositScreenState extends State<DepositScreen> {
                           controller: _transactionDateController,
                           readOnly: true,
                           onTap: () => _selectDate(context),
-                          style: const TextStyle(color: zBlack),
+                          style: const TextStyle(
+                            color: zBlack,
+                            fontFamily: FontFamily.globalFontFamily,
+                          ),
                           decoration: InputDecoration(
                             labelText: 'Transaction Date',
                             labelStyle: const TextStyle(
                               color: zBlack,
                               fontWeight: FontWeight.w500,
+                              fontFamily: FontFamily.globalFontFamily,
                             ),
                             filled: true,
                             fillColor: Colors.grey.withOpacity(.5),
@@ -264,7 +277,11 @@ class _DepositScreenState extends State<DepositScreen> {
                           ),
                           label: const Text(
                             'Add Attachment',
-                            style: TextStyle(fontSize: 16, color: Colors.white),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontFamily: FontFamily.globalFontFamily,
+                              color: Colors.white,
+                            ),
                           ),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
@@ -360,6 +377,7 @@ class _DepositScreenState extends State<DepositScreen> {
                                             style: TextStyle(
                                               fontSize: 16,
                                               color: kWhiteColor,
+                                               fontFamily: FontFamily.globalFontFamily,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -430,6 +448,7 @@ class _DepositScreenState extends State<DepositScreen> {
                                   style: TextStyle(
                                     fontSize: 18,
                                     color: kWhiteColor,
+                                     fontFamily: FontFamily.globalFontFamily,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -501,6 +520,7 @@ class _DepositScreenState extends State<DepositScreen> {
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: kGoldenBraunColor,
+                         fontFamily: FontFamily.globalFontFamily,
                         shadows: const [
                           Shadow(
                             color: Colors.black12,
@@ -539,8 +559,7 @@ class _DepositScreenState extends State<DepositScreen> {
                                 color: Colors.green,
                                 fontWeight: FontWeight.w600,
                                 height: 1.5, // Line spacing
-                                fontFamily:
-                                    'JetBrainsMono', // Optional: Use a clean font
+                                fontFamily: FontFamily.globalFontFamily, // Optional: Use a clean font
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -551,8 +570,7 @@ class _DepositScreenState extends State<DepositScreen> {
                                 color: Colors.black87,
                                 fontWeight: FontWeight.w600,
                                 height: 1.5, // Line spacing
-                                fontFamily:
-                                    'JetBrainsMono', // Optional: Use a clean font
+                                fontFamily: FontFamily.globalFontFamily,// Optional: Use a clean font
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -568,8 +586,7 @@ class _DepositScreenState extends State<DepositScreen> {
                                 color: Colors.green,
                                 fontWeight: FontWeight.w600,
                                 height: 1.5, // Line spacing
-                                fontFamily:
-                                    'JetBrainsMono', // Optional: Use a clean font
+                               fontFamily: FontFamily.globalFontFamily,// Optional: Use a clean font
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -580,8 +597,7 @@ class _DepositScreenState extends State<DepositScreen> {
                                 color: Colors.black87,
                                 fontWeight: FontWeight.w600,
                                 height: 1.5, // Line spacing
-                                fontFamily:
-                                    'JetBrainsMono', // Optional: Use a clean font
+                                fontFamily: FontFamily.globalFontFamily,// Optional: Use a clean font
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -597,8 +613,7 @@ class _DepositScreenState extends State<DepositScreen> {
                                 color: Colors.green,
                                 fontWeight: FontWeight.w600,
                                 height: 1.5, // Line spacing
-                                fontFamily:
-                                    'JetBrainsMono', // Optional: Use a clean font
+                                fontFamily: FontFamily.globalFontFamily,// Optional: Use a clean font
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -609,8 +624,7 @@ class _DepositScreenState extends State<DepositScreen> {
                                 color: Colors.black87,
                                 fontWeight: FontWeight.w600,
                                 height: 1.5, // Line spacing
-                                fontFamily:
-                                    'JetBrainsMono', // Optional: Use a clean font
+                                fontFamily: FontFamily.globalFontFamily, // Optional: Use a clean font
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -626,8 +640,7 @@ class _DepositScreenState extends State<DepositScreen> {
                                 color: Colors.green,
                                 fontWeight: FontWeight.w600,
                                 height: 1.5, // Line spacing
-                                fontFamily:
-                                    'JetBrainsMono', // Optional: Use a clean font
+                                fontFamily: FontFamily.globalFontFamily, // Optional: Use a clean font
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -638,8 +651,7 @@ class _DepositScreenState extends State<DepositScreen> {
                                 color: Colors.black87,
                                 fontWeight: FontWeight.w600,
                                 height: 1.5, // Line spacing
-                                fontFamily:
-                                    'JetBrainsMono', // Optional: Use a clean font
+                                 fontFamily: FontFamily.globalFontFamily, // Optional: Use a clean font
                               ),
                               textAlign: TextAlign.center,
                             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:suproxu/Assets/assets.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
@@ -26,7 +27,7 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: zBlack,
+      // backgroundColor: zBlack,
       appBar: AppBar(
         backgroundColor: Colors.black,
         leading: IconButton(
@@ -57,33 +58,33 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
           }
           return Builder(
             builder: (context) {
-              if (errorMessage != null) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Error: $errorMessage',
-                        style: const TextStyle(color: Colors.red),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            errorMessage = null;
-                          });
-                          try {
-                            webSocket.disconnect();
-                          } catch (_) {}
-                          webSocket.connect();
-                        },
-                        child: const Text('Retry Connection'),
-                      ),
-                    ],
-                  ),
-                );
-              }
+              // if (errorMessage != null) {
+              //   return Center(
+              //     child: Column(
+              //       mainAxisAlignment: MainAxisAlignment.center,
+              //       children: [
+              //         Text(
+              //           'Error: $errorMessage',
+              //           style: const TextStyle(color: Colors.red),
+              //           textAlign: TextAlign.center,
+              //         ),
+              //         const SizedBox(height: 16),
+              //         ElevatedButton(
+              //           onPressed: () {
+              //             setState(() {
+              //               errorMessage = null;
+              //             });
+              //             try {
+              //               webSocket.disconnect();
+              //             } catch (_) {}
+              //             webSocket.connect();
+              //           },
+              //           child: const Text('Retry Connection'),
+              //         ),
+              //       ],
+              //     ),
+              //   );
+              // }
 
               // Show loading indicator while waiting for first data
               if (symbolData.status != 1 && errorMessage == null) {
@@ -106,7 +107,15 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
                       ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
-                        color: kWhiteColor,
+                        color: lvoryWhiteColor,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            spreadRadius: .5,
+                            blurRadius: 5,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(8),
@@ -130,24 +139,11 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
                                   vertical: screenHeight * 0.018,
                                 ),
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: selectedTab == 0
-                                        ? [marketColor, marketColor]
-                                        : [orderColor, orderColor],
-                                  ),
+                                  color: selectedTab == 0
+                                      ? aquaGreyColor.withOpacity(.6)
+                                      : aquaGreyColor.withOpacity(.6),
+
                                   borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(
-                                        0xFF00C853,
-                                      ).withOpacity(0.3),
-                                      spreadRadius: 1,
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
                                 ),
                               ),
                             ),
@@ -177,8 +173,8 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
                                             child: Icon(
                                               Icons.show_chart,
                                               color: selectedTab == 0
-                                                  ? Colors.white
-                                                  : Colors.black,
+                                                  ? Colors.black
+                                                  : aquaGreyColor,
                                               size: 20,
                                             ),
                                           ),
@@ -189,13 +185,19 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
                                             ),
                                             style: TextStyle(
                                               color: selectedTab == 0
-                                                  ? Colors.white
-                                                  : Colors.black,
+                                                  ? Colors.black
+                                                  : aquaGreyColor,
                                               fontWeight: FontWeight.w900,
                                               fontSize: 18.5,
                                               letterSpacing: 2,
                                             ),
-                                            child: const Text("MARKET"),
+                                            child: const Text(
+                                              "MARKET",
+                                              style: TextStyle(
+                                                fontFamily:
+                                                    FontFamily.globalFontFamily,
+                                              ),
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -225,8 +227,8 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
                                             child: Icon(
                                               Icons.receipt_long,
                                               color: selectedTab == 1
-                                                  ? Colors.white
-                                                  : zBlack,
+                                                  ? Colors.black
+                                                  : aquaGreyColor,
                                               size: 20,
                                             ),
                                           ),
@@ -237,13 +239,19 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
                                             ),
                                             style: TextStyle(
                                               color: selectedTab == 1
-                                                  ? Colors.white
-                                                  : Colors.black,
+                                                  ? Colors.black
+                                                  : aquaGreyColor,
                                               fontWeight: FontWeight.w900,
                                               fontSize: 18.5,
                                               letterSpacing: 2,
                                             ),
-                                            child: const Text("ORDER"),
+                                            child: const Text(
+                                              "ORDER",
+                                              style: TextStyle(
+                                                fontFamily:
+                                                    FontFamily.globalFontFamily,
+                                              ),
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -278,6 +286,7 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
                               style: const TextStyle(
                                 color: zBlack,
                                 fontSize: 15,
+                                fontFamily: FontFamily.globalFontFamily,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),

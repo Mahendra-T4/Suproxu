@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/service/Auth/auto_logout.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
@@ -66,6 +67,7 @@ class _TradeTabsScreenState extends State<TradeTabsScreen> {
                             labelStyle: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 16.sp,
+                              fontFamily: FontFamily.globalFontFamily,
                             ),
                             unselectedLabelStyle: const TextStyle(
                               fontWeight: FontWeight.w500,
@@ -162,6 +164,7 @@ class _TradeTabsScreenState extends State<TradeTabsScreen> {
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 12.sp,
+                    fontFamily: FontFamily.globalFontFamily,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -259,6 +262,7 @@ class OrderCard extends StatelessWidget {
                                 fontSize: 18.sp,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,
+                                fontFamily: FontFamily.globalFontFamily,
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -267,6 +271,7 @@ class OrderCard extends StatelessWidget {
                               expiryDate,
                               style: TextStyle(
                                 fontSize: 12.sp,
+                                fontFamily: FontFamily.globalFontFamily,
                                 color: Colors.grey[400],
                               ),
                             ),
@@ -341,6 +346,7 @@ class OrderCard extends StatelessWidget {
             style: TextStyle(
               color: isCompleted ? Colors.green : Colors.red,
               fontSize: 12.sp,
+              fontFamily: FontFamily.globalFontFamily,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -354,7 +360,11 @@ class OrderCard extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(color: Colors.grey[400], fontSize: 12.sp),
+          style: TextStyle(
+            color: Colors.grey[400],
+            fontFamily: FontFamily.globalFontFamily,
+            fontSize: 12.sp,
+          ),
         ),
         SizedBox(height: 4.h),
         Text(
@@ -362,6 +372,7 @@ class OrderCard extends StatelessWidget {
           style: TextStyle(
             color: valueColor,
             fontSize: 14.sp,
+            fontFamily: FontFamily.globalFontFamily,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -420,7 +431,11 @@ class OrderCard extends StatelessWidget {
           children: [
             Text(
               label,
-              style: TextStyle(color: Colors.grey[400], fontSize: 12.sp),
+              style: TextStyle(
+                color: Colors.grey[400],
+                fontFamily: FontFamily.globalFontFamily,
+                fontSize: 12.sp,
+              ),
             ),
             Text(
               time,
@@ -428,6 +443,7 @@ class OrderCard extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w500,
+                fontFamily: FontFamily.globalFontFamily,
               ),
             ),
           ],
@@ -474,7 +490,11 @@ class ScrollableButtonRow extends StatelessWidget {
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 15, color: Colors.black),
+        style: const TextStyle(
+          fontSize: 15,
+          fontFamily: FontFamily.globalFontFamily,
+          color: Colors.black,
+        ),
       ),
     );
   }
@@ -525,6 +545,7 @@ Widget _buildPortfolioItem(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                   color: Colors.white,
+                  fontFamily: FontFamily.globalFontFamily,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -537,6 +558,7 @@ Widget _buildPortfolioItem(
                         : Colors.redAccent,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
+                    fontFamily: FontFamily.globalFontFamily,
                   ),
                 ),
             ],
@@ -549,7 +571,11 @@ Widget _buildPortfolioItem(
             children: [
               Text(
                 'Qty: $qty',
-                style: TextStyle(color: Colors.grey[300], fontSize: 14),
+                style: TextStyle(
+                  color: Colors.grey[300],
+                  fontFamily: FontFamily.globalFontFamily,
+                  fontSize: 14,
+                ),
               ),
               if (avgSell != null && avgBuy != null)
                 Column(
@@ -557,11 +583,19 @@ Widget _buildPortfolioItem(
                   children: [
                     Text(
                       'Avg Sell: $avgSell',
-                      style: TextStyle(color: Colors.grey[300], fontSize: 14),
+                      style: TextStyle(
+                        color: Colors.grey[300],
+                        fontFamily: FontFamily.globalFontFamily,
+                        fontSize: 14,
+                      ),
                     ),
                     Text(
                       'Avg Buy: $avgBuy',
-                      style: TextStyle(color: Colors.grey[300], fontSize: 14),
+                      style: TextStyle(
+                        color: Colors.grey[300],
+                        fontFamily: FontFamily.globalFontFamily,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),

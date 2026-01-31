@@ -1,18 +1,14 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
-import 'package:suproxu/Assets/assets.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
-import 'package:suproxu/core/responsive/responsive.dart';
 import 'package:suproxu/core/service/Auth/auto_logout.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
 import 'package:suproxu/core/service/page/not_connected.dart';
 import 'package:suproxu/core/widgets/app_bar.dart';
 import 'package:suproxu/features/navbar/Portfolio/close_portfolio_tab.dart';
 import 'package:suproxu/features/navbar/Portfolio/active_portfolio.dart';
-
-import 'package:suproxu/features/navbar/profile/notification/notificationScreen.dart';
 
 class Portfolioclose extends StatefulWidget {
   final bool showCloseTab;
@@ -85,6 +81,7 @@ class _PortfoliocloseState extends State<Portfolioclose>
                       labelStyle: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 16.sp,
+                        fontFamily: FontFamily.globalFontFamily,
                       ),
                       unselectedLabelStyle: const TextStyle(
                         fontWeight: FontWeight.w500,
@@ -92,6 +89,7 @@ class _PortfoliocloseState extends State<Portfolioclose>
                       indicatorSize: TabBarIndicatorSize.tab,
                       labelColor: kGoldenBraunColor,
                       unselectedLabelColor: kGoldenBraunColor,
+
                       tabs: const [
                         Tab(text: 'Active'),
                         Tab(text: 'Closed'),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
 import 'package:suproxu/core/service/Auth/auto_logout.dart';
@@ -147,14 +148,23 @@ class _PaymentScreenState extends State<PaymentScreen>
                                       child: Text(
                                         snapshot.transRequestListEntity.message
                                             .toString(),
-                                        style: TextStyle(color: zBlack),
+                                        style: TextStyle(
+                                          color: zBlack,
+                                          fontFamily:
+                                              FontFamily.globalFontFamily,
+                                        ),
                                       ),
                                     );
                             case const (TransactionListFailedErrorState):
                               return const SizedBox.shrink();
                             default:
                               return const Center(
-                                child: Text('State Not found'),
+                                child: Text(
+                                  'State Not found',
+                                  style: TextStyle(
+                                    fontFamily: FontFamily.globalFontFamily,
+                                  ),
+                                ),
                               );
                           }
                         },
@@ -239,7 +249,7 @@ class TransactionItem extends StatelessWidget {
                   fontSize: 14,
                   color: zBlack,
                   fontWeight: FontWeight.w500,
-                  fontFamily: 'JetBrainsMono',
+                  fontFamily: FontFamily.globalFontFamily,
                 ),
               ),
               const SizedBox(height: 4),
@@ -249,7 +259,7 @@ class TransactionItem extends StatelessWidget {
                   fontSize: 16,
                   color: zBlack,
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'JetBrainsMono',
+                  fontFamily: FontFamily.globalFontFamily,
                 ),
               ),
               const SizedBox(height: 16),
@@ -259,7 +269,7 @@ class TransactionItem extends StatelessWidget {
                   fontSize: 14,
                   color: zBlack,
                   fontWeight: FontWeight.w500,
-                  fontFamily: 'JetBrainsMono',
+                  fontFamily: FontFamily.globalFontFamily,
                 ),
               ),
               const SizedBox(height: 4),
@@ -267,7 +277,7 @@ class TransactionItem extends StatelessWidget {
                 StringExtension(status).capitalize(),
                 style: TextStyle(
                   fontSize: 16,
-                  fontFamily: 'JetBrainsMono',
+                  fontFamily: FontFamily.globalFontFamily,
                   color: status == "pending"
                       ? Colors.orangeAccent
                       : Colors.greenAccent,
@@ -286,7 +296,7 @@ class TransactionItem extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   color: zBlack,
-                  fontFamily: 'JetBrainsMono',
+                  fontFamily: FontFamily.globalFontFamily,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -297,7 +307,7 @@ class TransactionItem extends StatelessWidget {
                   fontSize: 16,
                   color: zBlack,
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'JetBrainsMono',
+                  fontFamily: FontFamily.globalFontFamily,
                 ),
               ),
               const SizedBox(height: 16),
@@ -307,7 +317,7 @@ class TransactionItem extends StatelessWidget {
                   fontSize: 14,
                   color: zBlack,
                   fontWeight: FontWeight.w500,
-                  fontFamily: 'JetBrainsMono',
+                  fontFamily: FontFamily.globalFontFamily,
                 ),
               ),
               const SizedBox(height: 4),
@@ -317,7 +327,7 @@ class TransactionItem extends StatelessWidget {
                   fontSize: 16,
                   color: Colors.greenAccent,
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'JetBrainsMono',
+                  fontFamily: FontFamily.globalFontFamily,
                 ),
               ),
             ],

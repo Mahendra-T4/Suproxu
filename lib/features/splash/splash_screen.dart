@@ -1,11 +1,9 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:suproxu/Assets/assets.dart';
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/constants/apis/api_urls.dart';

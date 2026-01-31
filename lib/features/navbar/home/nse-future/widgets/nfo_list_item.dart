@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:suproxu/Assets/assets.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/color_blinker.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
@@ -131,11 +132,21 @@ class _NFOListItemState extends State<NFOListItem> {
   Widget _buildWishlistButton() {
     return InkWell(
       onTap: () async {
-        final success = await WishlistRepository.addToWishlist(
-          category: 'NFO',
-          symbolKey: widget.itemData.symbolKey.toString(),
-          context: context,
-        );
+        bool success = false;
+        if (widget.itemData.watchlist == 1) {
+          // Remove from wishlist
+          success = await WishlistRepository.removeWatchListSymbols(
+            category: 'NFO',
+            symbolKey: widget.itemData.symbolKey.toString(),
+          );
+        } else {
+          // Add to wishlist
+          success = await WishlistRepository.addToWishlist(
+            category: 'NFO',
+            symbolKey: widget.itemData.symbolKey.toString(),
+            context: context,
+          );
+        }
 
         if (success && mounted) {
           widget.onWishlistChanged();
@@ -204,6 +215,7 @@ class _NFOListItemState extends State<NFOListItem> {
     final textStyle = TextStyle(
       color: color ?? zBlack,
       fontSize: 11.5,
+      fontFamily: FontFamily.globalFontFamily,
       fontWeight: FontWeight.bold,
     );
 
@@ -223,6 +235,7 @@ class _NFOListItemState extends State<NFOListItem> {
     final textStyle = TextStyle(
       color: color ?? zBlack,
       fontSize: 11.5,
+      fontFamily: FontFamily.globalFontFamily,
       fontWeight: FontWeight.bold,
     );
 

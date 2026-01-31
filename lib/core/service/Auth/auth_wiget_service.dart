@@ -5,7 +5,6 @@ import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/logout/logout.dart';
 import 'package:suproxu/core/service/Auth/user_validation.dart';
 
-
 class AuthCheckWidget extends StatefulWidget {
   final Widget child;
   const AuthCheckWidget({required this.child, super.key});
@@ -21,6 +20,8 @@ class AuthCheckWidgetState extends State<AuthCheckWidget> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Provide a context to AuthService so it can perform logout if needed
+      AuthService().setContext(context);
       _startPeriodicCheck();
     });
   }
@@ -38,7 +39,7 @@ class AuthCheckWidgetState extends State<AuthCheckWidget> {
     });
 
     // Then check periodically (every 30 seconds)
-    _timer = Timer.periodic(const Duration(milliseconds: 800), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
@@ -50,9 +51,10 @@ class AuthCheckWidgetState extends State<AuthCheckWidget> {
   Future<void> _checkAuth() async {
     try {
       if (!mounted) return;
-
+      debugPrint('AuthCheck: running _checkAuth()');
       final pref = await SharedPreferences.getInstance();
       final authToken = pref.getBool(loginToken) ?? false;
+      debugPrint('AuthCheck: loginToken=$authToken');
 
       // Skip validation on startup if not logged in
       if (!authToken) return;
@@ -62,6 +64,7 @@ class AuthCheckWidgetState extends State<AuthCheckWidget> {
 
       if (mounted) {
         final isValid = await AuthService().checkUserValidation();
+        debugPrint('AuthCheck: validation result=$isValid');
         if (!isValid && mounted) {
           await logoutUser(context);
         }

@@ -173,7 +173,10 @@ final GoRouter routerConfig = GoRouter(
     GoRoute(
       path: TradeWarning.routeName,
       name: TradeWarning.routeName,
-      builder: (context, state) => TradeWarning(),
+      builder: (context, state) {
+        final updatePassword = state.extra as String;
+        return TradeWarning(updatePassword: updatePassword);
+      },
     ),
     GoRoute(
       path: LoginPages.routeName,

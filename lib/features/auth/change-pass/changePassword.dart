@@ -10,7 +10,6 @@ import 'package:suproxu/core/service/connectivity/internet_connection_service.da
 import 'package:suproxu/core/service/page/not_connected.dart';
 import 'package:suproxu/features/auth/bloc/auth_bloc.dart';
 
-
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
   static const String routeName = '/change-password';
@@ -79,252 +78,231 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<bool>(
-        stream: InternetConnectionService().connectionStream,
-        builder: (context, snapshot) {
-          if (snapshot.data == false) {
-            return const NoInternetConnection(); // Show your offline UI
-          }
-          return Container(
-            color: greyColor,
-            child: Scaffold(
-              backgroundColor: zBlack,
-              appBar: AppBar(
-                backgroundColor: appBarColor,
-                elevation: 0,
-                flexibleSpace: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.black.withOpacity(0.9),
-                        Colors.transparent
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                  ),
-                ),
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white70),
-                  onPressed: () => context.pop(),
-                ),
-                title: const Text(
-                  'Change Password',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontFamily: 'JetBrainsMono',
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
+      stream: InternetConnectionService().connectionStream,
+      builder: (context, snapshot) {
+        if (snapshot.data == false) {
+          return const NoInternetConnection(); // Show your offline UI
+        }
+        return Container(
+          color: greyColor,
+          child: Scaffold(
+            // backgroundColor: zBlack,
+            appBar: AppBar(
+              backgroundColor: appBarColor,
+              elevation: 0,
+              flexibleSpace: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.black.withOpacity(0.9), Colors.transparent],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                   ),
                 ),
               ),
-              body: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Form(
-                    key: _formKey,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 20),
-                          // Form Container
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                color: kWhiteColor),
-                            child: Column(
-                              children: [
-                                _buildTextField(
-                                  controller: curController,
-                                  focusNode: _currentPassFocusNode,
-                                  isShowPass: isShowCurrentPass,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter your password';
-                                    } else if (value.length < 6) {
-                                      return 'Password too short (min 6 chars)';
-                                    }
-                                    return null;
-                                  },
-                                  label: 'Current Password',
-                                ),
-                                const SizedBox(height: 24),
-                                _buildTextField(
-                                  controller: newpassController,
-                                  focusNode: _newPassFocusNode,
-                                  isShowPass: isShowNewPass,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter your password';
-                                    } else if (value.length < 6) {
-                                      return 'Password too short (min 6 chars)';
-                                    }
-                                    return null;
-                                  },
-                                  label: 'New Password',
-                                ),
-                                const SizedBox(height: 24),
-                                _buildTextField(
-                                  controller: cpassController,
-                                  focusNode: _confirmPassFocusNode,
-                                  isShowPass: isShowConfirmPass,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter your password';
-                                    } else if (value.length < 6) {
-                                      return 'Password too short (min 6 chars)';
-                                    }
-                                    return null;
-                                  },
-                                  label: 'Confirm Password',
-                                ),
-                              ],
-                            ),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white70),
+                onPressed: () => GoRouter.of(context).pop(),
+              ),
+              title: const Text(
+                'Change Password',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'JetBrainsMono',
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ),
+            body: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Form(
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+                        // Form Container
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: lvoryWhiteColor,
                           ),
-                          const SizedBox(height: 40),
-                          // Submit Button
-                          BlocConsumer(
-                            bloc: _authBloc,
-                            listener: (context, state) {
-                              if (state is AuthChangeUserPasswordSuccessState) {
-                                if (state.changePasswordEntity.status == 1) {
-                                  // Show success message first
-                                  successToastMsg(
+                          child: Column(
+                            children: [
+                              _buildTextField(
+                                controller: curController,
+                                focusNode: _currentPassFocusNode,
+                                isShowPass: isShowCurrentPass,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your password';
+                                  }
+                                  // else if (value.length > 1) {
+                                  //   return 'Password too short (min 6 chars)';
+                                  // }
+                                  return null;
+                                },
+                                label: 'Current Password',
+                              ),
+                              const SizedBox(height: 24),
+                              _buildTextField(
+                                controller: newpassController,
+                                focusNode: _newPassFocusNode,
+                                isShowPass: isShowNewPass,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your password';
+                                  }
+                                  // else if (value.length > 1) {
+                                  //   return 'Password too short (min 6 chars)';
+                                  // }
+                                  return null;
+                                },
+                                label: 'New Password',
+                              ),
+                              const SizedBox(height: 24),
+                              _buildTextField(
+                                controller: cpassController,
+                                focusNode: _confirmPassFocusNode,
+                                isShowPass: isShowConfirmPass,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your password';
+                                  }
+                                  // else if (value.length > 1) {
+                                  //   return 'Password too short (min 6 chars)';
+                                  // }
+                                  return null;
+                                },
+                                label: 'Confirm Password',
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        // Submit Button
+                        BlocConsumer(
+                          bloc: _authBloc,
+                          listener: (context, state) {
+                            if (state is AuthChangeUserPasswordSuccessState) {
+                              if (state.changePasswordEntity.status == 1) {
+                                // Show success message first
+                                successToastMsg(
+                                  context,
+                                  state.changePasswordEntity.message.toString(),
+                                );
+                                // Then navigate after a short delay
+                                logoutUser(context);
+                              } else {
+                                if (mounted) {
+                                  // Check if widget is still mounted
+                                  CustomToast.showWarning(
                                     context,
                                     state.changePasswordEntity.message
                                         .toString(),
                                   );
-                                  // Then navigate after a short delay
-                                  logoutUser(context);
-                                } else {
-                                  if (mounted) {
-                                    // Check if widget is still mounted
-                                    CustomToast.showSuccess(
-                                      context,
-                                      state.changePasswordEntity.message
-                                          .toString(),
-                                    );
-                                  }
-                                }
-                              } else if (state
-                                  is AuthChangePasswordFailedErrorState) {
-                                if (mounted) {
-                                  CustomToast.showError(
-                                      context, state.error.toString());
-                                  // Check if widget is still mounted
                                 }
                               }
-                            },
-                            builder: (_, state) {
-                              if (state is AuthLoadingState) {
-                                return isLoading
-                                    ? const Center(
-                                        child: CircularProgressIndicator
-                                            .adaptive(),
-                                      )
-                                    : Center(
-                                        child: Container(
-                                          margin: const EdgeInsets.symmetric(
-                                              horizontal: 20),
-                                          width:
-                                              MediaQuery.sizeOf(context).width,
-                                          child: ElevatedButton(
-                                            onPressed: () {},
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: greyColor,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 40,
-                                                      vertical: 16),
-                                              // elevation: 4,
-                                              // shadowColor: Colors.black.withOpacity(0.3),
-                                            ),
-                                            child: const Text(
-                                              'PROCESSING...',
-                                            ).textStyleH1W(),
-                                          ),
-                                        ),
-                                      );
+                            } else if (state
+                                is AuthChangePasswordFailedErrorState) {
+                              if (mounted) {
+                                CustomToast.showError(
+                                  context,
+                                  state.error.toString(),
+                                );
+                                // Check if widget is still mounted
                               }
-                              return Center(
-                                child: Container(
-                                  margin: const EdgeInsets.symmetric(
-                                      horizontal: 20),
-                                  width: MediaQuery.sizeOf(context).width,
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      final formState = _formKey.currentState;
-                                      if (formState != null) {
-                                        final isValid = formState.validate();
-
-                                        if (curController.text.isEmpty) {
-                                          FocusScope.of(context).requestFocus(
-                                              _currentPassFocusNode);
-                                        } else if (newpassController
-                                            .text.isEmpty) {
-                                          FocusScope.of(context)
-                                              .requestFocus(_newPassFocusNode);
-                                        } else if (cpassController
-                                            .text.isEmpty) {
-                                          FocusScope.of(context).requestFocus(
-                                              _confirmPassFocusNode);
-                                        }
-
-                                        if (isValid) {
-                                          _authBloc.add(
-                                              AuthChangeUserPasswordEvent(
-                                                  currentPass:
-                                                      curController.text,
-                                                  newPassword:
-                                                      newpassController.text,
-                                                  confirmPassword:
-                                                      cpassController.text));
-                                          isLoading = false;
-                                        }
-                                      }
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: kGoldenBraunColor,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 40, vertical: 16),
-                                      // elevation: 4,
-                                      // shadowColor: Colors.black.withOpacity(0.3),
-                                    ),
-                                    child: const Text(
-                                      'CHANGE PASSWORD',
-                                    ).textStyleH1W(),
-                                  ),
+                            }
+                          },
+                          builder: (_, state) {
+                            if (state is AuthLoadingState) {
+                              return Center(child: CircularProgressIndicator());
+                            }
+                            return Center(
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 20,
                                 ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
+                                width: MediaQuery.sizeOf(context).width,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    final formState = _formKey.currentState;
+                                    if (formState != null) {
+                                      final isValid = formState.validate();
+
+                                      if (curController.text.isEmpty) {
+                                        FocusScope.of(
+                                          context,
+                                        ).requestFocus(_currentPassFocusNode);
+                                      } else if (newpassController
+                                          .text
+                                          .isEmpty) {
+                                        FocusScope.of(
+                                          context,
+                                        ).requestFocus(_newPassFocusNode);
+                                      } else if (cpassController.text.isEmpty) {
+                                        FocusScope.of(
+                                          context,
+                                        ).requestFocus(_confirmPassFocusNode);
+                                      }
+
+                                      if (isValid) {
+                                        _authBloc.add(
+                                          AuthChangeUserPasswordEvent(
+                                            currentPass: curController.text,
+                                            newPassword: newpassController.text,
+                                            confirmPassword:
+                                                cpassController.text,
+                                          ),
+                                        );
+                                        // isLoading = false;
+                                      }
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: kGoldenBraunColor,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 40,
+                                      vertical: 16,
+                                    ),
+                                    // elevation: 4,
+                                    // shadowColor: Colors.black.withOpacity(0.3),
+                                  ),
+                                  child: const Text(
+                                    'CHANGE PASSWORD',
+                                  ).textStyleH1W(),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
-  Widget _buildTextField(
-      {required TextEditingController controller,
-      required String label,
-      required FocusNode focusNode,
-      required bool isShowPass,
-      required FormFieldValidator validator}) {
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required FocusNode focusNode,
+    required bool isShowPass,
+    required FormFieldValidator validator,
+  }) {
     return TextFormField(
       controller: controller,
       focusNode: focusNode,
@@ -368,8 +346,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.blueAccent, width: 2.0),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
       validator: validator,
       obscureText: isShowPass,
@@ -397,10 +377,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
       return;
     }
 
-    if (!RegExp(r'(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#\$&*~])')
-        .hasMatch(newPassword)) {
+    if (!RegExp(
+      r'(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#\$&*~])',
+    ).hasMatch(newPassword)) {
       _showErrorDialog(
-          'New password must include uppercase, lowercase, number, and special character.');
+        'New password must include uppercase, lowercase, number, and special character.',
+      );
       return;
     }
 
@@ -418,21 +400,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.grey[900],
-        title: const Text(
-          'Error',
-          style: TextStyle(color: Colors.redAccent),
-        ),
-        content: Text(
-          message,
-          style: const TextStyle(color: Colors.white),
-        ),
+        title: const Text('Error', style: TextStyle(color: Colors.redAccent)),
+        content: Text(message, style: const TextStyle(color: Colors.white)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'OK',
-              style: TextStyle(color: Colors.blueAccent),
-            ),
+            child: const Text('OK', style: TextStyle(color: Colors.blueAccent)),
           ),
         ],
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -449,17 +422,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
           'Success',
           style: TextStyle(color: Colors.greenAccent),
         ),
-        content: Text(
-          message,
-          style: const TextStyle(color: Colors.white),
-        ),
+        content: Text(message, style: const TextStyle(color: Colors.white)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'OK',
-              style: TextStyle(color: Colors.blueAccent),
-            ),
+            child: const Text('OK', style: TextStyle(color: Colors.blueAccent)),
           ),
         ],
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

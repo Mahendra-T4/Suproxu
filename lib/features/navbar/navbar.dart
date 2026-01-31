@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/features/auth/change-pass/changePassword.dart';
 import 'package:suproxu/features/navbar/Portfolio/portfolio.dart';
 import 'package:suproxu/features/navbar/TradeScreen/tradeTab.dart';
 import 'package:suproxu/features/navbar/profile/accountScreen.dart';
 import 'package:suproxu/features/navbar/profile/complaint/lodgeComplaint.dart';
 import 'package:suproxu/features/navbar/profile/ledger/ledgerScreen.dart';
+import 'package:suproxu/features/navbar/profile/notification/notificationScreen.dart';
 import 'package:suproxu/features/navbar/profile/payment/paymentScreen.dart';
 import 'package:suproxu/features/navbar/profile/profile/profile_info.dart';
 import 'package:suproxu/features/navbar/profile/wallet/user_wallet.dart';
 import 'package:suproxu/features/navbar/profile/withdraw/withdraw.dart';
-import 'package:suproxu/features/navbar/wishlist/wishlist-tabs/MCX-Tab/page/mcx_stock_wishlist_fixed.dart';
 import 'package:suproxu/features/navbar/wishlist/wishlist.dart';
 
 class GlobalNavBar extends StatefulWidget {
@@ -19,10 +20,7 @@ class GlobalNavBar extends StatefulWidget {
 
   static const String routeName = '/global-nav-bar';
 
-  const GlobalNavBar({
-    super.key,
-    this.child,
-  });
+  const GlobalNavBar({super.key, this.child});
 
   @override
   _GlobalNavBarState createState() => _GlobalNavBarState();
@@ -51,6 +49,10 @@ class _GlobalNavBarState extends State<GlobalNavBar>
     LodgeComplaintScreen.routeName, // Assuming you have a complaint screen
   ];
 
+  // Routes where navbar should be neutral (no selection)
+  static const String notificationRouteName = NotificationScreen.routeName;
+  final List<String> _neutralRoutes = [notificationRouteName];
+
   @override
   void initState() {
     super.initState();
@@ -60,10 +62,7 @@ class _GlobalNavBarState extends State<GlobalNavBar>
       duration: const Duration(milliseconds: 400),
       vsync: this,
     );
-    _animation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    );
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
   }
 
   @override
@@ -86,11 +85,17 @@ class _GlobalNavBarState extends State<GlobalNavBar>
     // Get the bottom padding of the device
     final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
     final currentPath = GoRouterState.of(context).uri.path;
-    _selectedIndex = _listOfWidget.indexOf(currentPath);
-    if (_selectedIndex == -1) {
-      _selectedIndex = _allRoutes.contains(currentPath)
-          ? 3
-          : 0; // Default to first tab if on a non-nav route
+
+    // Check if current path is a neutral route (like notification page)
+    if (_neutralRoutes.contains(currentPath)) {
+      _selectedIndex = -1; // Neutral - no item selected
+    } else {
+      _selectedIndex = _listOfWidget.indexOf(currentPath);
+      if (_selectedIndex == -1) {
+        _selectedIndex = _allRoutes.contains(currentPath)
+            ? 3
+            : 0; // Default to first tab if on a non-nav route
+      }
     }
 
     return Scaffold(
@@ -177,6 +182,7 @@ class _NavBarItem extends StatelessWidget {
               label,
               style: TextStyle(
                 color: color,
+                fontFamily: FontFamily.globalFontFamily,
                 fontWeight: selected ? FontWeight.bold : FontWeight.w500,
                 fontSize: 12,
               ),

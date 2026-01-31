@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:go_router/go_router.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/apis/api_urls.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -18,10 +19,9 @@ import 'package:suproxu/features/navbar/TradeScreen/model/close_all_order_model.
 import 'package:suproxu/features/navbar/TradeScreen/model/param.dart';
 import 'package:suproxu/features/navbar/TradeScreen/repositories/trade_repo.dart';
 import 'package:suproxu/features/navbar/home/bloc/home_bloc.dart';
-import 'package:suproxu/features/navbar/home/mcx/McxSymbolsScreen.dart';
+
 import 'package:suproxu/features/navbar/home/mcx/page/symbol/mcx_symbol.dart';
-import 'package:suproxu/features/navbar/home/nse-future/fnoSymbolScreen.dart'
-    hide SymbolScreenParams;
+
 import 'package:suproxu/features/navbar/home/nse-future/page/nse_future_symbol_page.dart';
 import 'package:suproxu/features/navbar/home/repository/trade_repository.dart';
 
@@ -316,6 +316,7 @@ class _TradeactiveState extends State<Tradeactive>
                                                                 1
                                                             ? Colors.green
                                                             : Colors.red,
+                                                             fontFamily: FontFamily.globalFontFamily,
                                                       ),
                                                     ),
                                                   ),
@@ -383,6 +384,10 @@ class _TradeactiveState extends State<Tradeactive>
                                                           ),
                                                           child: const Text(
                                                             'Processing...',
+                                                            style: TextStyle(
+                                                              fontFamily: FontFamily
+                                                                  .globalFontFamily,
+                                                            ),
                                                           ),
                                                         )
                                                       : InkWell(
@@ -650,6 +655,8 @@ class _TradeactiveState extends State<Tradeactive>
                                           color: zBlack,
                                           fontSize: 15,
                                           fontWeight: FontWeight.w500,
+                                          fontFamily:
+                                              FontFamily.globalFontFamily,
                                         ),
                                       ),
                                     ),
@@ -657,7 +664,14 @@ class _TradeactiveState extends State<Tradeactive>
                                 ],
                               );
                       } else if (state is ActiveTradeFailedErrorState) {
-                        return Center(child: Text(state.error));
+                        return Center(
+                          child: Text(
+                            state.error,
+                            style: TextStyle(
+                              fontFamily: FontFamily.globalFontFamily,
+                            ),
+                          ),
+                        );
                       } else {
                         return const SizedBox.shrink();
                       }
@@ -732,6 +746,7 @@ class _TradeactiveState extends State<Tradeactive>
               'CLOSE TRADE',
               style: TextStyle(
                 fontSize: 14.sp,
+                fontFamily: FontFamily.globalFontFamily,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
@@ -809,6 +824,7 @@ class _TradeactiveState extends State<Tradeactive>
               'CLOSE TRADE',
               style: TextStyle(
                 fontSize: 14.sp,
+                fontFamily: FontFamily.globalFontFamily,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),

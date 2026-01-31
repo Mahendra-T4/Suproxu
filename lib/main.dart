@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/router/router_confic.dart';
 import 'package:suproxu/core/service/Auth/auth_wiget_service.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
         child: MaterialApp.router(
           title: 'Suproxu',
           theme: ThemeData(
+            scaffoldBackgroundColor: kWhiteColor,
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,
           ),

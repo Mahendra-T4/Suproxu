@@ -1,14 +1,11 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:suproxu/Assets/assets.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/color_blinker.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
-
 import 'package:suproxu/features/navbar/home/mcx/page/home/mcx_home.dart';
 import 'package:suproxu/features/navbar/home/mcx/page/symbol/mcx_symbol.dart';
 import 'package:suproxu/features/navbar/wishlist/model/mcx_symbol_param.dart';
@@ -27,7 +24,7 @@ class McxStockWishlist extends StatefulWidget {
 }
 
 class _McxStockWishlistState extends State<McxStockWishlist> {
-  late final MCXWishlistWebSocketService socket;
+  late MCXWishlistWebSocketService socket;
   MCXWishlistEntity mcxWishlist = MCXWishlistEntity();
   String? errorMessage;
   bool _disposed = false;
@@ -67,14 +64,21 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
         _safeSetState(() {
           errorMessage = error;
         });
+        if (!_disposed && mounted) {
+          Future.delayed(const Duration(milliseconds: 100), () {
+            socket.connect();
+          });
+        }
       },
       onConnected: () {
         debugPrint('MCX Wishlist WebSocket Connected');
+        // Refresh data on connection
+        _refreshWishlistData();
       },
       onDisconnected: () {
         debugPrint('MCX Wishlist WebSocket Disconnected');
         if (!_disposed && mounted) {
-          Future.delayed(const Duration(seconds: 1), () {
+          Future.delayed(const Duration(milliseconds: 100), () {
             socket.connect();
           });
         }
@@ -83,6 +87,21 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
 
     if (!_disposed && mounted) {
       socket.connect();
+    }
+  }
+
+  Future<void> _refreshWishlistData() async {
+    debugPrint('Refreshing MCX Wishlist Data');
+
+    if (!_disposed && mounted) {
+      if (socket.isConnected) {
+        // Socket is connected, request fresh data
+        // The socket will automatically emit when it receives data
+        debugPrint('Socket connected - data will auto-refresh');
+      } else {
+        // If not connected, reconnect first
+        await socket.connect();
+      }
     }
   }
 
@@ -105,15 +124,22 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
 
   @override
   void deactivate() {
-    socket.disconnect();
-
+    // DO NOT disconnect socket here - it marks socket as _isDisposed = true
+    // which prevents reconnection in activate()
+    debugPrint('Page deactivated - socket stays alive');
     super.deactivate();
   }
 
   @override
   void activate() {
-    if (!_disposed) {
-      socket.connect();
+    debugPrint('Page activated - reconnecting socket');
+    if (!_disposed && mounted) {
+      // Socket is still alive from deactivate, just reconnect if needed
+      if (!socket.isConnected) {
+        socket.connect();
+      } else {
+        _refreshWishlistData();
+      }
     }
     super.activate();
   }
@@ -149,43 +175,6 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
       ),
     );
   }
-
-  // Widget _buildEmptyState() {
-  //   return Center(
-  //     child: Column(
-  //       mainAxisAlignment: MainAxisAlignment.center,
-  //       children: [
-  //         Icon(Icons.bookmark_border, size: 48, color: Colors.grey[400]),
-  //         const SizedBox(height: 16),
-  //         const Text(
-  //           'Your watchlist is empty',
-  //           style: TextStyle(
-  //             fontSize: 16,
-  //             color: Colors.grey,
-  //           ),
-  //         ),
-  //         const SizedBox(height: 8),
-  //         ElevatedButton(
-  //           onPressed: () => context.pushNamed(McxHome.routeName),
-  //           child: const Text('Add Symbols'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  // Widget _buildLoadingState() {
-  //   return const Center(
-  //     child: Column(
-  //       mainAxisAlignment: MainAxisAlignment.center,
-  //       children: [
-  //         CircularProgressIndicator(),
-  //         SizedBox(height: 16),
-  //         Text('Loading watchlist...'),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   Widget _buildListView() {
     return ReorderableListView.builder(
@@ -353,6 +342,7 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
               "Chg: ",
               style: TextStyle(
                 color: changeColor,
+                fontFamily: FontFamily.globalFontFamily,
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
               ),
@@ -436,28 +426,29 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: Builder(
-              builder: (context) {
-                if (_localWatchlist.isEmpty) {
-                  return Center(
-                    child: Text(
-                      errorMessage ?? 'Data not available',
-                      style: const TextStyle(color: zBlack),
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                }
+            child: RefreshIndicator(
+              onRefresh: _refreshWishlistData,
+              child: Builder(
+                builder: (context) {
+                  if (_localWatchlist.isEmpty) {
+                    return SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: SizedBox(
+                        height: MediaQuery.of(context).size.height - 150,
+                        child: Center(
+                          child: Text(
+                            errorMessage ?? 'Data not available',
+                            style: const TextStyle(color: zBlack),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
 
-                // if (mcxWishlist.mcxWatchlist == null) {
-                //   return _buildLoadingState();
-                // }
-
-                // if (mcxWishlist.mcxWatchlist!.isEmpty) {
-                //   return _buildEmptyState();
-                // }
-
-                return _buildListView();
-              },
+                  return _buildListView();
+                },
+              ),
             ),
           ),
         ],

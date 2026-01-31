@@ -10,11 +10,13 @@ import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/constants/widget/toast.dart';
 import 'package:suproxu/core/logout/logout.dart';
 import 'package:suproxu/features/Rules/provider/rules_provider.dart';
+import 'package:suproxu/features/auth/change-pass/changePassword.dart';
 
 import 'package:suproxu/features/navbar/wishlist/wishlist.dart';
 
 class TradeWarning extends ConsumerStatefulWidget {
-  const TradeWarning({super.key});
+  const TradeWarning({super.key, required this.updatePassword});
+  final String updatePassword;
   static const String routeName = '/trade-warning';
 
   @override
@@ -28,9 +30,13 @@ class _TradeWarningState extends ConsumerState<TradeWarning> {
   warningAccepted() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (_agreedToRisks && _agreedToTerms) {
-      await prefs
-          .setBool(warnedKey, true)
-          .then((_) => context.goNamed(WishList.routeName));
+      await prefs.setBool(warnedKey, true).then((_) {
+        if (widget.updatePassword == '1') {
+          context.goNamed(WishList.routeName);
+        } else {
+          context.pushNamed(ChangePasswordScreen.routeName);
+        }
+      });
       log('User has accepted the trade warning.', name: 'TradeWarning Accept');
     } else {
       waringToast(context, 'Please accept all terms & conditions to continue.');

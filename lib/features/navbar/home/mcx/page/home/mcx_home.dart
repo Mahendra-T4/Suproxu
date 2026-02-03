@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/color_blinker.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/features/navbar/home/mcx/page/symbol/mcx_symbol.dart';
 import 'package:suproxu/features/navbar/home/model/mcx_entity.dart';
 import 'package:suproxu/features/navbar/home/nse-future/widgets/searchbar_widget.dart';
@@ -25,6 +28,8 @@ class McxHome extends StatefulWidget {
 class _McxHomeState extends State<McxHome> {
   final TextEditingController _searchController = TextEditingController();
   late final SocketService socket;
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
   MCXDataEntity mcx = MCXDataEntity();
 
   Future<bool> rWatchList(symbolKey) async {
@@ -85,6 +90,26 @@ class _McxHomeState extends State<McxHome> {
   @override
   void initState() {
     super.initState();
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        developer.log('McxHome auth validation error: $e');
+      }
+    });
+    _logoutSub = AuthService().onLogout.listen((_) async {
+      // Immediate cleanup on global logout
+      _validationTimer?.cancel();
+      try {
+        socket.disconnect();
+      } catch (e) {
+        developer.log('Error disconnecting socket on logout: $e');
+      }
+      debugPrint('McxHome: handled global logout cleanup');
+    });
     socket = SocketService(
       onDataReceived: (data) {
         setState(() {
@@ -123,6 +148,8 @@ class _McxHomeState extends State<McxHome> {
 
   @override
   void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     try {
       socket.disconnect();
     } catch (e) {

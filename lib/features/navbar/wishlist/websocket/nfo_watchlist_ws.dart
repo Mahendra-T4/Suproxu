@@ -55,20 +55,20 @@ class NFOWatchListWebSocketService {
       );
 
       // Build socket with proper options
-      final socket = IO.io(
-        wsUrl,
-        IO.OptionBuilder()
-            .setPath(WebSocketConfig.socketPath)
-            .setTransports(['websocket'])
-            .disableAutoConnect()
-            // .setReconnection(true)
-            .setReconnectionAttempts(5)
-            .setReconnectionDelay(1000)
-            .setReconnectionDelayMax(5000)
-            .setTimeout(10000)
-            .setAuth({'token': WebSocketConfig.authToken})
-            .build(),
-      );
+      final socket = IO.io(wsUrl, {
+        'path': WebSocketConfig.socketPath,
+        'transports': ['websocket'],
+        'autoConnect': true,
+        'reconnection': true,
+        'reconnectionDelay': 1000,
+        'reconnectionDelayMax': 5000,
+        'reconnectionAttempts': 5,
+        'timeout': 10000,
+        'auth': {'token': WebSocketConfig.authToken},
+        'extraHeaders': {
+          'Authorization': 'Bearer ${WebSocketConfig.authToken}',
+        },
+      });
 
       _socket = socket;
 

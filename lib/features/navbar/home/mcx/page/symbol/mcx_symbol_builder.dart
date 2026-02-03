@@ -19,6 +19,7 @@ import 'package:suproxu/core/constants/widget/toast.dart';
 import 'package:suproxu/core/extensions/color_ext.dart';
 import 'package:suproxu/core/extensions/neg-pos-tracker.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/features/navbar/home/mcx/page/symbol/mcx_symbol.dart';
 import 'package:suproxu/features/navbar/home/model/buy_sale_entity.dart';
 import 'package:suproxu/features/navbar/home/model/get_stock_record_entity.dart';
@@ -29,6 +30,8 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
   late MCXSymbolWebSocketService webSocket;
   GetStockRecordEntity symbolData = GetStockRecordEntity();
   String? errorMessage;
+  dynamic orderSellPrice;
+  dynamic orderBuyPrice;
 
   final ValueNotifier<int> lotsNotifierLmt = ValueNotifier<int>(1);
   final TextEditingController usernameController = TextEditingController(
@@ -47,6 +50,8 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
   bool isMarketOpen = true;
 
   late Timer timer;
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
 
   void initMCXSymbolWebSocket() {
     // First, ensure any previous socket is fully cleaned up
@@ -430,6 +435,23 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
   @override
   void initState() {
     super.initState();
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        log('MCX symbol auth validation error: $e');
+      }
+    });
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      try {
+        webSocket.disconnect();
+      } catch (_) {}
+      log('MCX symbol: handled global logout cleanup');
+    });
     initMCXSymbolWebSocket();
     _fetchInitialDataViaHttp(); // Fetch data immediately via HTTP while WebSocket connects
     initUser();
@@ -468,6 +490,8 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
   @override
   void dispose() {
     timer.cancel();
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     try {
       webSocket.disconnect();
     } catch (_) {}
@@ -1089,6 +1113,8 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
     double screenHeight,
     double screenWidth,
   ) {
+    orderBuyPrice = ohlc.buyPrice;
+    orderSellPrice = ohlc.salePrice;
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.symmetric(
@@ -1376,7 +1402,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                         double.tryParse(
                                           usernameController.text,
                                         ) ??
-                                        0.0;
+                                        orderSellPrice;
                                     // final int lots = lotsNotifierLmt.value;
                                     // final double total = price * lots;
                                     return '${price.toStringAsFixed(2)}';
@@ -1488,7 +1514,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                         double.tryParse(
                                           usernameController.text,
                                         ) ??
-                                        0.0;
+                                        orderBuyPrice;
                                     // final int lots = lotsNotifierLmt.value;
                                     // final double total = price * lots;
                                     return '${price.toStringAsFixed(2)}';

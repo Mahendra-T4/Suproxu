@@ -7,52 +7,49 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
+import 'package:suproxu/core/service/navigation/navigation_service.dart';
 import 'package:suproxu/features/auth/login/loginPage.dart';
 
-
-Future<void> logoutUser(BuildContext context) async {
+Future<void> logoutUser(BuildContext? context) async {
   // First clear the data regardless of navigation
   try {
     DatabaseService dbService = DatabaseService();
     SharedPreferences pref = await SharedPreferences.getInstance();
     await dbService.clearAllData();
     await pref.setBool(loginToken, false);
+    debugPrint('Logout: Data cleared successfully');
   } catch (e) {
     debugPrint('Error clearing data: $e');
   }
 
-  // Then handle navigation
-  if (!context.mounted) return;
-
+  // Then handle navigation using NavigatorKey for instant logout
   try {
-    // Try using GoRouter first
-    final router = GoRouter.of(context);
-    router.goNamed(LoginPages.routeName);
-  } catch (e) {
-    debugPrint('GoRouter navigation failed: $e');
+    final navigationService = NavigationService();
 
-    // Fallback to traditional navigation
-    try {
-      // Find the nearest navigator
-      final navigator = Navigator.maybeOf(context);
-      if (navigator != null) {
-        await navigator.pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginPages()),
-          (route) => false,
-        );
-      } else {
-        // If no navigator is found, try root navigator
-        if (!context.mounted) return;
-        final rootNavigator = Navigator.of(context, rootNavigator: true);
-        await rootNavigator.pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginPages()),
-          (route) => false,
-        );
+    // If context is available and valid, try GoRouter first (for named routes)
+    if (context != null && context.mounted) {
+      try {
+        final router = GoRouter.of(context);
+        debugPrint('Logout: Using GoRouter');
+        router.goNamed(LoginPages.routeName);
+        return;
+      } catch (e) {
+        debugPrint('GoRouter navigation failed: $e');
       }
-    } catch (navigatorError) {
-      debugPrint('Traditional navigation failed: $navigatorError');
-      // If all navigation attempts fail, at least the data is cleared
     }
+
+    // Fallback to NavigatorKey for instant logout (works even without context)
+    if (navigationService.isNavigatorReady) {
+      debugPrint('Logout: Using NavigatorKey for instant logout');
+      navigationService.navigator!.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginPages()),
+        (route) => false,
+      );
+    } else {
+      debugPrint('Warning: Navigator not ready, cannot perform instant logout');
+    }
+  } catch (e) {
+    debugPrint('Logout error: $e');
   }
 }
 
@@ -144,9 +141,7 @@ class _CustomDialogState extends State<CustomDialog>
                         ),
                       ),
                       SizedBox(height: 24.h),
-                      const Text(
-                        'Logout',
-                      ).textStyleHB(),
+                      const Text('Logout').textStyleHB(),
                       SizedBox(height: 16.h),
                       const Text(
                         'Are you sure you want to logout?',
@@ -209,9 +204,7 @@ class _CustomDialogState extends State<CustomDialog>
           decoration: BoxDecoration(
             gradient: isOutlined
                 ? null
-                : LinearGradient(
-                    colors: [Colors.black, Colors.blue.shade400],
-                  ),
+                : LinearGradient(colors: [Colors.black, Colors.blue.shade400]),
             borderRadius: BorderRadius.circular(12.r),
             border: isOutlined
                 ? Border.all(color: Colors.deepPurpleAccent, width: 2)

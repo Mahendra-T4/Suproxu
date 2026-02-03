@@ -1,9 +1,12 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/service/Auth/auto_logout.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
 import 'package:suproxu/core/service/page/not_connected.dart';
 import 'package:suproxu/core/widgets/app_bar.dart';
@@ -25,6 +28,8 @@ class _PortfoliocloseState extends State<Portfolioclose>
   double ledgerBalance = 19700.25;
   double investBalance = 10000;
   var ProfitLoOnInvest = 0.0;
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
   double calculateLossOnInvest(double ledgerBalance, double investBalance) {
     final loss = investBalance - 2000;
     ProfitLoOnInvest = investBalance - loss;
@@ -35,8 +40,20 @@ class _PortfoliocloseState extends State<Portfolioclose>
   void initState() {
     super.initState();
     if (!mounted) return;
-    // Ensure autoLogoutUser is imported from core/logout/logout.dart
-    autoLogoutUser(context, mounted);
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        debugPrint('Portfolio auth validation error: $e');
+      }
+    });
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      debugPrint('Portfolio: received logout event, cancelled local timer');
+    });
     tabController = TabController(
       length: 2,
       vsync: this,
@@ -46,6 +63,8 @@ class _PortfoliocloseState extends State<Portfolioclose>
 
   @override
   void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     tabController.dispose();
     super.dispose();
   }

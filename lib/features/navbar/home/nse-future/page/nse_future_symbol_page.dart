@@ -41,6 +41,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
   late final NFOSymbolWebSocket _socketService;
   GetStockRecordEntity _stockRecord = GetStockRecordEntity();
   String? errorMessage;
+  dynamic orderSellPrice;
+  dynamic orderBuyPrice;
 
   final ValueNotifier<int> lotsNotifierMrk = ValueNotifier<int>(1);
   final ValueNotifier<int> lotsNotifierLmt = ValueNotifier<int>(1);
@@ -58,6 +60,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
   int lots = 1; // Variable to track the lot count
   int selecteddTab = 0;
   late Timer _timer;
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
   bool isBuyClicked = false;
   bool isSellClicked = false;
   var ohlcNFO;
@@ -379,6 +383,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
 
   @override
   void initState() {
+    AuthService().validateAndLogout(context);
     // First, ensure any previous socket is fully cleaned up
 
     _socketService = NFOSymbolWebSocket(
@@ -432,8 +437,30 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
     _fetchInitialDataViaHttp(); // Fetch data immediately via HTTP while WebSocket connects
     _timer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       initUser();
-      AuthService().checkUserValidation();
       // _checkMarketStatus();
+    });
+    // Separate periodic validation (every 10s)
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        log('NFO symbol auth validation error: $e');
+      }
+    });
+    _logoutSub = AuthService().onLogout.listen((_) {
+      try {
+        _validationTimer?.cancel();
+      } catch (_) {}
+      try {
+        _timer.cancel();
+      } catch (_) {}
+      try {
+        _socketService.disconnect();
+      } catch (_) {}
+      log('NFO symbol: handled global logout cleanup');
     });
 
     lotsNotifierMrk.addListener(() {
@@ -450,13 +477,17 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
 
     initUser();
     // _checkMarketStatus();
-    AuthService().checkUserValidation();
+    AuthService().validateAndLogout(context);
     super.initState();
   }
 
   @override
   void dispose() {
     _timer.cancel();
+    try {
+      _validationTimer?.cancel();
+    } catch (_) {}
+    _logoutSub?.cancel();
     lotsNotifierMrk.dispose();
     lotsNotifierLmt.dispose();
     _lotsMktController.dispose();
@@ -539,6 +570,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
 
           final record = _stockRecord.response.first;
           final ohlc = record.ohlc;
+          orderBuyPrice = ohlc.buyPrice;
+          orderSellPrice = ohlc.salePrice;
 
           return Column(
             children: [
@@ -1590,7 +1623,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                               _usernameController
                                                                   .text,
                                                             ) ??
-                                                            0.0;
+                                                            orderSellPrice;
                                                         // final int lots =
                                                         //     lotsNotifierLmt
                                                         //         .value;
@@ -1720,7 +1753,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                               _usernameController
                                                                   .text,
                                                             ) ??
-                                                            0.0;
+                                                            orderBuyPrice;
                                                         // final int lots =
                                                         //     lotsNotifierLmt
                                                         //         .value;

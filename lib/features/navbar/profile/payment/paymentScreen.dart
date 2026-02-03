@@ -5,11 +5,13 @@ import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
 import 'package:suproxu/core/service/Auth/auto_logout.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
 import 'package:suproxu/core/service/page/not_connected.dart';
 import 'package:suproxu/core/widgets/app_bar.dart';
 import 'package:suproxu/features/navbar/profile/bloc/profile_bloc.dart';
 import 'package:suproxu/features/navbar/profile/diposit/depositeScreen.dart';
+import 'dart:async';
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
@@ -26,6 +28,8 @@ class _PaymentScreenState extends State<PaymentScreen>
   DateTime toDate = DateTime.now();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
 
   String? payStatus;
 
@@ -45,10 +49,29 @@ class _PaymentScreenState extends State<PaymentScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+
+    // Start periodic validation timer (every 10 seconds)
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        debugPrint('Payment auth validation error: $e');
+      }
+    });
+    // Subscribe to global logout events to cleanup immediately
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      debugPrint('Payment: handled global logout cleanup');
+    });
   }
 
   @override
   void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     _animationController.dispose();
     super.dispose();
   }

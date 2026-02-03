@@ -1,10 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:suproxu/core/constants/color.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
 import 'package:suproxu/core/service/page/not_connected.dart';
 import 'package:suproxu/core/widgets/app_bar.dart';
 import 'package:suproxu/features/navbar/wishlist/repositories/wishlist_repo.dart';
-import 'package:suproxu/features/navbar/wishlist/wishlist-tabs/MCX-Tab/page/mcx_stock_wishlist_fixed.dart';
+import 'package:suproxu/features/navbar/wishlist/wishlist-tabs/MCX-Tab/page/mcx_stock_wishlist_riverpod.dart';
 import 'package:suproxu/features/navbar/wishlist/wishlist-tabs/NFO-Tab/page/nse_future_stock_wishlist.dart';
 
 class WishList extends StatefulWidget {
@@ -19,14 +22,42 @@ class _WishListState extends State<WishList>
     with SingleTickerProviderStateMixin {
   // late WishlistBloc _wishlistBloc;
   late TabController _tabController;
-
-  // Timer? _timer;
-  // bool _disposed = false;
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _startValidationTimer();
+  }
+
+  void _startValidationTimer() {
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        debugPrint('WishList auth validation error: $e');
+      }
+    });
+    // Subscribe to global logout events -> cleanup local resources immediately
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      debugPrint(
+        'WishList: received global logout event, cancelled local timer',
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
+    _tabController.dispose();
+    super.dispose();
   }
 
   // Keys to force rebuild of child wishlist pages when cleared

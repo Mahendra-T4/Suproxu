@@ -19,6 +19,7 @@ import 'package:suproxu/core/constants/widget/toast.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
 import 'package:suproxu/core/logout/logout.dart';
 import 'package:suproxu/core/service/Auth/auto_logout.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/core/widgets/app_bar.dart';
 import 'package:suproxu/features/auth/change-pass/changePassword.dart';
 import 'package:suproxu/features/navbar/Portfolio/portfolio.dart';
@@ -45,6 +46,8 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
 
   String? uFName;
   String? uLName;
@@ -120,6 +123,24 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
     _profileBloc.add(LoadUserWalletDataEvent());
     timer = Timer.periodic(const Duration(seconds: 1), (timer) => userWallet());
     userWallet();
+
+    // Start periodic validation timer (every 10 seconds)
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        debugPrint('Account auth validation error: $e');
+      }
+    });
+    // Subscribe to global logout events to cleanup immediately
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      debugPrint('Account: handled global logout cleanup');
+    });
+
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -132,6 +153,8 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
 
   @override
   void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     _animationController.dispose();
     super.dispose();
   }
@@ -444,7 +467,7 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
             style: TextStyle(
               color: color,
               fontSize: screenWidth * 0.045,
-               fontFamily: FontFamily.globalFontFamily,
+              fontFamily: FontFamily.globalFontFamily,
               fontWeight: FontWeight.bold,
               // fontFamily: 'JetBrainsMono',
             ),
@@ -472,7 +495,7 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
             style: TextStyle(
               color: color,
               fontSize: screenWidth * 0.05,
-               fontFamily: FontFamily.globalFontFamily,
+              fontFamily: FontFamily.globalFontFamily,
               fontWeight: FontWeight.bold,
               // fontFamily: 'JetBrainsMono',
             ),

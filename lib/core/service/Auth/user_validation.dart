@@ -9,12 +9,20 @@ import 'package:http/http.dart' as http;
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/constants/apis/api_urls.dart';
+import 'package:suproxu/core/constants/widget/custom_toast.dart';
 import 'package:suproxu/core/logout/logout.dart';
 
 class AuthService {
   static final AuthService _instance = AuthService._internal();
   factory AuthService() => _instance;
   AuthService._internal();
+
+  // Broadcast stream to notify listeners that a logout is about to occur.
+  final StreamController<void> _logoutController =
+      StreamController<void>.broadcast();
+
+  /// Stream that emits an event when logout is initiated.
+  Stream<void> get onLogout => _logoutController.stream;
 
   final _apiUrl = Uri.parse(superTradeBaseApiEndPointUrl);
 
@@ -65,7 +73,7 @@ class AuthService {
         body: {
           "activity": "device-check",
           "deviceID": androidInfo.id.toString(),
-          "userKey": userKey.toString()
+          "userKey": userKey.toString(),
         },
       );
 
@@ -76,6 +84,7 @@ class AuthService {
         if (jsonData['status'] == 1) {
           // User is valid, update the token and validation state
           final pref = await SharedPreferences.getInstance();
+          // CustomToast.showWarning('User validation successful');
           await pref.setBool(loginToken, true);
           _isValidUser = true;
           log('User validation successful');
@@ -118,8 +127,23 @@ class AuthService {
 
   Future<void> _performLogout() async {
     _isValidUser = false;
+    log('User validation state set to invalid, initiating logout');
+
+    // Broadcast logout event first so pages can clean up sockets/timers.
+    try {
+      _logoutController.add(null);
+    } catch (e) {
+      log('Error broadcasting logout event: $e');
+    }
+
+    // Use NavigatorKey for instant logout (works even without context)
     if (_context != null && _context!.mounted) {
-      await logoutUser(_context!);
+      log('Context available, performing logout with context');
+      await logoutUser(_context);
+    } else {
+      log('No context available, performing instant logout via NavigatorKey');
+      // Perform instant logout without context using NavigatorKey
+      await logoutUser(null);
     }
   }
 
@@ -128,5 +152,13 @@ class AuthService {
   void invalidateUser() {
     _isValidUser = false;
     log('User validation state invalidated');
+  }
+
+  /// Convenience helper that sets context (if provided) and runs validation.
+  /// Returns `true` if user is valid, `false` otherwise. If invalid,
+  /// `_performLogout()` will be invoked which performs instant logout.
+  Future<bool> validateAndLogout([BuildContext? context]) async {
+    if (context != null) setContext(context);
+    return await checkUserValidation();
   }
 }

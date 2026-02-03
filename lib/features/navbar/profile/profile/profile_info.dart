@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/service/Auth/auto_logout.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/core/widgets/app_bar.dart';
 import 'package:suproxu/features/navbar/profile/bloc/profile_bloc.dart';
 
@@ -17,6 +20,8 @@ class ProfileInfo extends StatefulWidget {
 
 class _ProfileInfoState extends State<ProfileInfo> {
   late ProfileBloc _profileBloc;
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
 
   @override
   void initState() {
@@ -25,7 +30,30 @@ class _ProfileInfoState extends State<ProfileInfo> {
     // Ensure autoLogoutUser is imported from core/logout/logout.dart
     autoLogoutUser(context, mounted);
     _profileBloc.add(FetchUserProfileInfoEvent());
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        debugPrint('Notification auth validation error: $e');
+      }
+    });
+    // Subscribe to global logout events to cleanup immediately
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      debugPrint('Notification: handled global logout cleanup');
+    });
+
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
+    super.dispose();
   }
 
   @override

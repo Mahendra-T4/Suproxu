@@ -34,6 +34,12 @@ class MCXSymbolWebSocketService {
 
   /// Connect to WebSocket with full lifecycle management
   Future<void> connect() async {
+    // Allow reconnection if socket was disposed
+    if (_isDisposed && _socket == null) {
+      _isDisposed = false;
+      _isConnecting = false;
+    }
+
     if (_isDisposed) return;
     if (_socket?.connected == true || _isConnecting) {
       developer.log(
@@ -281,7 +287,10 @@ class MCXSymbolWebSocketService {
   void disconnect() {
     if (_isDisposed) return;
 
-    developer.log('Disconnecting MCX WebSocket...', name: 'MCX WebSocket');
+    developer.log(
+      'Disconnecting Symbol MCX WebSocket...',
+      name: 'MCX WebSocket',
+    );
     _isDisposed = true;
 
     _stopPeriodicEmit();
@@ -298,6 +307,17 @@ class MCXSymbolWebSocketService {
     await Future.delayed(const Duration(milliseconds: 500));
     if (!_isDisposed) {
       await connect();
+    }
+  }
+
+  /// Reset disposed state (for navigation scenarios)
+  void reset() {
+    if (_isDisposed && _socket == null) {
+      developer.log(
+        'MCX WebSocket: Resetting disposed state for reconnection',
+        name: 'MCX WebSocket',
+      );
+      _isDisposed = false;
     }
   }
 

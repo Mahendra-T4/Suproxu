@@ -34,6 +34,12 @@ class NFOSymbolWebSocket {
 
   /// Connect to WebSocket with full lifecycle management
   Future<void> connect() async {
+    // Allow reconnection if socket was disposed
+    if (_isDisposed && _socket == null) {
+      _isDisposed = false;
+      _isConnecting = false;
+    }
+
     if (_isDisposed) return;
     if (_socket?.connected == true || _isConnecting) {
       developer.log(
@@ -318,6 +324,17 @@ class NFOSymbolWebSocket {
     await Future.delayed(const Duration(milliseconds: 500));
     if (!_isDisposed) {
       await connect();
+    }
+  }
+
+  /// Reset disposed state (for navigation scenarios)
+  void reset() {
+    if (_isDisposed && _socket == null) {
+      developer.log(
+        'NFO WebSocket: Resetting disposed state for reconnection',
+        name: 'NFO WebSocket',
+      );
+      _isDisposed = false;
     }
   }
 

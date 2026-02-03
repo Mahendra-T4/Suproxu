@@ -56,35 +56,34 @@ class MCXWishlistWebSocketService {
         'wss://',
       );
 
-      final socket = IO.io(
-        wsUrl,
-        IO.OptionBuilder()
-            .setPath(WebSocketConfig.socketPath)
-            .setTransports(['websocket'])
-            // .disableAutoConnect()
-            // .setReconnection(true)
-            .setReconnectionAttempts(5)
-            .setReconnectionDelay(1000)
-            .setReconnectionDelayMax(5000)
-            .setTimeout(10000)
-            .setAuth({'token': WebSocketConfig.authToken})
-            .build(),
-      );
-
-      _socket = socket;
+      _socket = IO.io(wsUrl, {
+        'path': WebSocketConfig.socketPath,
+        'transports': ['websocket'],
+        'autoConnect': true,
+        'reconnection': true,
+        'reconnectionDelay': 1000,
+        'reconnectionDelayMax': 5000,
+        'reconnectionAttempts': 5,
+        'timeout': 10000,
+        'auth': {'token': WebSocketConfig.authToken},
+        'extraHeaders': {
+          'Authorization': 'Bearer ${WebSocketConfig.authToken}',
+        },
+      });
+      // _socket = socket;
 
       // === Connection Events ===
-      socket.onConnect((_) {
+      _socket?.onConnect((_) {
         if (_isDisposed) return;
 
         _isConnecting = false;
-        developer.log('MCX WebSocket Connected: ${socket.id}');
+        developer.log('MCX WebSocket Connected: ${_socket?.id}');
         onConnected?.call();
 
         _startPeriodicEmit(userKey, deviceID);
       });
 
-      socket.onDisconnect((_) {
+      _socket?.onDisconnect((_) {
         if (_isDisposed) return;
 
         developer.log('MCX WebSocket Disconnected');
@@ -92,27 +91,27 @@ class MCXWishlistWebSocketService {
         _stopPeriodicEmit();
       });
 
-      socket.onConnectError((err) => _handleError('Connect Error: $err'));
-      socket.onError((err) => _handleError('Socket Error: $err'));
+      _socket?.onConnectError((err) => _handleError('Connect Error: $err'));
+      _socket?.onError((err) => _handleError('Socket Error: $err'));
 
       // === Data Listener ===
-      socket.on('response', (data) {
+      _socket?.on('response', (data) {
         if (_isDisposed) return;
         _handleResponseData(data);
       });
 
-      socket.onReconnect((attempt) {
+      _socket?.onReconnect((attempt) {
         developer.log('MCX WebSocket Reconnected (attempt: $attempt)');
         _emitMCXRequest(userKey, deviceID);
         _startPeriodicEmit(userKey, deviceID);
       });
 
-      socket.onReconnectAttempt((attempt) {
+      _socket?.onReconnectAttempt((attempt) {
         developer.log('MCX WebSocket Reconnect Attempt: $attempt');
       });
 
       // Manual connect
-      socket.connect();
+      _socket?.connect();
     } catch (e, stack) {
       _handleError('Setup Failed: $e', stack);
     } finally {

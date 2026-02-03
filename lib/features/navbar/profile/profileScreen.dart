@@ -4,8 +4,10 @@ import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/constants/color.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/core/service/connectivity/connectivity_service.dart';
 import 'package:suproxu/core/service/page/not_connected.dart';
+import 'dart:async';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -18,6 +20,8 @@ class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
 
   @override
   void initState() {
@@ -31,6 +35,23 @@ class _ProfileScreenState extends State<ProfileScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+
+    // Start periodic validation timer (every 10 seconds)
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        debugPrint('Profile auth validation error: $e');
+      }
+    });
+    // Subscribe to global logout events to cleanup immediately
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      debugPrint('Profile: handled global logout cleanup');
+    });
   }
 
   String? uFName;
@@ -71,6 +92,8 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   @override
   void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     _animationController.dispose();
     super.dispose();
   }

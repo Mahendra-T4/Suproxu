@@ -39,14 +39,41 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
   List<NFOWatchList> _reorderedNfoCopy = [];
 
   late Timer _timer;
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
   @override
   void initState() {
     super.initState();
+
     Future.microtask(() {
       if (mounted) {
         _initializeWebSocket();
         _setupAuthCheck();
       }
+    });
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        log('NFO wishlist auth validation error: $e');
+      }
+    });
+    // Subscribe to global logout events to cleanup immediately
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      try {
+        _timer.cancel();
+      } catch (_) {}
+      _disposed = true;
+      try {
+        nfoSocket.disconnect();
+      } catch (e) {
+        log('NFO wishlist: error disconnecting socket on logout: $e');
+      }
+      log('NFO wishlist: handled global logout cleanup');
     });
   }
 
@@ -121,13 +148,17 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
   }
 
   void _setupAuthCheck() {
-    AuthService().checkUserValidation();
-    _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
+    AuthService().validateAndLogout(context);
+    _timer = Timer.periodic(const Duration(seconds: 30), (timer) async {
       if (_disposed || !mounted) {
         timer.cancel();
         return;
       }
-      AuthService().checkUserValidation();
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        log('NFO wishlist auth validation error: $e');
+      }
     });
   }
 
@@ -137,6 +168,8 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
 
   @override
   void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     _disposed = true;
     _timer.cancel(); // Cancel the timer
     nfoSocket.disconnect();
@@ -186,7 +219,6 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                       ),
                     );
                   }
-
 
                   return ReorderableListView.builder(
                     itemCount: data.nfoWatchlist!.length,

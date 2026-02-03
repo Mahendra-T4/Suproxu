@@ -94,7 +94,7 @@ abstract class WishlistRepository {
         url,
         body: {
           'activity': 'wishlist',
-          'userKey': uKey.tos,
+          'userKey': uKey,
           "deviceID": deviceID.toString(),
           'dataRelatedTo': 'MCX',
         },

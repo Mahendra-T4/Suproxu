@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,6 +7,7 @@ import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/color_blinker.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/features/navbar/home/mcx/page/home/mcx_home.dart';
 import 'package:suproxu/features/navbar/home/mcx/page/symbol/mcx_symbol.dart';
 import 'package:suproxu/features/navbar/wishlist/model/mcx_symbol_param.dart';
@@ -30,10 +32,32 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
   bool _disposed = false;
   final Set<String> removingItems = {};
   List<MCXWatchlist> _localWatchlist = [];
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
 
   @override
   void initState() {
     super.initState();
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        debugPrint('MCX wishlist auth validation error: $e');
+      }
+    });
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      _disposed = true;
+      try {
+        socket.disconnect();
+      } catch (e) {
+        debugPrint('MCX wishlist: error disconnecting socket on logout: $e');
+      }
+      debugPrint('MCX wishlist: handled global logout cleanup');
+    });
     Future.microtask(() {
       if (mounted) {
         _initializeWebSocket();
@@ -113,6 +137,8 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
 
   @override
   void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     _disposed = true;
     try {
       socket.disconnect();

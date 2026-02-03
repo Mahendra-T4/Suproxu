@@ -4,10 +4,12 @@ import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/constants/widget/toast.dart';
 import 'package:suproxu/core/service/Auth/auto_logout.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
 import 'package:suproxu/core/service/page/not_connected.dart';
 import 'package:suproxu/core/widgets/app_bar.dart';
 import 'package:suproxu/features/navbar/profile/bloc/profile_bloc.dart';
+import 'dart:async';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -24,6 +26,8 @@ class _NotificationScreenState extends State<NotificationScreen>
   late Animation<double> _fadeAnimation;
 
   late ProfileBloc _profileBloc;
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
 
   @override
   void initState() {
@@ -41,10 +45,29 @@ class _NotificationScreenState extends State<NotificationScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+
+    // Start periodic validation timer (every 10 seconds)
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        debugPrint('Notification auth validation error: $e');
+      }
+    });
+    // Subscribe to global logout events to cleanup immediately
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      debugPrint('Notification: handled global logout cleanup');
+    });
   }
 
   @override
   void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     _profileBloc.close();
     _animationController.dispose();
     super.dispose();

@@ -10,6 +10,7 @@ import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/constants/widget/toast.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
 import 'package:suproxu/core/service/page/not_connected.dart';
 import 'package:suproxu/core/widgets/app_bar.dart';
@@ -35,8 +36,12 @@ class _LedgerReportScreenState extends State<LedgerReportScreen>
   late Timer _timer;
   dynamic uBalance;
 
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
+
   initUser() async {
     DatabaseService databaseService = DatabaseService();
+
     final userBalance = await databaseService.getUserData(key: userBalanceKey);
     if (mounted) {
       setState(() {
@@ -53,6 +58,20 @@ class _LedgerReportScreenState extends State<LedgerReportScreen>
 
     _profileBloc = ProfileBloc();
     _profileBloc.add(FetchLedgerRecordsEvent());
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        debugPrint('Portfolio auth validation error: $e');
+      }
+    });
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      debugPrint('Portfolio: received logout event, cancelled local timer');
+    });
     _timer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       if (mounted) {
         initUser();
@@ -66,7 +85,8 @@ class _LedgerReportScreenState extends State<LedgerReportScreen>
 
   @override
   void dispose() {
-    // _timer.cancel();
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     super.dispose();
   }
 

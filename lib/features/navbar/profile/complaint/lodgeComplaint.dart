@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
 import 'package:suproxu/core/service/Auth/auto_logout.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
 import 'package:suproxu/core/service/page/not_connected.dart';
 import 'package:suproxu/core/widgets/app_bar.dart';
@@ -28,6 +31,9 @@ class _LodgeComplaintScreenState extends State<LodgeComplaintScreen>
 
   bool flag = true;
 
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
+
   @override
   void initState() {
     super.initState();
@@ -43,6 +49,22 @@ class _LodgeComplaintScreenState extends State<LodgeComplaintScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        debugPrint('Notification auth validation error: $e');
+      }
+    });
+    // Subscribe to global logout events to cleanup immediately
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      debugPrint('Notification: handled global logout cleanup');
+    });
   }
 
   @override
@@ -50,6 +72,8 @@ class _LodgeComplaintScreenState extends State<LodgeComplaintScreen>
     _subjectController.dispose();
     _complaintController.dispose();
     _animationController.dispose();
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     super.dispose();
   }
 

@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:suproxu/core/service/navigation/navigation_service.dart';
 import 'package:suproxu/core/widgets/trade_warning.dart';
 import 'package:suproxu/features/auth/change-pass/changePassword.dart';
 import 'package:suproxu/features/auth/forgot-pass/forgetPassword.dart';
@@ -23,11 +24,12 @@ import 'package:suproxu/features/navbar/profile/roles/superoxu_rules.dart';
 import 'package:suproxu/features/navbar/profile/wallet/user_wallet.dart';
 import 'package:suproxu/features/navbar/profile/withdraw/withdraw.dart';
 import 'package:suproxu/features/navbar/wishlist/model/mcx_symbol_param.dart';
-import 'package:suproxu/features/navbar/wishlist/wishlist-tabs/MCX-Tab/page/mcx_stock_wishlist_fixed.dart';
+import 'package:suproxu/features/navbar/wishlist/wishlist-tabs/MCX-Tab/page/mcx_stock_wishlist_riverpod.dart';
 import 'package:suproxu/features/navbar/wishlist/wishlist.dart';
 import 'package:suproxu/features/splash/splash_screen.dart';
 
 final GoRouter routerConfig = GoRouter(
+  navigatorKey: NavigationService.navigatorKey,
   initialLocation: SplashScreen.routeName,
   routes: [
     ShellRoute(
@@ -178,6 +180,15 @@ final GoRouter routerConfig = GoRouter(
         return TradeWarning(updatePassword: updatePassword);
       },
     ),
+
+    // GoRoute(
+    //   path: McxWatchListBypass.routeName,
+    //   name: McxWatchListBypass.routeName,
+    //   builder: (context, state) {
+    //     final mcxSymbolParams = state.extra as MCXSymbolParams;
+    //     return McxWatchListBypass(item: mcxSymbolParams);
+    //   },
+    // ),
     GoRoute(
       path: LoginPages.routeName,
       name: LoginPages.routeName,

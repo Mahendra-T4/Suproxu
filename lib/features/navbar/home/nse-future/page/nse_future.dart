@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/features/navbar/home/nse-future/widgets/searchbar_widget.dart';
+import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:suproxu/features/navbar/home/websocket/nfo_websocket.dart';
 import '../widgets/nfo_list_item.dart';
@@ -23,13 +25,35 @@ class _NseFutureState extends State<NseFuture> {
   NFODataEntity filteredNFO = NFODataEntity();
   String? errorMessage;
   String _currentSearchQuery = '';
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
 
   @override
   void initState() {
     super.initState();
+    // Start periodic validation timer (every 10 seconds)
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        developer.log('NseFuture auth validation error: $e');
+      }
+    });
+    // Subscribe to global logout events to cleanup immediately
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      try {
+        nfoWebSocket.dispose();
+      } catch (_) {}
+      developer.log('NseFuture: handled global logout cleanup');
+    });
+
     nfoWebSocket = NFOWebSocket(
       keyword: _searchController.text,
-      onNFODataReceived: (data) {
+      onDataReceived: (data) {
         if (!mounted) return;
         setState(() {
           nfoData = data;
@@ -94,6 +118,8 @@ class _NseFutureState extends State<NseFuture> {
 
   @override
   void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     nfoWebSocket.dispose();
     super.dispose();
   }
@@ -132,9 +158,8 @@ class _NseFutureState extends State<NseFuture> {
                                 setState(() {
                                   errorMessage = null;
                                 });
-                                try {
-                                  nfoWebSocket.disconnect();
-                                } catch (_) {}
+                                // Just reconnect without disconnecting
+                                // (socket is shared with other pages)
                                 nfoWebSocket.connect();
                               },
                               child: const Text(

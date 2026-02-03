@@ -6,10 +6,12 @@ import 'package:go_router/go_router.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/constants/widget/toast.dart';
 import 'package:suproxu/core/service/Auth/auto_logout.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/core/widgets/app_bar.dart';
 import 'package:suproxu/features/navbar/profile/bloc/profile_bloc.dart';
 import 'package:suproxu/features/navbar/profile/model/withdraw_req_model.dart';
 import 'package:suproxu/features/navbar/profile/repository/withdraw_repo.dart';
+import 'dart:async';
 
 final withRequestProvider = FutureProvider.family<WithdrawRequest, String>(
   (ref, amount) async =>
@@ -27,6 +29,8 @@ class WithdrawPage extends StatefulWidget {
 class _WithdrawPageState extends State<WithdrawPage> {
   late ProfileBloc _profileBloc;
   final TextEditingController amountController = TextEditingController();
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
 
   @override
   void initState() {
@@ -35,7 +39,32 @@ class _WithdrawPageState extends State<WithdrawPage> {
     // Ensure autoLogoutUser is imported from core/logout/logout.dart
     autoLogoutUser(context, mounted);
     _profileBloc.add(FetchingWithdrawListEvent());
+
+    // Start periodic validation timer (every 10 seconds)
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        debugPrint('Withdraw auth validation error: $e');
+      }
+    });
+    // Subscribe to global logout events to cleanup immediately
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      debugPrint('Withdraw: handled global logout cleanup');
+    });
+
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
+    super.dispose();
   }
 
   @override

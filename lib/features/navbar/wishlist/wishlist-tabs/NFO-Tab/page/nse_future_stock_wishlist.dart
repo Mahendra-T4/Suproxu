@@ -37,20 +37,29 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
   List<String> removingNfoItems = [];
   List<NFOWatchList> _localNfoWatchlist = [];
   List<NFOWatchList> _reorderedNfoCopy = [];
-
-  late Timer _timer;
   Timer? _validationTimer;
   StreamSubscription<void>? _logoutSub;
+
+  late Timer _timer;
   @override
   void initState() {
     super.initState();
-
     Future.microtask(() {
       if (mounted) {
         _initializeWebSocket();
         _setupAuthCheck();
       }
     });
+
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted && !_disposed) {
+        _refreshWishlistData();
+      }
+    });
+    _startValidationTimer();
+  }
+
+  void _startValidationTimer() {
     _validationTimer = Timer.periodic(const Duration(seconds: 10), (
       timer,
     ) async {
@@ -58,23 +67,31 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
       try {
         await AuthService().validateAndLogout(context);
       } catch (e) {
-        log('NFO wishlist auth validation error: $e');
+        debugPrint('TradeTabs auth validation error: $e');
       }
     });
-    // Subscribe to global logout events to cleanup immediately
     _logoutSub = AuthService().onLogout.listen((_) {
       _validationTimer?.cancel();
-      try {
-        _timer.cancel();
-      } catch (_) {}
-      _disposed = true;
-      try {
-        nfoSocket.disconnect();
-      } catch (e) {
-        log('NFO wishlist: error disconnecting socket on logout: $e');
-      }
-      log('NFO wishlist: handled global logout cleanup');
+      debugPrint('TradeTabs: received logout event, cancelled local timer');
     });
+  }
+
+  Future<void> _refreshWishlistData() async {
+    debugPrint('Refreshing NFO Wishlist Data');
+
+    // Skip refresh during reordering to prevent UI flicker
+    if (_isReordering) {
+      debugPrint('Reordering in progress, skipping refresh');
+      return;
+    }
+
+    if (!_disposed && mounted) {
+      if (nfoSocket.isConnected) {
+        debugPrint('Socket connected - data will auto-refresh');
+      } else {
+        await nfoSocket.connect();
+      }
+    }
   }
 
   String? errorMessage;
@@ -102,6 +119,12 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
           }
         }
         log('==========================================');
+
+        // Skip updates during reordering to prevent UI blink
+        if (_isReordering) {
+          log('Reordering in progress, skipping WebSocket update');
+          return;
+        }
 
         _safeSetState(() {
           nfoWishlist = data;
@@ -148,33 +171,54 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
   }
 
   void _setupAuthCheck() {
-    AuthService().validateAndLogout(context);
-    _timer = Timer.periodic(const Duration(seconds: 30), (timer) async {
+    AuthService().checkUserValidation();
+    _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
       if (_disposed || !mounted) {
         timer.cancel();
         return;
       }
-      try {
-        await AuthService().validateAndLogout(context);
-      } catch (e) {
-        log('NFO wishlist auth validation error: $e');
-      }
+      AuthService().checkUserValidation();
     });
   }
 
   // Remove unused methods
 
   bool _disposed = false;
+  bool _isReordering = false;
 
   @override
   void dispose() {
-    _validationTimer?.cancel();
-    _logoutSub?.cancel();
     _disposed = true;
     _timer.cancel(); // Cancel the timer
     nfoSocket.disconnect();
     searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void deactivate() {
+    // Disconnect socket when tab is deactivated to prevent data overlap
+    // This prevents the socket from continuing to emit data in the background
+    debugPrint(
+      'NFO Tab deactivated - disconnecting socket to prevent data overlap',
+    );
+    try {
+      nfoSocket.disconnect();
+    } catch (e) {
+      debugPrint('Error disconnecting NFO socket on deactivate: $e');
+    }
+    super.deactivate();
+  }
+
+  @override
+  void activate() {
+    // Reconnect socket when tab is activated again
+    debugPrint('NFO Tab activated - reconnecting socket');
+    if (!_disposed && mounted) {
+      // Reinitialize the socket when returning to this tab
+      _initializeWebSocket();
+    }
+    super.activate();
   }
 
   void _safeSetState(VoidCallback fn) {
@@ -221,21 +265,21 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                   }
 
                   return ReorderableListView.builder(
-                    itemCount: data.nfoWatchlist!.length,
+                    itemCount: _localNfoWatchlist.length,
                     proxyDecorator: (child, index, animation) {
                       return AnimatedBuilder(
                         animation: animation,
                         builder: (context, child) {
                           return Material(
                             elevation: 12,
-                            color: zBlack,
+                            color: kWhiteColor,
                             borderRadius: BorderRadius.circular(12),
                             child: Container(
                               decoration: BoxDecoration(
-                                color: zBlack,
+                                color: kWhiteColor,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: kGoldenBraunColor.withOpacity(0.5),
+                                  color: kWhiteColor,
                                   width: 2,
                                 ),
                               ),
@@ -247,6 +291,8 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                       );
                     },
                     onReorder: (oldIndex, newIndex) {
+                      _isReordering = true;
+
                       _safeSetState(() {
                         if (newIndex > oldIndex) newIndex--;
                         final item = _localNfoWatchlist.removeAt(oldIndex);
@@ -272,15 +318,37 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                       ).join(',');
 
                       WishlistRepository.symbolSorting(
-                        param: SortListParam(
-                          symbolKey: symbolKeys,
-                          symbolOrder: orderNumbers,
-                        ),
-                      );
+                            param: SortListParam(
+                              symbolKey: symbolKeys,
+                              symbolOrder: orderNumbers,
+                            ),
+                          )
+                          .then((_) {
+                            // Add delay before re-enabling WebSocket updates to let UI settle
+                            Future.delayed(const Duration(milliseconds: 500), () {
+                              if (mounted && !_disposed) {
+                                _isReordering = false;
+                                log(
+                                  'Reordering completed, WebSocket updates re-enabled',
+                                );
+                              }
+                            });
+                          })
+                          .catchError((error) {
+                            // On error, also re-enable WebSocket updates with delay
+                            Future.delayed(const Duration(milliseconds: 500), () {
+                              if (mounted && !_disposed) {
+                                _isReordering = false;
+                                log(
+                                  'Reordering error: $error, WebSocket updates re-enabled',
+                                );
+                              }
+                            });
+                          });
                     },
                     buildDefaultDragHandles: true,
                     itemBuilder: (context, index) {
-                      var record = data.nfoWatchlist![index];
+                      var record = _localNfoWatchlist[index];
                       // Remove unused variable
                       //  final item = data.mcxWatchlist![index];
                       final date = record.expiryDate?.substring(0, 10);
@@ -448,26 +516,14 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                                               width: 24,
                                               height: 24,
                                               child: CircularProgressIndicator(
-                                                color: Colors.white,
+                                                color: zBlack,
                                                 strokeWidth: 2,
                                               ),
                                             )
-                                          : Container(
-                                              decoration: BoxDecoration(
-                                                border: Border.all(
-                                                  color: Colors.green,
-                                                  width: 2,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                              ),
-                                              width: 20,
-                                              height: 20,
-                                              child: Icon(
-                                                Icons.check,
-                                                size: 16,
-                                                color: Colors.green,
-                                              ),
+                                          : Image.asset(
+                                              Assets.assetsImagesCheckbox,
+                                              width: 34,
+                                              height: 34,
                                             ),
                                     ),
                                   ],

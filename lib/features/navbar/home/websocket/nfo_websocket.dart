@@ -10,7 +10,9 @@ import 'package:suproxu/features/navbar/home/model/nfo_entity.dart';
 import 'package:suproxu/features/navbar/home/model/stock_list_entity.dart';
 
 class NFOWebSocket {
-  late IO.Socket socket;
+  IO.Socket? socket;
+  bool _isConnecting = false;
+  bool _isDisposed = false;
 
   Function(NFODataEntity)? onDataReceived;
   Function(String)? onError;
@@ -29,6 +31,14 @@ class NFOWebSocket {
   });
 
   void connect() async {
+    if (_isDisposed) return;
+    if (socket?.connected == true || _isConnecting) {
+      log('NFO Home: Already connected or connecting');
+      if (socket?.connected == true) onConnected?.call();
+      return;
+    }
+    _isConnecting = true;
+
     DatabaseService databaseService = DatabaseService();
     final uKey = await databaseService.getUserData(key: userIDKey);
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
@@ -65,7 +75,7 @@ class NFOWebSocket {
       );
       log('Connecting to WebSocket URL: $wsUrl');
 
-      socket = IO.io(WebSocketConfig.socketUrl, {
+      socket = IO.io(wsUrl, {
         'path': WebSocketConfig.socketPath,
         'transports': ['websocket'],
         'autoConnect': true,
@@ -79,14 +89,14 @@ class NFOWebSocket {
           'Authorization': 'Bearer ${WebSocketConfig.authToken}',
         },
       });
-
-      socket.onConnect((_) {
-        print('Connected: ${socket.id}');
+      socket!.onConnect((_) {
+        _isConnecting = false;
+        print('Connected: ${socket!.id}');
         onConnected?.call();
 
         // Function to emit data request
         void emitDataRequest() {
-          socket.emit('activity', {
+          socket!.emit('activity', {
             'activity': socketType == 'stock-search'
                 ? 'get-stock-search'
                 : 'get-stock-list',
@@ -103,19 +113,19 @@ class NFOWebSocket {
         // Set up periodic emission every 200ms
         _emitTimer?.cancel();
         _emitTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
-          if (socket.connected) {
+          if (socket?.connected == true) {
             emitDataRequest();
           }
         });
       });
 
-      socket.onDisconnect((_) {
+      socket!.onDisconnect((_) {
         print('Disconnected');
 
         onDisconnected?.call();
       });
 
-      socket.on('response', (data) {
+      socket!.on('response', (data) {
         try {
           log('========== WebSocket Response ==========');
           log('Response Type: ${data.runtimeType}');
@@ -170,18 +180,18 @@ class NFOWebSocket {
         }
       });
 
-      socket.onConnectError((err) {
+      socket!.onConnectError((err) {
         print('Connect error: $err');
 
         onError?.call('Connection error: $err');
       });
 
-      socket.onError((err) {
+      socket!.onError((err) {
         print('Socket error: $err');
         onError?.call('Socket error: $err');
       });
 
-      socket.connect();
+      socket!.connect();
     } catch (e) {
       print('Error initializing socket: $e');
       onError?.call('Error initializing socket: $e');
@@ -193,17 +203,20 @@ class NFOWebSocket {
   void disconnect() {
     _emitTimer?.cancel();
     try {
-      if (socket.connected) {
-        socket.disconnect();
+      if (socket?.connected == true) {
+        socket!.disconnect();
       }
     } catch (e) {
       print('Error while disconnecting socket: $e');
     }
     try {
-      socket.dispose();
+      socket?.clearListeners();
+      socket?.dispose();
     } catch (e) {
       print('Error while disposing socket: $e');
     }
+    // socket = null;
+    _isConnecting = false;
   }
 
   void dispose() {

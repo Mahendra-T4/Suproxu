@@ -63,30 +63,6 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
             builder: (context, symbolData, child) {
               return Builder(
                 builder: (context) {
-                  // 🔥 Safety check: ensure we're displaying data for the correct symbol
-                  if (symbolData.response.isNotEmpty) {
-                    final matchesCurrentSymbol = symbolData.response.any(
-                      (r) =>
-                          r.symbolKey.trim() == widget.params.symbolKey.trim(),
-                    );
-
-                    if (!matchesCurrentSymbol) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const CircularProgressIndicator(),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Loading ${widget.params.symbol}...',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-                  }
-
                   // Show loading indicator while waiting for first data
                   if (symbolData.status != 1 && errorMessage == null) {
                     return const Center(child: CircularProgressIndicator());

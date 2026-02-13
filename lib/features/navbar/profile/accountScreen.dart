@@ -22,6 +22,7 @@ import 'package:suproxu/core/service/Auth/auto_logout.dart';
 import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/core/widgets/app_bar.dart';
 import 'package:suproxu/features/auth/change-pass/changePassword.dart';
+import 'package:suproxu/features/navbar/Portfolio/active_portfolio.dart';
 import 'package:suproxu/features/navbar/Portfolio/portfolio.dart';
 import 'package:suproxu/features/navbar/home/providers/wallet_provider.dart';
 import 'package:suproxu/features/navbar/profile/bloc/profile_bloc.dart';
@@ -313,12 +314,19 @@ class _AccountscreenState extends ConsumerState<Accountscreen>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          modernStatCard2(
-                            icon: Icons.account_balance_wallet_rounded,
-                            label: "Balance",
-                            value: wallet.record?.first.availableBalance ?? 0,
-                            color: Colors.greenAccent,
-                            screenWidth: screenWidth,
+                          InkWell(
+                            onTap: () {
+                              GoRouter.of(context).goNamed(
+                                Portfolioclose.routeName,
+                              );
+                            },
+                            child: modernStatCard2(
+                              icon: Icons.account_balance_wallet_rounded,
+                              label: "Balance",
+                              value: wallet.record?.first.availableBalance ?? 0,
+                              color: Colors.greenAccent,
+                              screenWidth: screenWidth,
+                            ),
                           ),
                           WalletWidget(screenWidth: screenWidth),
                         ],

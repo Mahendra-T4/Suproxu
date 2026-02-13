@@ -269,7 +269,7 @@ class MCXWishlistWebSocketService {
     _socket?.disconnect();
     _socket = null;
     _isConnecting = false;
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future.delayed(const Duration(milliseconds: 400));
     await connect();
   }
 

@@ -508,13 +508,7 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
                                                                       .status ==
                                                                   1) {
                                                                 if (mounted) {
-                                                                  // First trigger the portfolio update
-                                                                  _portfolioBloc
-                                                                      .add(
-                                                                        ActivePortfolioDataFetchingEvent(),
-                                                                      );
-
-                                                                  // Remove loading and locked states
+                                                                  // Remove loading and locked states immediately
                                                                   setState(() {
                                                                     loadingIndices
                                                                         .remove(
@@ -523,32 +517,31 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
                                                                     lockedIndices
                                                                         .remove(
                                                                           index,
-                                                                        ); // Unlock immediately on success
+                                                                        );
                                                                   });
 
-                                                                  // Wait a moment to ensure delete is processed
+                                                                  // Show success message
+                                                                  successToastMsg(
+                                                                    context,
+                                                                    result
+                                                                        .message
+                                                                        .toString(),
+                                                                  );
+
+                                                                  // Refresh the provider to fetch updated data
                                                                   await Future.delayed(
                                                                     const Duration(
                                                                       milliseconds:
-                                                                          500,
+                                                                          300,
                                                                     ),
                                                                   );
 
-                                                                  // Then remove the item if still mounted
                                                                   if (mounted) {
-                                                                    setState(() {
-                                                                      data.response!
-                                                                          .removeAt(
-                                                                            index,
-                                                                          );
-                                                                    });
+                                                                    ref.invalidate(
+                                                                      activePortfolioProvider,
+                                                                    );
                                                                   }
                                                                 }
-                                                                failedToast(
-                                                                  context,
-                                                                  result.message
-                                                                      .toString(),
-                                                                );
                                                               } else {
                                                                 setState(() {
                                                                   loadingIndices
@@ -558,8 +551,13 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
                                                                   lockedIndices
                                                                       .remove(
                                                                         index,
-                                                                      ); // Unlock on failure too
+                                                                      );
                                                                 });
+                                                                failedToast(
+                                                                  context,
+                                                                  result.message
+                                                                      .toString(),
+                                                                );
                                                               }
                                                             } catch (e) {
                                                               log(
@@ -883,73 +881,6 @@ class _PortfolioActiveTabState extends ConsumerState<PortfolioActiveTab>
         SizedBox(height: 4.h),
         Text(label).textStyleH2G(),
       ],
-    );
-  }
-
-  Widget _buildTradeDetails({
-    // required String symbolName,
-    // required double symbolPrice,
-    required String mathod,
-    required String profitandLoss,
-    required String qnt,
-    required String category,
-    required String margin,
-    required String marginHolding,
-    required String currentPrice,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(height: 8.h),
-        _buildInfoRow('Current Market Price:', currentPrice.toString()),
-        _buildInfoRowProfit('Profit and Loss:', profitandLoss.toString()),
-        _buildInfoRow('Category:', category.toString()),
-        _buildInfoRow('Margin:', margin.toString()),
-        _buildInfoRow('Margin Holding:', marginHolding.toString()),
-      ],
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value, {bool isProfit = false}) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 4.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label).textStyleH1(),
-          Text(
-            value,
-            style: TextStyle(
-              color: isProfit ? Colors.green : Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRowProfit(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 4.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              color: value.contains('-') ? Colors.red : Colors.green,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

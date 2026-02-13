@@ -27,9 +27,6 @@ import 'package:suproxu/features/navbar/home/websocket/mcx_symbol_websocket.dart
 abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
   final ValueNotifier<int> lotsNotifierMrk = ValueNotifier<int>(1);
   late MCXSymbolWebSocketService webSocket;
-  dynamic salePrice;
-  dynamic buyPrice;
-  bool initialPricesSet = false;
 
   // ✅ Use ValueNotifier for reactive updates instead of setState
   final ValueNotifier<GetStockRecordEntity> symbolDataNotifier =
@@ -44,7 +41,9 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
   String? errorMessage;
 
   final ValueNotifier<int> lotsNotifierLmt = ValueNotifier<int>(1);
-  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController(
+    text: 0.toString(),
+  );
   final TextEditingController lotsMktController = TextEditingController(
     text: '1',
   );
@@ -60,9 +59,11 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
   late Timer timer;
 
   void initMCXSymbolWebSocket() {
-    log(
-      '🔥🔥🔥 INIT SOCKET - Requested Symbol: ${widget.params.symbolKey} 🔥🔥🔥',
-    );
+    // // First, ensure any previous socket is fully cleaned up
+    // if (!mounted) return;
+    // try {
+    //   webSocket.disconnect();
+    // } catch (_) {}
 
     webSocket = MCXSymbolWebSocketService(
       symbolKey: widget.params.symbolKey,
@@ -70,15 +71,6 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
         // ✅ Forward socket data via ValueNotifier for guaranteed UI updates
         if (!mounted) return;
         try {
-          log('SOCKET RECEIVED DATA:');
-          log('  Requested symbolKey: ${widget.params.symbolKey}');
-          log('  Response count: ${data.response.length}');
-          if (data.response.isNotEmpty) {
-            log(
-              '  Response symbols: ${data.response.map((r) => '${r.symbol}(${r.symbolKey})').join(", ")}',
-            );
-          }
-
           // Extra validation: ensure response contains the requested symbol
           final hasMatchingSymbol =
               data.response.isNotEmpty &&
@@ -149,21 +141,12 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
             '═══════════════════════════════════════════════════════════════',
           );
 
-          // CRITICAL: Filter to ONLY this symbol
-          final matchingSymbol = data.response.firstWhere(
-            (r) => r.symbolKey.trim() == widget.params.symbolKey.trim(),
-          );
-          final filteredData = GetStockRecordEntity(
-            status: data.status,
-            response: [matchingSymbol],
-            message: data.message,
-          );
-
-          _updateSymbolData(filteredData);
+          // ✅ Use ValueNotifier instead of setState for reliable updates
+          _updateSymbolData(data);
           errorMessage = null;
-          log('Socket Updated: ${widget.params.symbolKey}');
+          log('✓ MCX Symbol Data Updated: ${widget.params.symbolKey}');
         } catch (e, stack) {
-          log('Error: $e');
+          log('❌ Error updating symbolData: $e');
           log('Stack: $stack');
         }
       },
@@ -194,18 +177,6 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
     webSocket.connect();
   }
 
-  Future<void> _refreshWishlistData() async {
-    debugPrint('Refreshing MCX Wishlist Data');
-
-    if (mounted) {
-      if (webSocket.isConnected) {
-        debugPrint('Socket connected - data will auto-refresh');
-      } else {
-        await webSocket.connect();
-      }
-    }
-  }
-
   final client = http.Client();
   final url = Uri.parse(superTradeBaseApiEndPointUrl);
   dynamic uBalance;
@@ -221,12 +192,6 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
       DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
       final deviceID = androidInfo.id.toString();
-
-      log('🔍 HTTP REQUEST DEBUG:');
-      log('  userKey: $userKey');
-      log('  deviceID: $deviceID');
-      log('  symbolKey: ${widget.params.symbolKey}');
-      log('  activity: get-stock-record');
 
       final response = await client
           .post(
@@ -255,58 +220,32 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
           log(
             '═══════════════════════════════════════════════════════════════',
           );
-          log(
-            '📊 HTTP INITIAL DATA RESPONSE - REQUESTING: ${widget.params.symbolKey}',
-          );
-          log('HTTP RESPONSE received ${data.response.length} items:');
-          if (data.response.isNotEmpty) {
-            for (var i = 0; i < data.response.length; i++) {
-              log(
-                '  [${i}] ${data.response[i].symbol} (${data.response[i].symbolKey})',
-              );
-            }
-          }
+          log('📊 HTTP INITIAL DATA RESPONSE - ${widget.params.symbolKey}');
           log(
             '═══════════════════════════════════════════════════════════════',
           );
           log('Status: ${data.status}');
           log('Message: ${data.message}');
+          log('Response Count: ${data.response.length}');
 
           if (data.status == 1 && data.response.isNotEmpty) {
-            // 🔥 STRICT VALIDATION: Only accept data if it contains OUR symbolKey
-            final matchesCurrentSymbol = data.response.any(
-              (r) => r.symbolKey.trim() == widget.params.symbolKey.trim(),
-            );
-
-            if (!matchesCurrentSymbol) {
-              log('⚠️  HTTP data rejected - symbol mismatch!');
-              log('Expected: ${widget.params.symbolKey}');
-              log('Got: ${data.response.map((r) => r.symbolKey).join(",")}');
-              return; // Don't update with mismatched data
-            }
-
-            // CRITICAL: Filter response to ONLY contain the requested symbol
-            final matchingSymbol = data.response.firstWhere(
-              (r) => r.symbolKey.trim() == widget.params.symbolKey.trim(),
-            );
-            final filteredData = GetStockRecordEntity(
-              status: data.status,
-              response: [matchingSymbol], // Only 1 item!
-              message: data.message,
-            );
-
-            final resp = filteredData.response.first;
+            final resp = data.response.first;
             log(
               '───────────────────────────────────────────────────────────────',
             );
-            log('FILTERED: Symbol Key: ${resp.symbolKey}');
+            log('Symbol Key: ${resp.symbolKey}');
             log('Symbol: ${resp.symbol}');
             log('Last Price: ${resp.ohlc.lastPrice}');
+            log('Open: ${resp.ohlc.open}');
+            log('High: ${resp.ohlc.high}');
+            log('Low: ${resp.ohlc.low}');
+            log('Close: ${resp.ohlc.close}');
             log(
               '═══════════════════════════════════════════════════════════════',
             );
 
-            _updateSymbolData(filteredData);
+            // ✅ Use ValueNotifier instead of setState
+            _updateSymbolData(data);
             log(
               '✓ Initial HTTP data loaded successfully for ${widget.params.symbolKey}',
             );
@@ -596,15 +535,6 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
   @override
   void initState() {
     super.initState();
-
-    // 🔥 CRITICAL: Reset data BEFORE initializing socket to prevent showing cached data from previous symbol
-    symbolDataNotifier.value = GetStockRecordEntity();
-    errorMessage = null;
-
-    // ✅ Capture prices ONLY on first data arrival
-    symbolDataNotifier.addListener(_captureInitialPrices);
-
-    initMCXSymbolWebSocket();
     log('╔═══════════════════════════════════════════════════════════════╗');
     log('║          MCX SYMBOL PAGE INITIALIZED                         ║');
     log('╚═══════════════════════════════════════════════════════════════╝');
@@ -612,6 +542,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
     log('🔑 Symbol Key: ${widget.params.symbolKey}');
     log('⏰ Timestamp: ${DateTime.now()}');
 
+    initMCXSymbolWebSocket();
     _fetchInitialDataViaHttp(); // Fetch data immediately via HTTP while WebSocket connects
     initUser();
 
@@ -626,9 +557,8 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
     });
 
     // Setup periodic updates - REDUCED to 5 seconds (was 500ms causing blinking)
-    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (!mounted) return;
-      _refreshWishlistData();
       initUser();
       _checkMarketStatus();
     });
@@ -648,16 +578,6 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
         webSocket.connect();
       }
     });
-  }
-
-  // ✅ Capture prices once when first data arrives
-  void _captureInitialPrices() {
-    if (!initialPricesSet && symbolDataNotifier.value.response.isNotEmpty) {
-      salePrice = symbolDataNotifier.value.response.first.ohlc.salePrice;
-      buyPrice = symbolDataNotifier.value.response.first.ohlc.buyPrice;
-      initialPricesSet = true;
-      log('💰 Initial prices captured - Sale: $salePrice, Buy: $buyPrice');
-    }
   }
 
   @override
@@ -1287,8 +1207,6 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
     double screenHeight,
     double screenWidth,
   ) {
-    // salePrice = ohlc.salePrice;
-    // buyPrice = ohlc.buyPrice;
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.symmetric(
@@ -1426,13 +1344,6 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                   letterSpacing: 2,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Enter the amount',
-                  hintStyle: TextStyle(
-                    color: zBlack.withOpacity(0.5),
-                    fontSize: 16,
-                    fontFamily: FontFamily.globalFontFamily,
-                    fontWeight: FontWeight.w500,
-                  ),
                   // labelText: "Price",
                   labelStyle: TextStyle(
                     color: zBlack,
@@ -1578,7 +1489,16 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                   ],
                                 ),
                                 Text(
-                                  '${(salePrice ?? ohlc.salePrice).toStringAsFixed(2)}',
+                                  (() {
+                                    final double price =
+                                        double.tryParse(
+                                          usernameController.text,
+                                        ) ??
+                                        0.0;
+                                    // final int lots = lotsNotifierLmt.value;
+                                    // final double total = price * lots;
+                                    return '${price.toStringAsFixed(2)}';
+                                  })(),
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: screenWidth * 0.045,
@@ -1681,7 +1601,16 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                   ],
                                 ),
                                 Text(
-                                  '${(buyPrice ?? ohlc.buyPrice).toStringAsFixed(2)}',
+                                  (() {
+                                    final double price =
+                                        double.tryParse(
+                                          usernameController.text,
+                                        ) ??
+                                        0.0;
+                                    // final int lots = lotsNotifierLmt.value;
+                                    // final double total = price * lots;
+                                    return '${price.toStringAsFixed(2)}';
+                                  })(),
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: screenWidth * 0.045,

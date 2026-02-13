@@ -4,12 +4,16 @@ import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/features/auth/change-pass/changePassword.dart';
 import 'package:suproxu/features/navbar/Portfolio/portfolio.dart';
 import 'package:suproxu/features/navbar/TradeScreen/tradeTab.dart';
+import 'package:suproxu/features/navbar/home/mcx/page/home/mcx_home.dart';
+import 'package:suproxu/features/navbar/home/nse-future/page/nse_future.dart';
 import 'package:suproxu/features/navbar/profile/accountScreen.dart';
 import 'package:suproxu/features/navbar/profile/complaint/lodgeComplaint.dart';
+import 'package:suproxu/features/navbar/profile/diposit/depositeScreen.dart';
 import 'package:suproxu/features/navbar/profile/ledger/ledgerScreen.dart';
 import 'package:suproxu/features/navbar/profile/notification/notificationScreen.dart';
 import 'package:suproxu/features/navbar/profile/payment/paymentScreen.dart';
 import 'package:suproxu/features/navbar/profile/profile/profile_info.dart';
+import 'package:suproxu/features/navbar/profile/roles/superoxu_rules.dart';
 import 'package:suproxu/features/navbar/profile/wallet/user_wallet.dart';
 import 'package:suproxu/features/navbar/profile/withdraw/withdraw.dart';
 import 'package:suproxu/features/navbar/wishlist/wishlist.dart';
@@ -51,7 +55,17 @@ class _GlobalNavBarState extends State<GlobalNavBar>
 
   // Routes where navbar should be neutral (no selection)
   static const String notificationRouteName = NotificationScreen.routeName;
-  final List<String> _neutralRoutes = [notificationRouteName];
+  final List<String> _neutralRoutes = [
+    notificationRouteName,
+    McxHome.routeName,
+    NseFuture.routeName,
+    WithdrawPage.routeName,
+    UserWalletPage.routeName,
+    SuproxuRulesPage.routeName,
+    ProfileInfo.routeName, LodgeComplaintScreen.routeName,  PaymentScreen.routeName, LedgerReportScreen.routeName,
+    DepositScreen.routeName,
+    
+  ];
 
   @override
   void initState() {

@@ -24,7 +24,7 @@ import 'package:suproxu/features/navbar/profile/roles/superoxu_rules.dart';
 import 'package:suproxu/features/navbar/profile/wallet/user_wallet.dart';
 import 'package:suproxu/features/navbar/profile/withdraw/withdraw.dart';
 import 'package:suproxu/features/navbar/wishlist/model/mcx_symbol_param.dart';
-import 'package:suproxu/features/navbar/wishlist/wishlist-tabs/MCX-Tab/page/mcx_stock_wishlist_riverpod.dart';
+import 'package:suproxu/features/navbar/wishlist/preview/symbol_card_tile_widget.dart';
 import 'package:suproxu/features/navbar/wishlist/wishlist.dart';
 import 'package:suproxu/features/splash/splash_screen.dart';
 
@@ -35,11 +35,11 @@ final GoRouter routerConfig = GoRouter(
     ShellRoute(
       builder: (context, state, child) => GlobalNavBar(child: child),
       routes: [
-        // GoRoute(
-        //   path: Mcxscreen.routeName,
-        //   name: Mcxscreen.routeName,
-        //   builder: (context, state) => Mcxscreen(),
-        // ),
+        GoRoute(
+          path: SymbolCardTileWidget.routeName,
+          name: SymbolCardTileWidget.routeName,
+          builder: (context, state) => SymbolCardTileWidget(),
+        ),
         // GoRoute(
         //   path: MCXStockPage.routeName,
         //   name: MCXStockPage.routeName,
@@ -49,12 +49,6 @@ final GoRouter routerConfig = GoRouter(
           path: McxHome.routeName,
           name: McxHome.routeName,
           builder: (context, state) => const McxHome(),
-        ),
-
-        GoRoute(
-          path: McxStockWishlist.routeName,
-          name: McxStockWishlist.routeName,
-          builder: (context, state) => const McxStockWishlist(),
         ),
         // GoRoute(
         //   path: NseFutureMain.routeName,

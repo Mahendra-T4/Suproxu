@@ -1,32 +1,30 @@
 import 'dart:async';
 import 'dart:developer' as developer;
+
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/config/web_socket_config.dart';
-import 'package:suproxu/features/navbar/home/model/get_stock_record_entity.dart';
+import 'package:suproxu/features/navbar/wishlist/model/wishlist_entity.dart';
 
-class MCXSymbolWebSocketService {
+class NFOWatchListWebSocketService {
   IO.Socket? _socket;
   Timer? _emitTimer;
   bool _isConnecting = false;
   bool _isDisposed = false;
 
-  final Function(GetStockRecordEntity) onDataReceived;
+  final Function(NFOWishlistEntity) onNFODataReceived;
   final Function(String)? onError;
   final Function()? onConnected;
   final Function()? onDisconnected;
 
-  final String symbolKey;
-  // final String categoryName;
-  static const String _activity = 'get-stock-record';
+  // Use correct activity name as per backend
+  static const String _activity = 'get-wishlist-stocks';
   static const Duration _emitInterval = Duration(milliseconds: 200);
 
-  MCXSymbolWebSocketService({
-    required this.symbolKey,
-    // required this.categoryName,
-    required this.onDataReceived,
+  NFOWatchListWebSocketService({
+    required this.onNFODataReceived,
     this.onError,
     this.onConnected,
     this.onDisconnected,
@@ -79,7 +77,7 @@ class MCXSymbolWebSocketService {
         if (_isDisposed) return;
 
         _isConnecting = false;
-        developer.log('MCX Symbol WebSocket Connected: ${socket.id}');
+        developer.log('NFO WebSocket Connected: ${socket.id}');
         onConnected?.call();
 
         _startPeriodicEmit(userKey, deviceID);
@@ -88,7 +86,7 @@ class MCXSymbolWebSocketService {
       socket.onDisconnect((_) {
         if (_isDisposed) return;
 
-        developer.log('MCX Symbol WebSocket Disconnected: ${socket.id}');
+        developer.log('NFO WebSocket Disconnected: ${socket.id}');
         onDisconnected?.call();
         _stopPeriodicEmit();
       });
@@ -109,16 +107,14 @@ class MCXSymbolWebSocketService {
       });
 
       socket.onReconnect((attempt) {
-        developer.log(
-          'MCX Symbol WebSocket Reconnected after $attempt attempts',
-        );
+        developer.log('NFO WebSocket Reconnected after $attempt attempts');
         // Re-emit immediately on reconnect
-        _emitMCXRequest(userKey, deviceID);
+        _emitNFORequest(userKey, deviceID);
         _startPeriodicEmit(userKey, deviceID);
       });
 
       socket.onReconnectAttempt((attempt) {
-        developer.log('MCX Symbol WebSocket Reconnect Attempt: $attempt');
+        developer.log('NFO WebSocket Reconnect Attempt: $attempt');
       });
 
       // Manually connect
@@ -132,20 +128,19 @@ class MCXSymbolWebSocketService {
     }
   }
 
-  /// Emit request for MCX symbol data
-  void _emitMCXRequest(String userKey, String deviceID) {
+  /// Emit request for NFO wishlist data
+  void _emitNFORequest(String userKey, String deviceID) {
     if (_socket?.connected != true || _isDisposed) return;
 
     final payload = {
       'activity': _activity,
       'userKey': userKey,
-      'symbolKey': symbolKey,
       'deviceID': deviceID,
-      'dataRelatedTo': 'MCX',
+      'dataRelatedTo': 'NFO',
     };
 
     _socket!.emit('activity', payload);
-    developer.log('Emitted MCX Symbol Request: $payload');
+    developer.log('Emitted NFO Request: $payload');
   }
 
   /// Start periodic emission
@@ -153,11 +148,11 @@ class MCXSymbolWebSocketService {
     _stopPeriodicEmit(); // Ensure no duplicate timers
 
     _emitTimer = Timer.periodic(_emitInterval, (_) {
-      _emitMCXRequest(userKey, deviceID);
+      _emitNFORequest(userKey, deviceID);
     });
 
     // Emit immediately on start
-    _emitMCXRequest(userKey, deviceID);
+    _emitNFORequest(userKey, deviceID);
   }
 
   /// Stop periodic emission
@@ -170,45 +165,14 @@ class MCXSymbolWebSocketService {
   void _handleResponseData(dynamic data) {
     try {
       if (data is Map<String, dynamic>) {
-        // Guard 1: Ensure response is for MCX market
-        final dr =
-            (data['dataRelatedTo'] ?? data['category'])
-                ?.toString()
-                .toUpperCase() ??
-            '';
-        if (dr.isNotEmpty && dr != 'MCX') {
-          developer.log('Ignored response for different market: $dr');
-          return;
-        }
-
-        // Guard 2: Check if response is for symbol-level activity (not wishlist)
-        final activity = data['activity']?.toString().toLowerCase() ?? '';
-        if (activity.isNotEmpty && activity.contains('wishlist')) {
-          developer.log('Ignored wishlist response on symbol page: $activity');
-          return;
-        }
-
-        final mcxData = GetStockRecordEntity.fromJson(data);
-
-        // Guard 3: Only forward if response contains THIS specific symbol
-        final hasMatchingSymbol =
-            mcxData.response.isNotEmpty &&
-            mcxData.response.any((r) => r.symbolKey.trim() == symbolKey.trim());
-
-        if (!hasMatchingSymbol) {
-          developer.log(
-            'Ignored symbol response (symbol=$symbolKey not in response): ${mcxData.response.map((r) => r.symbolKey).join(",")}',
-          );
-          return;
-        }
-
-        onDataReceived(mcxData);
-        developer.log('✓ MCX Symbol Data Parsed & Sent: symbolKey=$symbolKey');
+        final nfoData = NFOWishlistEntity.fromJson(data);
+        onNFODataReceived(nfoData);
+        developer.log('NFO Data Parsed & Sent: ${data.toString()}');
       } else {
         developer.log('Ignored non-map response: $data');
       }
     } catch (e, stack) {
-      developer.log('Failed to parse MCX response: $e', stackTrace: stack);
+      developer.log('Failed to parse NFO response: $e', stackTrace: stack);
       onError?.call('Parse error: $e');
     }
   }
@@ -218,7 +182,7 @@ class MCXSymbolWebSocketService {
     if (_isDisposed) return;
 
     _isConnecting = false;
-    developer.log(message, name: 'MCX WebSocket Error', stackTrace: stack);
+    developer.log(message, name: 'NFO WebSocket Error', stackTrace: stack);
     onError?.call(message);
   }
 
@@ -258,7 +222,7 @@ class MCXSymbolWebSocketService {
   void disconnect() {
     if (_isDisposed) return;
 
-    developer.log('Disconnecting MCX Symbol WebSocket...');
+    developer.log('Disconnecting NFO WebSocket...');
     _isDisposed = true;
 
     _stopPeriodicEmit();
@@ -272,7 +236,7 @@ class MCXSymbolWebSocketService {
   /// Reconnect manually if needed
   Future<void> reconnect() async {
     disconnect();
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future.delayed(const Duration(milliseconds: 500));
     if (!_isDisposed) {
       await connect();
     }

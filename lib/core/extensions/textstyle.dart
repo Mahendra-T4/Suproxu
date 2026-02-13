@@ -10,7 +10,7 @@ extension TextStyleX on Text {
       style: TextStyle(
         fontWeight: FontWeight.w500,
         fontFamily: FontFamily.globalFontFamily,
-        fontSize: 15,
+        fontSize: 13.h,
         color: zBlack,
       ),
       textAlign: textAlign,

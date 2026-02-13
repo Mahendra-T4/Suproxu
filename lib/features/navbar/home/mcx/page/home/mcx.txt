@@ -1,8 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:suproxu/Assets/assets.dart';
 import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/color_blinker.dart';
@@ -29,7 +26,6 @@ class _McxHomeState extends State<McxHome> {
   final TextEditingController _searchController = TextEditingController();
   late final SocketService socket;
   MCXDataEntity mcx = MCXDataEntity();
-  late Timer _refreshTimer;
 
   Future<bool> rWatchList(symbolKey) async {
     final success = await WishlistRepository.removeWatchListSymbols(
@@ -123,41 +119,10 @@ class _McxHomeState extends State<McxHome> {
     _searchController.addListener(() {
       _performSearch(_searchController.text);
     });
-
-    _refreshTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {
-        _refreshWishlistData();
-      }
-    });
-  }
-
-  Future<void> _refreshWishlistData() async {
-    debugPrint('Refreshing MCX Wishlist Data');
-
-    if (mounted && socket.socket.connected) {
-      debugPrint('Socket connected - data will auto-refresh');
-    } else if (mounted) {
-      socket.connect();
-    }
-  }
-
-  Future<void> _refreshSocketConnection() async {
-    debugPrint('Manual socket refresh triggered');
-    try {
-      socket.disconnect();
-      await Future.delayed(const Duration(milliseconds: 500));
-      if (mounted) {
-        socket.connect();
-      }
-    } catch (e) {
-      developer.log('Error refreshing socket: $e');
-    }
   }
 
   @override
   void dispose() {
-    _refreshTimer.cancel();
-    _searchController.dispose();
     try {
       socket.disconnect();
     } catch (e) {
@@ -175,7 +140,12 @@ class _McxHomeState extends State<McxHome> {
       // ),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: _refreshSocketConnection,
+          onRefresh: () async {
+            try {
+              socket.disconnect();
+            } catch (_) {}
+            socket.connect();
+          },
           child: Column(
             children: [
               SearchBarWidget(controller: _searchController),
@@ -386,50 +356,27 @@ class _McxHomeState extends State<McxHome> {
                                                 });
                                               }
                                             },
-                                            child: itemData.watchlist == 1
-                                                ? Image.asset(
-                                                    Assets.assetsImagesCheckbox,
-                                                    width: 34,
-                                                    height: 34,
-                                                  )
-                                                : Container(
-                                                    height: 28,
-                                                    width: 28,
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.lightGreen
-                                                          .withOpacity(0.5),
-                                                      border: Border.all(
-                                                        color: greyColor,
-                                                        width: 2,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            8,
-                                                          ),
-                                                    ),
-                                                  ),
-
-                                            // Container(
-                                            //   decoration: BoxDecoration(
-                                            //     border: Border.all(
-                                            //       color: itemData.watchlist == 1
-                                            //           ? Colors.green
-                                            //           : kGoldenBraunColor,
-                                            //       width: 2,
-                                            //     ),
-                                            //     borderRadius:
-                                            //         BorderRadius.circular(4),
-                                            //   ),
-                                            //   width: 20,
-                                            //   height: 20,
-                                            //   child: itemData.watchlist == 1
-                                            //       ? Icon(
-                                            //           Icons.check,
-                                            //           size: 16,
-                                            //           color: Colors.green,
-                                            //         )
-                                            //       : null,
-                                            // ),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                border: Border.all(
+                                                  color: itemData.watchlist == 1
+                                                      ? Colors.green
+                                                      : kGoldenBraunColor,
+                                                  width: 2,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              width: 20,
+                                              height: 20,
+                                              child: itemData.watchlist == 1
+                                                  ? Icon(
+                                                      Icons.check,
+                                                      size: 16,
+                                                      color: Colors.green,
+                                                    )
+                                                  : null,
+                                            ),
                                           ),
                                         ],
                                       ),

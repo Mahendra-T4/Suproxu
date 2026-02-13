@@ -321,7 +321,7 @@ class NFOSymbolWebSocket {
   /// Reconnect manually if needed
   Future<void> reconnect() async {
     disconnect();
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 200));
     if (!_isDisposed) {
       await connect();
     }

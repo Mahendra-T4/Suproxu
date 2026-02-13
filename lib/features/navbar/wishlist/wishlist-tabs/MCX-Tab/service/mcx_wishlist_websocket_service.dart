@@ -16,12 +16,13 @@ class MCXWishlistWebSocketService {
   Function()? onDisconnected;
   String? keyword;
 
-  MCXWishlistWebSocketService(
-      {this.onDataReceived,
-      this.onError,
-      this.onConnected,
-      this.onDisconnected,
-      this.keyword});
+  MCXWishlistWebSocketService({
+    this.onDataReceived,
+    this.onError,
+    this.onConnected,
+    this.onDisconnected,
+    this.keyword,
+  });
 
   void connect() async {
     DatabaseService databaseService = DatabaseService();
@@ -51,7 +52,7 @@ class MCXWishlistWebSocketService {
             'activity': 'get-wishlist-stocks',
             'userKey': uKey.toString(),
             "deviceID": deviceID.toString(),
-            'dataRelatedTo': 'MCX'
+            'dataRelatedTo': 'MCX',
           });
         }
 

@@ -43,6 +43,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
   String? errorMessage;
   dynamic orderSellPrice;
   dynamic orderBuyPrice;
+  bool initialPricesSet = false;
+  // bool initialPricesSet = false;
 
   final ValueNotifier<int> lotsNotifierMrk = ValueNotifier<int>(1);
   final ValueNotifier<int> lotsNotifierLmt = ValueNotifier<int>(1);
@@ -54,12 +56,11 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
   );
 
   bool isMarketOpen = true;
-  final TextEditingController _usernameController = TextEditingController(
-    text: '0',
-  );
+  final TextEditingController _usernameController = TextEditingController();
   int lots = 1; // Variable to track the lot count
   int selecteddTab = 0;
   late Timer _timer;
+  Timer? _refreshTimer;
   Timer? _validationTimer;
   StreamSubscription<void>? _logoutSub;
   bool isBuyClicked = false;
@@ -71,6 +72,19 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
   final url = Uri.parse(superTradeBaseApiEndPointUrl);
 
   NFO nfo = NFO();
+
+  /// Refresh symbol data by reconnecting to WebSocket
+  Future<void> refreshSymbolData() async {
+    debugPrint('Refreshing NFO Symbol Data');
+
+    if (!mounted) return;
+
+    try {
+      _socketService.connect();
+    } catch (e) {
+      log('Error refreshing NFO symbol data: $e');
+    }
+  }
 
   /// Fetch initial data via HTTP to show immediately while WebSocket connects
   Future<void> _fetchInitialDataViaHttp() async {
@@ -104,10 +118,15 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
           final data = GetStockRecordEntity.fromJson(jsonResponse);
 
           if (data.status == 1 && data.response.isNotEmpty) {
+            final selected = data.response.firstWhere(
+              (r) =>
+                  (r.symbolKey ?? '').trim() == widget.params.symbolKey.trim(),
+              orElse: () => data.response.first,
+            );
             setState(() {
               _stockRecord = data;
-              recordNFO = data.response.first;
-              ohlcNFO = data.response.first.ohlc;
+              recordNFO = selected;
+              ohlcNFO = selected.ohlc;
               errorMessage = null;
             });
             log('Initial HTTP data loaded successfully');
@@ -355,32 +374,6 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
     });
   }
 
-  // void _checkMarketStatus() {
-  //   final now = DateTime.now();
-  //   final marketOpenTime = DateTime(now.year, now.month, now.day, 9, 15);
-  //   final marketCloseTime = DateTime(now.year, now.month, now.day, 15, 30);
-
-  //   // Make sure the system is not on Saturday or Sunday
-  //   final isWeekday =
-  //       now.weekday >= DateTime.monday && now.weekday <= DateTime.friday;
-
-  //   final newMarketStatus = isWeekday &&
-  //       now.isAfter(marketOpenTime) &&
-  //       now.isBefore(marketCloseTime);
-
-  //   if (isMarketOpen != newMarketStatus) {
-  //     if (!mounted) return;
-  //     setState(() {
-  //       isMarketOpen = newMarketStatus;
-  //     });
-  //   }
-
-  //   print('Now: $now');
-  //   print('Market Open Time: $marketOpenTime');
-  //   print('Market Close Time: $marketCloseTime');
-  //   print('Market Status: $isMarketOpen');
-  // }
-
   @override
   void initState() {
     AuthService().validateAndLogout(context);
@@ -404,10 +397,16 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
             return;
           }
 
+          final selected = data.response.firstWhere(
+            (r) => (r.symbolKey ?? '').trim() == widget.params.symbolKey.trim(),
+            orElse: () => data.response.first,
+          );
           setState(() {
             _stockRecord = data;
-            recordNFO = data.response.first;
-            ohlcNFO = data.response.first.ohlc;
+            recordNFO = selected;
+            ohlcNFO = selected.ohlc;
+            // ✅ Capture prices ONLY on first data arrival
+            _captureInitialPrices(selected);
           });
         }
       },
@@ -438,6 +437,11 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
     _timer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       initUser();
       // _checkMarketStatus();
+    });
+    // Periodic refresh timer for data updates (1 second)
+    _refreshTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      refreshSymbolData();
     });
     // Separate periodic validation (every 10s)
     _validationTimer = Timer.periodic(const Duration(seconds: 10), (
@@ -481,9 +485,22 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
     super.initState();
   }
 
+  // ✅ Capture prices once when first data arrives
+  void _captureInitialPrices(dynamic record) {
+    if (!initialPricesSet) {
+      orderBuyPrice = record.ohlc.buyPrice;
+      orderSellPrice = record.ohlc.salePrice;
+      initialPricesSet = true;
+      log(
+        '💰 Initial prices captured - Sell: $orderSellPrice, Buy: $orderBuyPrice',
+      );
+    }
+  }
+
   @override
   void dispose() {
     _timer.cancel();
+    _refreshTimer?.cancel();
     try {
       _validationTimer?.cancel();
     } catch (_) {}
@@ -497,6 +514,19 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
       _socketService.disconnect();
     } catch (_) {}
     super.dispose();
+  }
+
+  @override
+  void activate() {
+    super.activate();
+    // Reconnect socket when the NFO symbol page comes back into focus
+    log('NFO Symbol: Page activated - reconnecting websocket');
+    try {
+      _socketService.reset();
+      _socketService.connect();
+    } catch (e) {
+      log('Error reconnecting NFO socket on activate: $e');
+    }
   }
 
   String _formatNumber(dynamic number) {
@@ -552,26 +582,27 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
             );
           }
 
-          // if (_stockRecord.response.isEmpty && errorMessage == null) {
-          //   return const Center(
-          //     child: Column(
-          //       mainAxisAlignment: MainAxisAlignment.center,
-          //       children: [
-          //         CircularProgressIndicator(),
-          //         SizedBox(height: 16),
-          //         Text(
-          //           'Connecting to server...',
-          //           style: TextStyle(fontFamily: FontFamily.globalFontFamily),
-          //         ),
-          //       ],
-          //     ),
-          //   );
-          // }
+          if (_stockRecord.response.isEmpty && errorMessage == null) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text(
+                    'Connecting to server...',
+                    style: TextStyle(fontFamily: FontFamily.globalFontFamily),
+                  ),
+                ],
+              ),
+            );
+          }
 
-          final record = _stockRecord.response.first;
+          final record = _stockRecord.response.firstWhere(
+            (r) => (r.symbolKey ?? '').trim() == widget.params.symbolKey.trim(),
+            orElse: () => _stockRecord.response.first,
+          );
           final ohlc = record.ohlc;
-          orderBuyPrice = ohlc.buyPrice;
-          orderSellPrice = ohlc.salePrice;
 
           return Column(
             children: [
@@ -701,7 +732,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text("UNIT").textStyleH11Color(),
+                                    const Text("UNITS").textStyleH11Color(),
                                     ValueListenableBuilder<int>(
                                       valueListenable: lotsNotifierMrk,
                                       builder: (context, lots, child) {
@@ -1322,7 +1353,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text("UNIT").textStyleH11Color(),
+                                    const Text("UNITS").textStyleH11Color(),
                                     ValueListenableBuilder<int>(
                                       valueListenable: lotsNotifierLmt,
                                       builder: (context, lots, child) {
@@ -1374,6 +1405,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                 ],
                                                 keyboardType:
                                                     TextInputType.number,
+
                                                 style: TextStyle(
                                                   fontSize: screenWidth * 0.045,
                                                   fontFamily: FontFamily
@@ -1462,6 +1494,13 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                     FilteringTextInputFormatter.digitsOnly,
                                   ],
                                   decoration: InputDecoration(
+                                    hintText: 'Enter the amount',
+                                    hintStyle: TextStyle(
+                                      color: zBlack.withOpacity(0.5),
+                                      fontSize: 16,
+                                      fontFamily: FontFamily.globalFontFamily,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                     prefixIcon: Padding(
                                       padding: const EdgeInsets.only(
                                         top: 10.0,
@@ -1619,16 +1658,10 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     Text(
                                                       (() {
                                                         final double price =
-                                                            double.tryParse(
-                                                              _usernameController
-                                                                  .text,
-                                                            ) ??
-                                                            orderSellPrice;
-                                                        // final int lots =
-                                                        //     lotsNotifierLmt
-                                                        //         .value;
-                                                        // final double total =
-                                                        //     price * lots;
+                                                            (orderSellPrice ??
+                                                                    ohlc.salePrice ??
+                                                                    0.0)
+                                                                as double;
                                                         return price
                                                             .toStringAsFixed(2);
                                                       })(),
@@ -1749,16 +1782,10 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     Text(
                                                       (() {
                                                         final double price =
-                                                            double.tryParse(
-                                                              _usernameController
-                                                                  .text,
-                                                            ) ??
-                                                            orderBuyPrice;
-                                                        // final int lots =
-                                                        //     lotsNotifierLmt
-                                                        //         .value;
-                                                        // final double total =
-                                                        //     price * lots;
+                                                            (orderBuyPrice ??
+                                                                    ohlc.buyPrice ??
+                                                                    0.0)
+                                                                as double;
                                                         return price
                                                             .toStringAsFixed(2);
                                                       })(),

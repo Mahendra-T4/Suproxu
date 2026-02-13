@@ -1,6 +1,4 @@
 class Assets {
-  Assets._();
-
   static const String assetsImagesFind = "assets/images/search.png";
 
   static const String assetsImagesScanner = "assets/images/scanner.png";
@@ -54,4 +52,7 @@ class Assets {
 
   static const String assetsImagesSuproxuSplash =
       "assets/images/suproxsplash.png";
+
+  static const String assetsImagesCheckbox =
+      "assets/images/checkbox_5135198.png";
 }

@@ -152,22 +152,17 @@ class _NFOListItemState extends State<NFOListItem> {
           widget.onWishlistChanged();
         }
       },
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: widget.itemData.watchlist == 1
-                ? Colors.green
-                : kGoldenBraunColor,
-            width: 2,
-          ),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        width: 20,
-        height: 20,
-        child: widget.itemData.watchlist == 1
-            ? Icon(Icons.check, size: 16, color: Colors.green)
-            : null,
-      ),
+      child: widget.itemData.watchlist == 1
+          ? Image.asset(Assets.assetsImagesCheckbox, width: 34, height: 34)
+          : Container(
+              height: 28,
+              width: 28,
+              decoration: BoxDecoration(
+                color: Colors.lightGreen.withOpacity(0.5),
+                border: Border.all(color: greyColor, width: 2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
       // child: Image.asset(
       //   widget.itemData.watchlist == 1
       //       ? Assets.assetsImagesSupertradeRomoveWishlist

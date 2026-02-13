@@ -200,7 +200,7 @@ class _LoginPagesState extends State<LoginPages> {
                                       _isPasswordVisible
                                           ? Icons.visibility
                                           : Icons.visibility_off,
-                                      color: zBlack,
+                                      color: kGoldenBraunColor,
                                     ),
                                     onPressed: () {
                                       setState(() {
@@ -359,7 +359,7 @@ class _LoginPagesState extends State<LoginPages> {
                           ).textStyleH5(),
                           SizedBox(height: 8.h),
                           const Text(
-                            'The Super Trade is not liable for any real money transaction. We dont deal in any real money.',
+                            'The Suproxu is not liable for any real money transaction. We dont deal in any real money.',
                           ).textStyleH5(),
                         ],
                       ],

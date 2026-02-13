@@ -4,12 +4,10 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:suproxu/Assets/assets.dart';
 import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/color_blinker.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
-import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/features/navbar/home/mcx/page/home/mcx_home.dart';
 import 'package:suproxu/features/navbar/home/mcx/page/symbol/mcx_symbol.dart';
 import 'package:suproxu/features/navbar/wishlist/model/mcx_symbol_param.dart';
@@ -30,13 +28,10 @@ class McxStockWishlist extends StatefulWidget {
 class _McxStockWishlistState extends State<McxStockWishlist> {
   late MCXWishlistWebSocketService socket;
   MCXWishlistEntity mcxWishlist = MCXWishlistEntity();
-  Timer? _validationTimer;
-  StreamSubscription<void>? _logoutSub;
   String? errorMessage;
   bool _disposed = false;
   final Set<String> removingItems = {};
   List<MCXWatchlist> _localWatchlist = [];
-  bool _isReordering = false;
 
   @override
   void initState() {
@@ -53,24 +48,6 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
         _refreshWishlistData();
       }
     });
-    _startValidationTimer();
-  }
-
-  void _startValidationTimer() {
-    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
-      timer,
-    ) async {
-      if (!mounted) return;
-      try {
-        await AuthService().validateAndLogout(context);
-      } catch (e) {
-        debugPrint('TradeTabs auth validation error: $e');
-      }
-    });
-    _logoutSub = AuthService().onLogout.listen((_) {
-      _validationTimer?.cancel();
-      debugPrint('TradeTabs: received logout event, cancelled local timer');
-    });
   }
 
   void _initializeWebSocket() {
@@ -84,12 +61,6 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
         log('Number of Watchlist Items: ${data.toString()}');
 
         debugPrint('==========================================\n');
-
-        // Skip updates during reordering to prevent UI blink
-        if (_isReordering) {
-          debugPrint('Reordering in progress, skipping WebSocket update');
-          return;
-        }
 
         _safeSetState(() {
           mcxWishlist = data;
@@ -140,12 +111,6 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
   Future<void> _refreshWishlistData() async {
     debugPrint('Refreshing MCX Wishlist Data');
 
-    // Skip refresh during reordering to prevent UI flicker
-    if (_isReordering) {
-      debugPrint('Reordering in progress, skipping refresh');
-      return;
-    }
-
     if (!_disposed && mounted) {
       if (socket.isConnected) {
         debugPrint('Socket connected - data will auto-refresh');
@@ -192,20 +157,23 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
 
   Widget _buildListView() {
     return ReorderableListView.builder(
-      itemCount: _localWatchlist.length,
+      itemCount: mcxWishlist.mcxWatchlist?.length ?? 0,
       proxyDecorator: (child, index, animation) {
         return AnimatedBuilder(
           animation: animation,
           builder: (context, child) {
             return Material(
               elevation: 12,
-              color: kWhiteColor,
+              color: zBlack,
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 decoration: BoxDecoration(
-                  color: kWhiteColor,
+                  color: zBlack,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: kWhiteColor, width: 2),
+                  border: Border.all(
+                    color: kGoldenBraunColor.withOpacity(0.5),
+                    width: 2,
+                  ),
                 ),
                 child: child,
               ),
@@ -216,8 +184,6 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
       },
 
       onReorder: (oldIndex, newIndex) {
-        _isReordering = true;
-
         _safeSetState(() {
           if (newIndex > oldIndex) newIndex--;
           final item = _localWatchlist.removeAt(oldIndex);
@@ -238,40 +204,14 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
         ).join(',');
 
         WishlistRepository.symbolSorting(
-              param: SortListParam(
-                symbolKey: symbolKeys,
-                symbolOrder: orderNumbers,
-              ),
-            )
-            .then((_) {
-              // Add delay before re-enabling WebSocket updates to let UI settle
-              Future.delayed(const Duration(milliseconds: 500), () {
-                if (mounted && !_disposed) {
-                  _isReordering = false;
-                  debugPrint(
-                    'Reordering completed, WebSocket updates re-enabled',
-                  );
-                }
-              });
-            })
-            .catchError((error) {
-              // On error, also re-enable WebSocket updates with delay
-              Future.delayed(const Duration(milliseconds: 500), () {
-                if (mounted && !_disposed) {
-                  _isReordering = false;
-                  debugPrint(
-                    'Reordering error: $error, WebSocket updates re-enabled',
-                  );
-                }
-              });
-            });
+          param: SortListParam(
+            symbolKey: symbolKeys,
+            symbolOrder: orderNumbers,
+          ),
+        );
       },
 
       itemBuilder: (context, index) {
-        // Safety check: bounds validation
-        if (index >= _localWatchlist.length) {
-          return SizedBox.shrink();
-        }
         final item = _localWatchlist[index];
         return GestureDetector(
           key: ValueKey(item.symbolKey),
@@ -295,7 +235,7 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
 
   Widget _buildListItem(MCXWatchlist item, int index) {
     return Container(
-      margin: const EdgeInsets.only(left: 8, right: 8, top: 10),
+      margin: const EdgeInsets.only(left: 10, right: 10, top: 10),
       decoration: BoxDecoration(
         color: kWhiteColor,
         borderRadius: BorderRadius.circular(12),
@@ -315,36 +255,21 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(
-          flex: 3,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(item.symbolName.toString()).textStyleH1(),
-              // SizedBox(height: 4.h),
-            ],
-          ),
-        ),
-        Column(
+        Expanded(flex: 3, child: Text(item.symbolName ?? '').textStyleH1()),
+        Row(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                BlinkingPriceText(
-                  assetId: item.symbolKey.toString(),
-                  text: "₹${_formatNumber(item.ohlc!.salePrice.toString())}",
-                  compareValue: item.ohlc!.lastPrice,
-                  currentValue: item.ohlc!.salePrice,
-                ),
-                SizedBox(width: 10.w),
-                BlinkingPriceText(
-                  assetId: item.symbolName.toString(),
-                  text: "₹${_formatNumber(item.ohlc!.buyPrice.toString())}",
-                  compareValue: item.ohlc!.lastPrice,
-                  currentValue: item.ohlc!.buyPrice,
-                ),
-                SizedBox(height: 5.w),
-              ],
+            BlinkingPriceText(
+              assetId: item.symbolKey.toString(),
+              text: "₹${_formatNumber(item.ohlc!.salePrice.toString())}",
+              compareValue: item.ohlc!.lastPrice,
+              currentValue: item.ohlc!.salePrice,
+            ),
+            SizedBox(width: 10.w),
+            BlinkingPriceText(
+              assetId: item.symbolName.toString(),
+              text: "₹${_formatNumber(item.ohlc!.buyPrice.toString())}",
+              compareValue: item.ohlc!.lastPrice,
+              currentValue: item.ohlc!.buyPrice,
             ),
           ],
         ),
@@ -365,11 +290,19 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
                   width: 24,
                   height: 24,
                   child: CircularProgressIndicator(
-                    color: zBlack,
+                    color: Colors.white,
                     strokeWidth: 2,
                   ),
                 )
-              : Image.asset(Assets.assetsImagesCheckbox, width: 34, height: 34),
+              : Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.green, width: 2),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  width: 20,
+                  height: 20,
+                  child: Icon(Icons.check, size: 16, color: Colors.green),
+                ),
         ),
       ],
     );

@@ -1,8 +1,10 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
+import 'package:suproxu/features/navbar/Portfolio/portfolio.dart';
 import 'package:suproxu/features/navbar/Portfolio/provider/active_port_provider.dart';
 
 class WalletWidget extends StatefulWidget {
@@ -28,14 +30,22 @@ class _WalletWidgetState extends State<WalletWidget> {
         return walletAsync.when(
           data: (wallet) {
             // When data is available
-            return modernStatCard2(
-              icon: Icons.show_chart_rounded,
-              label: "Profit & Loss",
-              value: wallet.status == 1
-                  ? wallet.activeStatics!.activeProfitLoss.toString()
-                  : '0.0',
-              color: Colors.purpleAccent,
-              screenWidth: widget.screenWidth,
+            return InkWell(
+              onTap: () {
+                // Navigate to the portfolio page when tapped
+                GoRouter.of(context).goNamed(
+                  Portfolioclose.routeName,
+                );
+              },
+              child: modernStatCard2(
+                icon: Icons.show_chart_rounded,
+                label: "Profit & Loss",
+                value: wallet.status == 1
+                    ? wallet.activeStatics!.activeProfitLoss.toString()
+                    : '0.0',
+                color: Colors.purpleAccent,
+                screenWidth: widget.screenWidth,
+              ),
             );
           },
           loading: () {

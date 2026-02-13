@@ -79,6 +79,24 @@ class _NseFutureState extends State<NseFuture> {
     _searchController.addListener(() {
       _performSearch(_searchController.text);
     });
+
+     Timer.periodic(const Duration(seconds:1), (timer) {
+      if (mounted) {
+        _refreshNFOData();
+      }
+    });
+  }
+
+  Future<void> _refreshNFOData() async {
+    debugPrint('Refreshing NFO Data');
+
+    if (!mounted) return;
+
+    try {
+      nfoWebSocket.connect();
+    } catch (e) {
+      developer.log('Error refreshing NFO data: $e');
+    }
   }
 
   void _performSearch(String query) {
@@ -125,14 +143,24 @@ class _NseFutureState extends State<NseFuture> {
   }
 
   @override
+  void activate() {
+    super.activate();
+    // Reconnect socket when the page comes back into focus
+    developer.log('NseFuture: Page activated - reconnecting websocket');
+    try {
+      nfoWebSocket.connect();
+    } catch (e) {
+      developer.log('Error reconnecting NFO websocket on activate: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kWhiteColor,
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async {
-            // Implement refresh logic if needed
-          },
+          onRefresh: _refreshNFOData,
           child: Column(
             children: [
               SearchBarWidget(controller: _searchController),

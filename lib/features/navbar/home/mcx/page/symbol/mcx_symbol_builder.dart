@@ -153,6 +153,12 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
           final matchingSymbol = data.response.firstWhere(
             (r) => r.symbolKey.trim() == widget.params.symbolKey.trim(),
           );
+
+          // // ✅ Update buy/sell prices with latest websocket data
+          // buyPrice = matchingSymbol.ohlc.buyPrice;
+          // salePrice =
+          //     matchingSymbol.ohlc.salePrice;
+
           final filteredData = GetStockRecordEntity(
             status: data.status,
             response: [matchingSymbol],
@@ -162,6 +168,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
           _updateSymbolData(filteredData);
           errorMessage = null;
           log('Socket Updated: ${widget.params.symbolKey}');
+          log('💰 Updated Prices - Buy: $buyPrice | Sell: $salePrice');
         } catch (e, stack) {
           log('Error: $e');
           log('Stack: $stack');
@@ -1287,8 +1294,6 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
     double screenHeight,
     double screenWidth,
   ) {
-    // salePrice = ohlc.salePrice;
-    // buyPrice = ohlc.buyPrice;
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.symmetric(
@@ -1522,25 +1527,38 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                           width: screenWidth / 2.5,
                           child: ElevatedButton(
                             onPressed: () {
-                              if (double.parse(usernameController.text) >
-                                      double.parse(ohlc.salePrice.toString()) ||
-                                  double.parse(usernameController.text) <
-                                      double.parse(ohlc.buyPrice.toString())) {
-                                saleStock(
-                                  activity: 'sale-stock-order',
-                                  context: context,
-                                  symbolKey: widget.params.symbolKey,
-                                  categoryName: 'MCX',
-                                  stockPrice:
-                                      '${usernameController.text} * ${lotsNotifierLmt.value}',
-                                  stockQty: lotsNotifierLmt.value.toString(),
-                                );
-                              } else {
-                                waringToast(
-                                  context,
-                                  'You Cant Sale Stock Your Price is not in Range!',
-                                );
+                              final userPrice = double.tryParse(
+                                usernameController.text,
+                              );
+                              final buyPrice = double.tryParse(
+                                ohlc.buyPrice.toString(),
+                              );
+                              final salePrice = double.tryParse(
+                                ohlc.salePrice.toString(),
+                              );
+
+                              if (userPrice == null) {
+                                waringToast(context, 'Invalid price entered!');
                               }
+                              // else if (buyPrice != null &&
+                              //     salePrice != null &&
+                              //     userPrice >= buyPrice &&
+                              //     userPrice <= salePrice) {
+                              saleStock(
+                                activity: 'sale-stock-order',
+                                context: context,
+                                symbolKey: widget.params.symbolKey,
+                                categoryName: 'MCX',
+                                stockPrice:
+                                    '${usernameController.text} * ${lotsNotifierLmt.value}',
+                                stockQty: lotsNotifierLmt.value.toString(),
+                              );
+                              // } else {
+                              //   waringToast(
+                              //     context,
+                              //     'You Cant Sale Stock Your Price is not in Range!',
+                              //   );
+                              // }
                               // if (isMarketOpen) {
 
                               // } else {
@@ -1578,7 +1596,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                   ],
                                 ),
                                 Text(
-                                  '${(salePrice ?? ohlc.salePrice).toStringAsFixed(2)}',
+                                  '${usernameController.text.isNotEmpty ? (double.tryParse(usernameController.text)?.toStringAsFixed(2) ?? salePrice.toStringAsFixed(2)) : salePrice.toStringAsFixed(2)}',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: screenWidth * 0.045,
@@ -1622,25 +1640,38 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                           width: screenWidth / 2.5,
                           child: ElevatedButton(
                             onPressed: () {
-                              if (double.parse(usernameController.text) >
-                                      double.parse(ohlc.salePrice.toString()) ||
-                                  double.parse(usernameController.text) <
-                                      double.parse(ohlc.buyPrice.toString())) {
-                                buyStock(
-                                  activity: 'buy-stock-order',
-                                  context: context,
-                                  symbolKey: widget.params.symbolKey,
-                                  categoryName: 'MCX',
-                                  stockPrice:
-                                      '${usernameController.text} * ${lotsNotifierLmt.value}',
-                                  stockQty: lotsNotifierLmt.value.toString(),
-                                );
-                              } else {
-                                waringToast(
-                                  context,
-                                  'You Cant Buy Stock Your Price is not in Range!',
-                                );
+                              final userPrice = double.tryParse(
+                                usernameController.text,
+                              );
+                              final buyPrice = double.tryParse(
+                                ohlc.buyPrice.toString(),
+                              );
+                              final salePrice = double.tryParse(
+                                ohlc.salePrice.toString(),
+                              );
+
+                              if (userPrice == null) {
+                                waringToast(context, 'Invalid price entered!');
                               }
+                              //  else if (buyPrice != null &&
+                              //     salePrice != null &&
+                              //     userPrice >= buyPrice &&
+                              //     userPrice <= salePrice) {
+                              buyStock(
+                                activity: 'buy-stock-order',
+                                context: context,
+                                symbolKey: widget.params.symbolKey,
+                                categoryName: 'MCX',
+                                stockPrice:
+                                    '${usernameController.text} * ${lotsNotifierLmt.value}',
+                                stockQty: lotsNotifierLmt.value.toString(),
+                              );
+                              // } else {
+                              //   waringToast(
+                              //     context,
+                              //     'You Cant Buy Stock Your Price is not in Range!',
+                              //   );
+                              // }
                               // if (isMarketOpen) {
 
                               // } else {
@@ -1681,7 +1712,7 @@ abstract class MCXSymbolWidgetBuilder extends State<MCXSymbolRecordPage> {
                                   ],
                                 ),
                                 Text(
-                                  '${(buyPrice ?? ohlc.buyPrice).toStringAsFixed(2)}',
+                                  '${usernameController.text.isNotEmpty ? (double.tryParse(usernameController.text)?.toStringAsFixed(2) ?? buyPrice.toStringAsFixed(2)) : buyPrice.toStringAsFixed(2)}',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: screenWidth * 0.045,

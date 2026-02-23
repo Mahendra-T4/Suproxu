@@ -30,48 +30,195 @@ import 'package:suproxu/features/navbar/profile/notification/notificationScreen.
 
 class NseFutureSymbolPage extends StatefulWidget {
   const NseFutureSymbolPage({super.key, required this.params});
-  final SymbolScreenParams params;
+
   static const String routeName = '/nse-future-symbol-page';
+
+  final SymbolScreenParams params;
 
   @override
   State<NseFutureSymbolPage> createState() => _NseFutureSymbolPageState();
 }
 
 class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
-  late final NFOSymbolWebSocket _socketService;
-  GetStockRecordEntity _stockRecord = GetStockRecordEntity();
+  final client = http.Client();
   String? errorMessage;
-  dynamic orderSellPrice;
-  dynamic orderBuyPrice;
   bool initialPricesSet = false;
+  bool isBuyClicked = false;
+  bool isMarketOpen = true;
+  bool isSellClicked = false;
+  int lots = 1; // Variable to track the lot count
+  final ValueNotifier<int> lotsNotifierLmt = ValueNotifier<int>(1);
   // bool initialPricesSet = false;
 
   final ValueNotifier<int> lotsNotifierMrk = ValueNotifier<int>(1);
-  final ValueNotifier<int> lotsNotifierLmt = ValueNotifier<int>(1);
+
+  NFO nfo = NFO();
+  var ohlcNFO;
+  dynamic orderBuyPrice;
+  dynamic orderSellPrice;
+  var recordNFO;
+  int selecteddTab = 0;
+  dynamic uBalance;
+  final url = Uri.parse(superTradeBaseApiEndPointUrl);
+
+  StreamSubscription<void>? _logoutSub;
   final TextEditingController _lotsMktController = TextEditingController(
     text: '1',
   );
+
   final TextEditingController _lotsOdrController = TextEditingController(
     text: '1',
   );
 
-  bool isMarketOpen = true;
-  final TextEditingController _usernameController = TextEditingController();
-  int lots = 1; // Variable to track the lot count
-  int selecteddTab = 0;
-  late Timer _timer;
   Timer? _refreshTimer;
+  late final NFOSymbolWebSocket _socketService;
+  GetStockRecordEntity _stockRecord = GetStockRecordEntity();
+  late Timer _timer;
+  final TextEditingController _usernameController = TextEditingController();
   Timer? _validationTimer;
-  StreamSubscription<void>? _logoutSub;
-  bool isBuyClicked = false;
-  bool isSellClicked = false;
-  var ohlcNFO;
-  var recordNFO;
 
-  final client = http.Client();
-  final url = Uri.parse(superTradeBaseApiEndPointUrl);
+  @override
+  void activate() {
+    super.activate();
+    // Reconnect socket when the NFO symbol page comes back into focus
+    log('NFO Symbol: Page activated - reconnecting websocket');
+    try {
+      _socketService.reset();
+      _socketService.connect();
+    } catch (e) {
+      log('Error reconnecting NFO socket on activate: $e');
+    }
+  }
 
-  NFO nfo = NFO();
+  @override
+  void dispose() {
+    _timer.cancel();
+    _refreshTimer?.cancel();
+    try {
+      _validationTimer?.cancel();
+    } catch (_) {}
+    _logoutSub?.cancel();
+    lotsNotifierMrk.dispose();
+    lotsNotifierLmt.dispose();
+    _lotsMktController.dispose();
+    _lotsOdrController.dispose();
+    _usernameController.dispose();
+    try {
+      _socketService.disconnect();
+    } catch (_) {}
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    AuthService().validateAndLogout(context);
+    // First, ensure any previous socket is fully cleaned up
+
+    _socketService = NFOSymbolWebSocket(
+      symbolKey: widget.params.symbolKey,
+      onDataReceived: (data) {
+        if (mounted) {
+          // Extra validation: ensure response contains the requested symbol
+          final hasMatchingSymbol =
+              data.response.isNotEmpty &&
+              data.response.any(
+                (r) => r.symbolKey.trim() == widget.params.symbolKey.trim(),
+              );
+
+          if (!hasMatchingSymbol) {
+            log(
+              '⚠ Rejected data: no matching symbolKey. Expected: ${widget.params.symbolKey}',
+            );
+            return;
+          }
+
+          final selected = data.response.firstWhere(
+            (r) => (r.symbolKey ?? '').trim() == widget.params.symbolKey.trim(),
+            orElse: () => data.response.first,
+          );
+          setState(() {
+            _stockRecord = data;
+            recordNFO = selected;
+            ohlcNFO = selected.ohlc;
+            // ✅ Capture prices ONLY on first data arrival
+            _captureInitialPrices(selected);
+          });
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          setState(() {
+            errorMessage = error;
+          });
+        }
+      },
+      onConnected: () {
+        if (mounted) {
+          setState(() {
+            errorMessage = null;
+          });
+        }
+      },
+      onDisconnected: () {
+        if (mounted) {
+          setState(() {
+            errorMessage = "Connection lost. Attempting to reconnect...";
+          });
+        }
+      },
+    );
+    _socketService.connect();
+    _fetchInitialDataViaHttp(); // Fetch data immediately via HTTP while WebSocket connects
+    _timer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+      initUser();
+      // _checkMarketStatus();
+    });
+    // Periodic refresh timer for data updates (1 second)
+    _refreshTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      refreshSymbolData();
+    });
+    // Separate periodic validation (every 10s)
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        log('NFO symbol auth validation error: $e');
+      }
+    });
+    _logoutSub = AuthService().onLogout.listen((_) {
+      try {
+        _validationTimer?.cancel();
+      } catch (_) {}
+      try {
+        _timer.cancel();
+      } catch (_) {}
+      try {
+        _socketService.disconnect();
+      } catch (_) {}
+      log('NFO symbol: handled global logout cleanup');
+    });
+
+    lotsNotifierMrk.addListener(() {
+      if (lotsNotifierMrk.value > 0) {
+        _lotsMktController.text = lotsNotifierMrk.value.toString();
+      }
+    });
+
+    lotsNotifierLmt.addListener(() {
+      if (lotsNotifierLmt.value > 0) {
+        _lotsOdrController.text = lotsNotifierLmt.value.toString();
+      }
+    });
+
+    initUser();
+    // _checkMarketStatus();
+    AuthService().validateAndLogout(context);
+    super.initState();
+  }
 
   /// Refresh symbol data by reconnecting to WebSocket
   Future<void> refreshSymbolData() async {
@@ -83,61 +230,6 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
       _socketService.connect();
     } catch (e) {
       log('Error refreshing NFO symbol data: $e');
-    }
-  }
-
-  /// Fetch initial data via HTTP to show immediately while WebSocket connects
-  Future<void> _fetchInitialDataViaHttp() async {
-    try {
-      DatabaseService databaseService = DatabaseService();
-      final userKey = await databaseService.getUserData(key: userIDKey);
-      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      final deviceID = androidInfo.id.toString();
-
-      final response = await client
-          .post(
-            url,
-            body: {
-              'activity': 'get-stock-record',
-              'userKey': userKey,
-              'symbolKey': widget.params.symbolKey,
-              'dataRelatedTo': 'NFO',
-              'deviceID': deviceID.toString(),
-            },
-          )
-          .timeout(
-            const Duration(seconds: 5),
-            onTimeout: () => http.Response('timeout', 408),
-          );
-
-      if (response.statusCode == 200) {
-        if (!mounted) return;
-        try {
-          final jsonResponse = jsonDecode(response.body);
-          final data = GetStockRecordEntity.fromJson(jsonResponse);
-
-          if (data.status == 1 && data.response.isNotEmpty) {
-            final selected = data.response.firstWhere(
-              (r) =>
-                  (r.symbolKey ?? '').trim() == widget.params.symbolKey.trim(),
-              orElse: () => data.response.first,
-            );
-            setState(() {
-              _stockRecord = data;
-              recordNFO = selected;
-              ohlcNFO = selected.ohlc;
-              errorMessage = null;
-            });
-            log('Initial HTTP data loaded successfully');
-          }
-        } catch (e) {
-          log('Failed to parse initial HTTP response: $e');
-        }
-      }
-    } catch (e) {
-      log('Initial HTTP fetch error: $e');
-      // Continue silently - WebSocket will handle it
     }
   }
 
@@ -364,7 +456,6 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
     }
   }
 
-  dynamic uBalance;
   initUser() async {
     DatabaseService databaseService = DatabaseService();
     final userBalance = await databaseService.getUserData(key: userBalanceKey);
@@ -374,115 +465,59 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
     });
   }
 
-  @override
-  void initState() {
-    AuthService().validateAndLogout(context);
-    // First, ensure any previous socket is fully cleaned up
+  /// Fetch initial data via HTTP to show immediately while WebSocket connects
+  Future<void> _fetchInitialDataViaHttp() async {
+    try {
+      DatabaseService databaseService = DatabaseService();
+      final userKey = await databaseService.getUserData(key: userIDKey);
+      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      final deviceID = androidInfo.id.toString();
 
-    _socketService = NFOSymbolWebSocket(
-      symbolKey: widget.params.symbolKey,
-      onDataReceived: (data) {
-        if (mounted) {
-          // Extra validation: ensure response contains the requested symbol
-          final hasMatchingSymbol =
-              data.response.isNotEmpty &&
-              data.response.any(
-                (r) => r.symbolKey.trim() == widget.params.symbolKey.trim(),
-              );
-
-          if (!hasMatchingSymbol) {
-            log(
-              '⚠ Rejected data: no matching symbolKey. Expected: ${widget.params.symbolKey}',
-            );
-            return;
-          }
-
-          final selected = data.response.firstWhere(
-            (r) => (r.symbolKey ?? '').trim() == widget.params.symbolKey.trim(),
-            orElse: () => data.response.first,
+      final response = await client
+          .post(
+            url,
+            body: {
+              'activity': 'get-stock-record',
+              'userKey': userKey,
+              'symbolKey': widget.params.symbolKey,
+              'dataRelatedTo': 'NFO',
+              'deviceID': deviceID.toString(),
+            },
+          )
+          .timeout(
+            const Duration(seconds: 5),
+            onTimeout: () => http.Response('timeout', 408),
           );
-          setState(() {
-            _stockRecord = data;
-            recordNFO = selected;
-            ohlcNFO = selected.ohlc;
-            // ✅ Capture prices ONLY on first data arrival
-            _captureInitialPrices(selected);
-          });
-        }
-      },
-      onError: (error) {
-        if (mounted) {
-          setState(() {
-            errorMessage = error;
-          });
-        }
-      },
-      onConnected: () {
-        if (mounted) {
-          setState(() {
-            errorMessage = null;
-          });
-        }
-      },
-      onDisconnected: () {
-        if (mounted) {
-          setState(() {
-            errorMessage = "Connection lost. Attempting to reconnect...";
-          });
-        }
-      },
-    );
-    _socketService.connect();
-    _fetchInitialDataViaHttp(); // Fetch data immediately via HTTP while WebSocket connects
-    _timer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
-      initUser();
-      // _checkMarketStatus();
-    });
-    // Periodic refresh timer for data updates (1 second)
-    _refreshTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) return;
-      refreshSymbolData();
-    });
-    // Separate periodic validation (every 10s)
-    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
-      timer,
-    ) async {
-      if (!mounted) return;
-      try {
-        await AuthService().validateAndLogout(context);
-      } catch (e) {
-        log('NFO symbol auth validation error: $e');
-      }
-    });
-    _logoutSub = AuthService().onLogout.listen((_) {
-      try {
-        _validationTimer?.cancel();
-      } catch (_) {}
-      try {
-        _timer.cancel();
-      } catch (_) {}
-      try {
-        _socketService.disconnect();
-      } catch (_) {}
-      log('NFO symbol: handled global logout cleanup');
-    });
 
-    lotsNotifierMrk.addListener(() {
-      if (lotsNotifierMrk.value > 0) {
-        _lotsMktController.text = lotsNotifierMrk.value.toString();
-      }
-    });
+      if (response.statusCode == 200) {
+        if (!mounted) return;
+        try {
+          final jsonResponse = jsonDecode(response.body);
+          final data = GetStockRecordEntity.fromJson(jsonResponse);
 
-    lotsNotifierLmt.addListener(() {
-      if (lotsNotifierLmt.value > 0) {
-        _lotsOdrController.text = lotsNotifierLmt.value.toString();
+          if (data.status == 1 && data.response.isNotEmpty) {
+            final selected = data.response.firstWhere(
+              (r) =>
+                  (r.symbolKey ?? '').trim() == widget.params.symbolKey.trim(),
+              orElse: () => data.response.first,
+            );
+            setState(() {
+              _stockRecord = data;
+              recordNFO = selected;
+              ohlcNFO = selected.ohlc;
+              errorMessage = null;
+            });
+            log('Initial HTTP data loaded successfully');
+          }
+        } catch (e) {
+          log('Failed to parse initial HTTP response: $e');
+        }
       }
-    });
-
-    initUser();
-    // _checkMarketStatus();
-    AuthService().validateAndLogout(context);
-    super.initState();
+    } catch (e) {
+      log('Initial HTTP fetch error: $e');
+      // Continue silently - WebSocket will handle it
+    }
   }
 
   // ✅ Capture prices once when first data arrives
@@ -497,41 +532,28 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
     }
   }
 
-  @override
-  void dispose() {
-    _timer.cancel();
-    _refreshTimer?.cancel();
-    try {
-      _validationTimer?.cancel();
-    } catch (_) {}
-    _logoutSub?.cancel();
-    lotsNotifierMrk.dispose();
-    lotsNotifierLmt.dispose();
-    _lotsMktController.dispose();
-    _lotsOdrController.dispose();
-    _usernameController.dispose();
-    try {
-      _socketService.disconnect();
-    } catch (_) {}
-    super.dispose();
-  }
-
-  @override
-  void activate() {
-    super.activate();
-    // Reconnect socket when the NFO symbol page comes back into focus
-    log('NFO Symbol: Page activated - reconnecting websocket');
-    try {
-      _socketService.reset();
-      _socketService.connect();
-    } catch (e) {
-      log('Error reconnecting NFO socket on activate: $e');
-    }
-  }
-
   String _formatNumber(dynamic number) {
     if (number == null) return 'N/A';
     return NumberFormat('#,##,##0.00').format(number);
+  }
+
+  Widget _buildInfoBox(String text, double screenWidth, double screenHeight) {
+    final List<String> parts = text.split('\n');
+    final String label = parts[0];
+    final String value = parts.length > 1 ? parts[1] : '';
+
+    return Container(
+      height: screenHeight * 0.08,
+      width: screenWidth * 0.20,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(label).textStyleH2b(),
+          SizedBox(height: 4.h),
+          Text(value).textStyleH2b(),
+        ],
+      ),
+    );
   }
 
   @override
@@ -664,7 +686,11 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                       SizedBox(width: 8.h),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => setState(() => selecteddTab = 1),
+                          onTap: () => setState(() {
+                            selecteddTab = 1;
+                            orderSellPrice = ohlc.salePrice;
+                            orderBuyPrice = ohlc.buyPrice;
+                          }),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
                             alignment: Alignment.center,
@@ -1581,41 +1607,47 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                               borderRadius:
                                                   BorderRadius.circular(15),
                                               onTap: () {
-                                                if (double.parse(
-                                                          _usernameController
-                                                              .text,
-                                                        ) >
-                                                        double.parse(
-                                                          ohlc.salePrice
-                                                              .toString(),
-                                                        ) ||
-                                                    double.parse(
-                                                          _usernameController
-                                                              .text,
-                                                        ) <
-                                                        double.parse(
-                                                          ohlc.buyPrice
-                                                              .toString(),
-                                                        )) {
-                                                  saleStock(
-                                                    context: context,
-                                                    activity:
-                                                        'sale-stock-order',
-                                                    symbolKey:
-                                                        widget.params.symbolKey,
-                                                    categoryName: 'NFO',
-                                                    stockPrice:
-                                                        '${_usernameController.text} * ${lotsNotifierLmt.value}',
-                                                    stockQty: lotsNotifierLmt
-                                                        .value
-                                                        .toString(),
-                                                  );
-                                                } else {
+                                                final userPrice =
+                                                    double.tryParse(
+                                                      _usernameController.text,
+                                                    );
+                                                final buyPrice =
+                                                    double.tryParse(
+                                                      ohlc.buyPrice.toString(),
+                                                    );
+                                                final salePrice =
+                                                    double.tryParse(
+                                                      ohlc.salePrice.toString(),
+                                                    );
+
+                                                if (userPrice == null) {
                                                   waringToast(
                                                     context,
-                                                    'You Cant Sale Stock Your Price is not in Range!',
+                                                    'Invalid price entered!',
                                                   );
                                                 }
+                                                //  else if (buyPrice != null &&
+                                                //     salePrice != null &&
+                                                //     userPrice >= buyPrice &&
+                                                //     userPrice <= salePrice) {
+                                                saleStock(
+                                                  context: context,
+                                                  activity: 'sale-stock-order',
+                                                  symbolKey:
+                                                      widget.params.symbolKey,
+                                                  categoryName: 'NFO',
+                                                  stockPrice:
+                                                      '${_usernameController.text} * ${lotsNotifierLmt.value}',
+                                                  stockQty: lotsNotifierLmt
+                                                      .value
+                                                      .toString(),
+                                                );
+                                                // } else {
+                                                //   waringToast(
+                                                //     context,
+                                                //     'You Cant Sale Stock Your Price is not in Range!',
+                                                //   );
+                                                // }
                                               },
                                               child: Container(
                                                 padding: EdgeInsets.symmetric(
@@ -1656,15 +1688,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     ),
                                                     const SizedBox(height: 4),
                                                     Text(
-                                                      (() {
-                                                        final double price =
-                                                            (orderSellPrice ??
-                                                                    ohlc.salePrice ??
-                                                                    0.0)
-                                                                as double;
-                                                        return price
-                                                            .toStringAsFixed(2);
-                                                      })(),
+                                                      '${_usernameController.text.isNotEmpty ? (double.tryParse(_usernameController.text)?.toStringAsFixed(2) ?? orderSellPrice.toStringAsFixed(2)) : orderSellPrice.toStringAsFixed(2)}',
                                                       style: TextStyle(
                                                         color: Colors.white,
                                                         fontSize:
@@ -1676,6 +1700,27 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                         letterSpacing: 0.5,
                                                       ),
                                                     ),
+                                                    //  Text(
+                                                    //   (() {
+                                                    //     final double price =
+                                                    //         (orderSellPrice ??
+                                                    //                 ohlc.salePrice ??
+                                                    //                 0.0)
+                                                    //             as double;
+                                                    //     return price
+                                                    //         .toStringAsFixed(2);
+                                                    //   })(),
+                                                    //   style: TextStyle(
+                                                    //     color: Colors.white,
+                                                    //     fontSize:
+                                                    //         screenWidth * 0.045,
+                                                    //     fontWeight:
+                                                    //         FontWeight.bold,
+                                                    //     fontFamily: FontFamily
+                                                    //         .globalFontFamily,
+                                                    //     letterSpacing: 0.5,
+                                                    //   ),
+                                                    // ),
                                                   ],
                                                 ),
                                               ),
@@ -1706,40 +1751,81 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                               borderRadius:
                                                   BorderRadius.circular(15),
                                               onTap: () {
-                                                if (double.parse(
-                                                          _usernameController
-                                                              .text,
-                                                        ) >
-                                                        double.parse(
-                                                          ohlc.salePrice
-                                                              .toString(),
-                                                        ) ||
-                                                    double.parse(
-                                                          _usernameController
-                                                              .text,
-                                                        ) <
-                                                        double.parse(
-                                                          ohlc.buyPrice
-                                                              .toString(),
-                                                        )) {
-                                                  buyStock(
-                                                    context: context,
-                                                    activity: 'buy-stock-order',
-                                                    symbolKey:
-                                                        widget.params.symbolKey,
-                                                    categoryName: 'NFO',
-                                                    stockPrice:
-                                                        '${_usernameController.text} * ${lotsNotifierLmt.value}',
-                                                    stockQty: lotsNotifierLmt
-                                                        .value
-                                                        .toString(),
-                                                  );
-                                                } else {
+                                                final userPrice =
+                                                    double.tryParse(
+                                                      _usernameController.text,
+                                                    );
+                                                final buyPrice =
+                                                    double.tryParse(
+                                                      ohlc.buyPrice.toString(),
+                                                    );
+                                                final salePrice =
+                                                    double.tryParse(
+                                                      ohlc.salePrice.toString(),
+                                                    );
+
+                                                if (userPrice == null) {
                                                   waringToast(
                                                     context,
-                                                    'You Cant Buy Stock Your Price is not in Range!',
+                                                    'Invalid price entered!',
                                                   );
                                                 }
+                                                // else if (buyPrice != null &&
+                                                //     salePrice != null &&
+                                                //     userPrice >= buyPrice &&
+                                                //     userPrice <= salePrice) {
+                                                buyStock(
+                                                  context: context,
+                                                  activity: 'buy-stock-order',
+                                                  symbolKey:
+                                                      widget.params.symbolKey,
+                                                  categoryName: 'NFO',
+                                                  stockPrice:
+                                                      '${_usernameController.text} * ${lotsNotifierLmt.value}',
+                                                  stockQty: lotsNotifierLmt
+                                                      .value
+                                                      .toString(),
+                                                );
+                                                // } else {
+                                                //   waringToast(
+                                                //     context,
+                                                //     'You Cant Sale Stock Your Price is not in Range!',
+                                                //   );
+                                                // }
+                                                // if (double.parse(
+                                                //           _usernameController
+                                                //               .text,
+                                                //         ) >
+                                                //         double.parse(
+                                                //           ohlc.salePrice
+                                                //               .toString(),
+                                                //         ) ||
+                                                //     double.parse(
+                                                //           _usernameController
+                                                //               .text,
+                                                //         ) <
+                                                //         double.parse(
+                                                //           ohlc.buyPrice
+                                                //               .toString(),
+                                                //         )) {
+                                                //   buyStock(
+                                                //     context: context,
+                                                //     activity: 'buy-stock-order',
+                                                //     symbolKey:
+                                                //         widget.params.symbolKey,
+                                                //     categoryName: 'NFO',
+                                                //     stockPrice:
+                                                //         '${_usernameController.text} * ${lotsNotifierLmt.value}',
+                                                //     stockQty: lotsNotifierLmt
+                                                //         .value
+                                                //         .toString(),
+                                                //   );
+                                                // } else {
+                                                //   waringToast(
+                                                //     context,
+                                                //     'You Cant Buy Stock Your Price is not in Range!',
+                                                //   );
+                                                // }
                                               },
                                               child: Container(
                                                 padding: EdgeInsets.symmetric(
@@ -1780,15 +1866,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     ),
                                                     const SizedBox(height: 4),
                                                     Text(
-                                                      (() {
-                                                        final double price =
-                                                            (orderBuyPrice ??
-                                                                    ohlc.buyPrice ??
-                                                                    0.0)
-                                                                as double;
-                                                        return price
-                                                            .toStringAsFixed(2);
-                                                      })(),
+                                                      '${_usernameController.text.isNotEmpty ? (double.tryParse(_usernameController.text)?.toStringAsFixed(2) ?? orderBuyPrice.toStringAsFixed(2)) : orderBuyPrice.toStringAsFixed(2)}',
                                                       style: TextStyle(
                                                         color: Colors.white,
                                                         fontSize:
@@ -1800,6 +1878,27 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                         letterSpacing: 0.5,
                                                       ),
                                                     ),
+                                                    // Text(
+                                                    //   (() {
+                                                    //     final double price =
+                                                    //         (orderBuyPrice ??
+                                                    //                 ohlc.buyPrice ??
+                                                    //                 0.0)
+                                                    //             as double;
+                                                    //     return price
+                                                    //         .toStringAsFixed(2);
+                                                    //   })(),
+                                                    //   style: TextStyle(
+                                                    //     color: Colors.white,
+                                                    //     fontSize:
+                                                    //         screenWidth * 0.045,
+                                                    //     fontWeight:
+                                                    //         FontWeight.bold,
+                                                    //     fontFamily: FontFamily
+                                                    //         .globalFontFamily,
+                                                    //     letterSpacing: 0.5,
+                                                    //   ),
+                                                    // ),
                                                   ],
                                                 ),
                                               ),
@@ -2110,25 +2209,6 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
             ],
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildInfoBox(String text, double screenWidth, double screenHeight) {
-    final List<String> parts = text.split('\n');
-    final String label = parts[0];
-    final String value = parts.length > 1 ? parts[1] : '';
-
-    return Container(
-      height: screenHeight * 0.08,
-      width: screenWidth * 0.20,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(label).textStyleH2b(),
-          SizedBox(height: 4.h),
-          Text(value).textStyleH2b(),
-        ],
       ),
     );
   }

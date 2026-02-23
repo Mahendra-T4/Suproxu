@@ -42,6 +42,16 @@ class DatabaseService with ChangeNotifier {
     }
   }
 
+  Future<void> clearUserData({required String key}) async {
+    final pref = await SharedPreferences.getInstance();
+    try {
+      await pref.remove(key);
+      notifyListeners();
+    } catch (e) {
+      throw Exception("Error clearing data: $e");
+    }
+  }
+
   Future<bool> removeUserData({required String key}) async {
     final pref = await SharedPreferences.getInstance();
     try {

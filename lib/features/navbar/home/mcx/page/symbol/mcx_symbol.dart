@@ -209,8 +209,21 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
                                     SizedBox(width: 8.h),
                                     Expanded(
                                       child: GestureDetector(
-                                        onTap: () =>
-                                            setState(() => selectedTab = 1),
+                                        onTap: () {
+                                          setState(() {
+                                            selectedTab = 1;
+                                            salePrice = symbolData
+                                                .response
+                                                .first
+                                                .ohlc
+                                                .salePrice;
+                                            buyPrice = symbolData
+                                                .response
+                                                .first
+                                                .ohlc
+                                                .buyPrice;
+                                          });
+                                        },
                                         child: Container(
                                           padding: EdgeInsets.symmetric(
                                             vertical: screenHeight * 0.018,

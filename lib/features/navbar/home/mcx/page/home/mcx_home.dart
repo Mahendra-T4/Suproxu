@@ -257,7 +257,7 @@ class _McxHomeState extends State<McxHome> {
                                 },
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
+                                    horizontal: 8,
                                   ),
                                   color: kWhiteColor,
                                   child: Column(
@@ -271,7 +271,7 @@ class _McxHomeState extends State<McxHome> {
                                                 MediaQuery.sizeOf(
                                                   context,
                                                 ).width /
-                                                4,
+                                                3,
                                             child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,

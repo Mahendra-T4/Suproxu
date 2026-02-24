@@ -102,7 +102,7 @@ Widget _buildModernDropdownButton(
         child: Container(
           padding: EdgeInsets.all(4.r),
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(12.r)),
-          child: SuproxuLogo(width: 65.w),
+          child: SuproxuLogo(width: 50.w),
         ),
       ),
     ),

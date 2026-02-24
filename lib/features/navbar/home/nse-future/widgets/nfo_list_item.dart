@@ -153,10 +153,18 @@ class _NFOListItemState extends State<NFOListItem> {
         }
       },
       child: widget.itemData.watchlist == 1
-          ? Image.asset(Assets.assetsImagesCheckbox, width: 34, height: 34)
+          ? Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: Image.asset(
+                Assets.assetsImagesCheckbox,
+                width: 34,
+                height: 34,
+              ),
+            )
           : Container(
               height: 28,
               width: 28,
+              margin: const EdgeInsets.only(right: 10),
               decoration: BoxDecoration(
                 color: Colors.lightGreen.withOpacity(0.5),
                 border: Border.all(color: greyColor, width: 2),

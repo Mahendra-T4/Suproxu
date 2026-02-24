@@ -346,53 +346,69 @@ class _McxHomeState extends State<McxHome> {
 
                                           GestureDetector(
                                             onTap: () async {
+                                              final symbolKey = itemData
+                                                  .symbolKey
+                                                  .toString();
                                               bool success = false;
-                                              if (mcx
-                                                      .response![index]
-                                                      .watchlist ==
-                                                  1) {
+                                              if (itemData.watchlist == 1) {
                                                 // Remove from wishlist
                                                 success =
                                                     await WishlistRepository.removeWatchListSymbols(
                                                       category: 'MCX',
-                                                      symbolKey: mcx
-                                                          .response![index]
-                                                          .symbolKey
-                                                          .toString(),
+                                                      symbolKey: symbolKey,
                                                     );
                                               } else {
                                                 // Add to wishlist
                                                 success =
                                                     await WishlistRepository.addToWishlist(
                                                       category: 'MCX',
-                                                      symbolKey: mcx
-                                                          .response![index]
-                                                          .symbolKey
-                                                          .toString(),
+                                                      symbolKey: symbolKey,
                                                       context: context,
                                                     );
                                               }
                                               if (success && mounted) {
-                                                setState(() {
-                                                  mcx
-                                                          .response![index]
-                                                          .watchlist =
-                                                      mcx
-                                                              .response![index]
-                                                              .watchlist ==
-                                                          1
-                                                      ? 0
-                                                      : 1;
-                                                });
+                                                // Find the item by symbolKey and update it
+                                                final itemIndex =
+                                                    mcx.response?.indexWhere(
+                                                      (item) =>
+                                                          item.symbolKey
+                                                              .toString() ==
+                                                          symbolKey,
+                                                    ) ??
+                                                    -1;
+                                                if (itemIndex >= 0) {
+                                                  setState(() {
+                                                    mcx
+                                                            .response![itemIndex]
+                                                            .watchlist =
+                                                        mcx
+                                                                .response![itemIndex]
+                                                                .watchlist ==
+                                                            1
+                                                        ? 0
+                                                        : 1;
+                                                  });
+                                                }
                                               }
                                             },
                                             child: itemData.watchlist == 1
-                                                ? Image.asset(
-                                                    Assets.assetsImagesCheckbox,
-                                                    width: 34,
-                                                    height: 34,
+                                                ? Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          right: 8,
+                                                        ),
+                                                    child: Image.asset(
+                                                      Assets
+                                                          .assetsImagesCheckbox,
+                                                      width: 34,
+                                                      height: 34,
+                                                    ),
                                                   )
                                                 : Container(
+                                                    margin:
+                                                        const EdgeInsets.only(
+                                                          right: 8,
+                                                        ),
                                                     height: 28,
                                                     width: 28,
                                                     decoration: BoxDecoration(
@@ -408,28 +424,6 @@ class _McxHomeState extends State<McxHome> {
                                                           ),
                                                     ),
                                                   ),
-
-                                            // Container(
-                                            //   decoration: BoxDecoration(
-                                            //     border: Border.all(
-                                            //       color: itemData.watchlist == 1
-                                            //           ? Colors.green
-                                            //           : kGoldenBraunColor,
-                                            //       width: 2,
-                                            //     ),
-                                            //     borderRadius:
-                                            //         BorderRadius.circular(4),
-                                            //   ),
-                                            //   width: 20,
-                                            //   height: 20,
-                                            //   child: itemData.watchlist == 1
-                                            //       ? Icon(
-                                            //           Icons.check,
-                                            //           size: 16,
-                                            //           color: Colors.green,
-                                            //         )
-                                            //       : null,
-                                            // ),
                                           ),
                                         ],
                                       ),

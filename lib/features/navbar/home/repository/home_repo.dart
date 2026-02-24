@@ -6,6 +6,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/constants/apis/api_urls.dart';
+import 'package:suproxu/features/navbar/home/model/logo_model.dart';
 import 'package:suproxu/features/navbar/home/model/stock_cat_list.dart';
 
 // typedef EitherHandler<T> = Either<String, T>;
@@ -43,5 +44,26 @@ class HomeRepository {
       log('Stock Category Error =>> $e');
     }
     return stocksCategoryEntity;
+  }
+
+  static Future<LogoModel> getLogo() async {
+    LogoModel logoModel = LogoModel();
+    try {
+      final response = await _dio.post(
+        superTradeBaseApiEndPointUrl,
+        data: FormData.fromMap({'activity': 'logo'}),
+      );
+      if (response.statusCode == 200) {
+        // final jsonResponse = jsonDecode(response.data);
+        logoModel = LogoModel.fromJson(response.data);
+        log(logoModel.message.toString());
+        // return right(logoModel);
+      } else {
+        log('Failed to load data from server');
+      }
+    } catch (e) {
+      log('Logo Error =>> $e');
+    }
+    return logoModel;
   }
 }

@@ -79,9 +79,9 @@ class _LoginPagesState extends State<LoginPages> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Logo
-                  // SizedBox(height: 50),
+                  SizedBox(height: 50),
                   Center(child: SuproxuLogo(width: 200)),
-                  // const SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 50,

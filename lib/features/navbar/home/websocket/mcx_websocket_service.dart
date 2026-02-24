@@ -18,6 +18,10 @@ class SocketService {
   String? keyword;
   String socketType;
 
+  String? _uKey;
+  String? _deviceID;
+  String? _stockName;
+
   SocketService({
     this.onDataReceived,
     this.onError,
@@ -27,25 +31,45 @@ class SocketService {
     this.socketType = 'get-stock-list',
   });
 
+  void updateSearch(String newKeyword) {
+    keyword = newKeyword;
+    socketType = newKeyword.isEmpty ? 'get-stock-list' : 'stock-search';
+    log('Updating search: keyword="$keyword", socketType="$socketType"');
+    if (socket.connected) {
+      _emitDataRequest();
+    }
+  }
+
+  void _emitDataRequest() {
+    if (_uKey == null || _deviceID == null || _stockName == null) return;
+
+    socket.emit('activity', {
+      'activity': socketType == 'stock-search'
+          ? 'get-stock-search'
+          : 'get-stock-list',
+      'userKey': _uKey,
+      'deviceID': _deviceID,
+      'dataRelatedTo': _stockName,
+      'keyword': keyword,
+    });
+  }
+
   void connect() async {
     DatabaseService databaseService = DatabaseService();
-    final uKey = await databaseService.getUserData(key: userIDKey);
+    _uKey = await databaseService.getUserData(key: userIDKey);
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-    final deviceID = androidInfo.id.toString();
+    _deviceID = androidInfo.id.toString();
     final stockList = await GlobalRepository.stocksMapper();
-    final stockName = stockList.stocks!
+    _stockName = stockList.stocks!
         .firstWhere((stock) => stock.categoryName == 'MCX')
         .categoryCode;
-    final expectedActivity = socketType == 'stock-search'
-        ? 'get-stock-search'
-        : 'get-stock-list';
 
     try {
       log('=== WebSocket Connection Start ===');
-      log('User Key: $uKey');
-      log('Device ID: $deviceID');
-      log('Stock Name: $stockName');
+      log('User Key: $_uKey');
+      log('Device ID: $_deviceID');
+      log('Stock Name: $_stockName');
       log('Socket Type: $socketType');
       log('Keyword: $keyword');
 
@@ -74,27 +98,14 @@ class SocketService {
         print('Connected: ${socket.id}');
         onConnected?.call();
 
-        // Function to emit data request
-        void emitDataRequest() {
-          socket.emit('activity', {
-            'activity': socketType == 'stock-search'
-                ? 'get-stock-search'
-                : 'get-stock-list',
-            'userKey': uKey,
-            'deviceID': deviceID,
-            'dataRelatedTo': stockName,
-            'keyword': keyword,
-          });
-        }
-
         // Initial emission
-        emitDataRequest();
+        _emitDataRequest();
 
         // Set up periodic emission every 1 second
         _emitTimer?.cancel();
         _emitTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
           if (socket.connected) {
-            emitDataRequest();
+            _emitDataRequest();
           }
         });
       });
@@ -125,16 +136,21 @@ class SocketService {
                           as Map<String, dynamic>)['dataRelatedTo']
                     : null);
 
+            final currentExpectedActivity = socketType == 'stock-search'
+                ? 'get-stock-search'
+                : 'get-stock-list';
+
             log(
               'Response activity: $respActivity, dataRelatedTo: $respDataRelatedTo',
             );
 
-            if (respActivity != null && respActivity != expectedActivity) {
+            if (respActivity != null &&
+                respActivity != currentExpectedActivity) {
               log('Ignoring response for activity: $respActivity');
               return;
             }
 
-            if (respDataRelatedTo != null && respDataRelatedTo != stockName) {
+            if (respDataRelatedTo != null && respDataRelatedTo != _stockName) {
               log('Ignoring response for dataRelatedTo: $respDataRelatedTo');
               return;
             }

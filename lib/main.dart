@@ -9,6 +9,7 @@ import 'package:suproxu/core/service/Auth/auth_wiget_service.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
 import 'package:suproxu/core/service/notification/notification_service.dart';
 import 'package:suproxu/core/service/repositorie/global_respo.dart';
+import 'package:suproxu/core/util/suproxu_logo.dart';
 import 'package:suproxu/features/auth/bloc/auth_bloc.dart';
 import 'package:suproxu/features/navbar/TradeScreen/bloc/trade_bloc.dart';
 import 'package:suproxu/features/navbar/home/bloc/home_bloc.dart';
@@ -39,6 +40,7 @@ void main() async {
   );
   // ClientConfig.initStudents();
   GlobalRepository.stocksMapper();
+  SuproxuLogo();
   // getDeviceID();
 }
 

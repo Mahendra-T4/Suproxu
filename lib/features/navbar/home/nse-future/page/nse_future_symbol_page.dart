@@ -21,6 +21,9 @@ import 'package:suproxu/core/constants/widget/toast.dart';
 import 'package:suproxu/core/extensions/color_ext.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
 import 'package:suproxu/core/service/Auth/user_validation.dart';
+import 'package:suproxu/core/service/pricing_checker.dart';
+import 'package:suproxu/features/navbar/TradeScreen/model/active_trade_entity.dart';
+import 'package:suproxu/features/navbar/TradeScreen/repositories/trade_repo.dart';
 import 'package:suproxu/features/navbar/home/model/buy_sale_entity.dart';
 import 'package:suproxu/features/navbar/home/model/get_stock_record_entity.dart';
 import 'package:suproxu/features/navbar/home/model/symbol_page_param.dart';
@@ -41,6 +44,25 @@ class NseFutureSymbolPage extends StatefulWidget {
 
 class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
   final client = http.Client();
+  late final ActiveTradeEntity activeTradeEntity;
+  bool isSaleTradeExists = false;
+  bool isBuyTradeExists = false;
+
+  loadActiveTrade() async {
+    try {
+      final data = await TradeStockRepository.activeTrade();
+      if (data.status == 1 && data.record != null && data.record!.isNotEmpty) {
+        setState(() {
+          activeTradeEntity = data;
+        });
+      } else {
+        log('⚠️ No active trades or invalid data');
+      }
+    } catch (e) {
+      log('❌ Error loading active trades: $e');
+    }
+  }
+
   String? errorMessage;
   bool initialPricesSet = false;
   bool isBuyClicked = false;
@@ -239,6 +261,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
     required String categoryName,
     required String stockPrice,
     required String stockQty,
+    required String marketPrice,
     required BuildContext context,
   }) async {
     BuySaleEntity buySaleEntity = BuySaleEntity();
@@ -261,6 +284,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
           'symbolKey': symbolKey, // Fixed typo: 'symbolKey:' to 'symbolKey'
           'dataRelatedTo': categoryName,
           'stockPrice': stockPrice,
+          'marketPrice': marketPrice.toString(),
           "deviceID": deviceID.toString(),
           'stockQty': stockQty,
         },
@@ -310,7 +334,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                 Center(
                   child: TextButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      // Navigator.pop(context);
+                      context.pop();
                     },
                     child: const Text(
                       "OK",
@@ -347,6 +372,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
     required String categoryName,
     required String stockPrice,
     required String stockQty,
+    required String marketPrice,
     required BuildContext context,
   }) async {
     BuySaleEntity buySaleEntity = BuySaleEntity();
@@ -368,6 +394,7 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
           'symbolKey': symbolKey, // Fixed typo: 'symbolKey:' to 'symbolKey'
           'dataRelatedTo': categoryName,
           'stockPrice': stockPrice,
+          'marketPrice': marketPrice.toString(),
           "deviceID": deviceID.toString(),
           'stockQty': stockQty,
         },
@@ -925,6 +952,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                   symbolKey:
                                                       widget.params.symbolKey,
                                                   categoryName: 'NFO',
+                                                  marketPrice: ohlc.salePrice
+                                                      .toString(),
                                                   stockPrice:
                                                       '${ohlc.salePrice} * ${lotsNotifierMrk.value}',
                                                   stockQty: lotsNotifierMrk
@@ -1017,6 +1046,8 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                   symbolKey:
                                                       widget.params.symbolKey,
                                                   categoryName: 'NFO',
+                                                  marketPrice: ohlc.buyPrice
+                                                      .toString(),
                                                   stockPrice:
                                                       '${ohlc.buyPrice} * ${lotsNotifierMrk.value}',
                                                   stockQty: lotsNotifierMrk
@@ -1626,22 +1657,38 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     'Invalid price entered!',
                                                   );
                                                 }
+
+                                                HelperService.pricingChecker(
+                                                  context: context,
+                                                  lowerCKT: record.lowerCKT,
+                                                  upperCKT: record.upperCKT,
+                                                  price: userPrice,
+                                                  onSuccess: () {
+                                                    saleStock(
+                                                      context: context,
+                                                      activity:
+                                                          'sale-stock-order',
+                                                      symbolKey: widget
+                                                          .params
+                                                          .symbolKey,
+                                                      categoryName: 'NFO',
+                                                      marketPrice: ohlc
+                                                          .salePrice
+                                                          .toString(),
+                                                      stockPrice:
+                                                          '${_usernameController.text} * ${lotsNotifierLmt.value}',
+                                                      stockQty: lotsNotifierLmt
+                                                          .value
+                                                          .toString(),
+                                                    );
+                                                  },
+                                                );
+
                                                 //  else if (buyPrice != null &&
                                                 //     salePrice != null &&
                                                 //     userPrice >= buyPrice &&
                                                 //     userPrice <= salePrice) {
-                                                saleStock(
-                                                  context: context,
-                                                  activity: 'sale-stock-order',
-                                                  symbolKey:
-                                                      widget.params.symbolKey,
-                                                  categoryName: 'NFO',
-                                                  stockPrice:
-                                                      '${_usernameController.text} * ${lotsNotifierLmt.value}',
-                                                  stockQty: lotsNotifierLmt
-                                                      .value
-                                                      .toString(),
-                                                );
+
                                                 // } else {
                                                 //   waringToast(
                                                 //     context,
@@ -1770,62 +1817,31 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                     'Invalid price entered!',
                                                   );
                                                 }
-                                                // else if (buyPrice != null &&
-                                                //     salePrice != null &&
-                                                //     userPrice >= buyPrice &&
-                                                //     userPrice <= salePrice) {
-                                                buyStock(
+
+                                                HelperService.pricingChecker(
                                                   context: context,
-                                                  activity: 'buy-stock-order',
-                                                  symbolKey:
-                                                      widget.params.symbolKey,
-                                                  categoryName: 'NFO',
-                                                  stockPrice:
-                                                      '${_usernameController.text} * ${lotsNotifierLmt.value}',
-                                                  stockQty: lotsNotifierLmt
-                                                      .value
-                                                      .toString(),
+                                                  lowerCKT: record.lowerCKT,
+                                                  upperCKT: record.upperCKT,
+                                                  price: userPrice,
+                                                  onSuccess: () {
+                                                    buyStock(
+                                                      context: context,
+                                                      activity:
+                                                          'buy-stock-order',
+                                                      symbolKey: widget
+                                                          .params
+                                                          .symbolKey,
+                                                      categoryName: 'NFO',
+                                                      marketPrice: ohlc.buyPrice
+                                                          .toString(),
+                                                      stockPrice:
+                                                          '${_usernameController.text} * ${lotsNotifierLmt.value}',
+                                                      stockQty: lotsNotifierLmt
+                                                          .value
+                                                          .toString(),
+                                                    );
+                                                  },
                                                 );
-                                                // } else {
-                                                //   waringToast(
-                                                //     context,
-                                                //     'You Cant Sale Stock Your Price is not in Range!',
-                                                //   );
-                                                // }
-                                                // if (double.parse(
-                                                //           _usernameController
-                                                //               .text,
-                                                //         ) >
-                                                //         double.parse(
-                                                //           ohlc.salePrice
-                                                //               .toString(),
-                                                //         ) ||
-                                                //     double.parse(
-                                                //           _usernameController
-                                                //               .text,
-                                                //         ) <
-                                                //         double.parse(
-                                                //           ohlc.buyPrice
-                                                //               .toString(),
-                                                //         )) {
-                                                //   buyStock(
-                                                //     context: context,
-                                                //     activity: 'buy-stock-order',
-                                                //     symbolKey:
-                                                //         widget.params.symbolKey,
-                                                //     categoryName: 'NFO',
-                                                //     stockPrice:
-                                                //         '${_usernameController.text} * ${lotsNotifierLmt.value}',
-                                                //     stockQty: lotsNotifierLmt
-                                                //         .value
-                                                //         .toString(),
-                                                //   );
-                                                // } else {
-                                                //   waringToast(
-                                                //     context,
-                                                //     'You Cant Buy Stock Your Price is not in Range!',
-                                                //   );
-                                                // }
                                               },
                                               child: Container(
                                                 padding: EdgeInsets.symmetric(
@@ -1878,27 +1894,6 @@ class _NseFutureSymbolPageState extends State<NseFutureSymbolPage> {
                                                         letterSpacing: 0.5,
                                                       ),
                                                     ),
-                                                    // Text(
-                                                    //   (() {
-                                                    //     final double price =
-                                                    //         (orderBuyPrice ??
-                                                    //                 ohlc.buyPrice ??
-                                                    //                 0.0)
-                                                    //             as double;
-                                                    //     return price
-                                                    //         .toStringAsFixed(2);
-                                                    //   })(),
-                                                    //   style: TextStyle(
-                                                    //     color: Colors.white,
-                                                    //     fontSize:
-                                                    //         screenWidth * 0.045,
-                                                    //     fontWeight:
-                                                    //         FontWeight.bold,
-                                                    //     fontFamily: FontFamily
-                                                    //         .globalFontFamily,
-                                                    //     letterSpacing: 0.5,
-                                                    //   ),
-                                                    // ),
                                                   ],
                                                 ),
                                               ),

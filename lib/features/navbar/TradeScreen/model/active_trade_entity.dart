@@ -35,6 +35,7 @@ class Record {
   dynamic stockPrice;
   String? orderMethod;
   int? tradeMethod;
+  String? tradeText;
   int? availableQty;
   String? currentDate;
   String? time;
@@ -42,20 +43,22 @@ class Record {
   dynamic margin;
   dynamic marginHolding;
 
-  Record(
-      {this.tradeID,
-      this.symbolName,
-      this.symbolKey,
-      this.dataRelatedTo,
-      this.stockPrice,
-      this.orderMethod,
-      this.tradeMethod,
-      this.availableQty,
-      this.currentDate,
-      this.time,
-      this.tradeKey,
-      this.margin,
-      this.marginHolding});
+  Record({
+    this.tradeID,
+    this.symbolName,
+    this.symbolKey,
+    this.dataRelatedTo,
+    this.stockPrice,
+    this.orderMethod,
+    this.tradeMethod,
+    this.tradeText,
+    this.availableQty,
+    this.currentDate,
+    this.time,
+    this.tradeKey,
+    this.margin,
+    this.marginHolding,
+  });
 
   Record.fromJson(Map<String, dynamic> json) {
     tradeID = json['tradeID'];
@@ -65,6 +68,7 @@ class Record {
     stockPrice = json['stockPrice'];
     orderMethod = json['orderMethod'];
     tradeMethod = json['tradeMethod'];
+    tradeText = json['tradeText'];
     availableQty = json['availableQty'];
     currentDate = json['currentDate'];
     time = json['time'];
@@ -81,6 +85,7 @@ class Record {
     data['dataRelatedTo'] = this.dataRelatedTo;
     data['stockPrice'] = this.stockPrice;
     data['orderMethod'] = this.orderMethod;
+    data['tradeText'] = this.tradeText;
     data['tradeMethod'] = this.tradeMethod;
     data['availableQty'] = this.availableQty;
     data['currentDate'] = this.currentDate;

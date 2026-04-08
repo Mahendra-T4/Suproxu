@@ -33,6 +33,7 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
   TextEditingController searchController = TextEditingController();
   bool isMarketOpen = true; // This should be fetched from your backend
   bool isSearch = false;
+  bool isLoading = false;
 
   List<String> removingNfoItems = [];
   List<NFOWatchList> _localNfoWatchlist = [];
@@ -142,6 +143,7 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
             }
             return NFOWatchList();
           }).toList();
+          isLoading = false;
         });
       },
       onError: (error) {
@@ -150,6 +152,7 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
           nfoWishlist = NFOWishlistEntity();
           _localNfoWatchlist = [];
           errorMessage = error;
+          isLoading = false;
         });
       },
       onConnected: () {
@@ -189,6 +192,8 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
   @override
   void dispose() {
     _disposed = true;
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     _timer.cancel(); // Cancel the timer
     nfoSocket.disconnect();
     searchController.dispose();
@@ -204,6 +209,12 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
     );
     try {
       nfoSocket.disconnect();
+      // Clear data to prevent showing stale data when switching back
+      _safeSetState(() {
+        nfoWishlist = NFOWishlistEntity();
+        _localNfoWatchlist = [];
+        errorMessage = null;
+      });
     } catch (e) {
       debugPrint('Error disconnecting NFO socket on deactivate: $e');
     }
@@ -212,6 +223,13 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
 
   @override
   void activate() {
+    // Clear existing data before reconnecting to prevent blinking with old data
+    _safeSetState(() {
+      nfoWishlist = NFOWishlistEntity();
+      _localNfoWatchlist = [];
+      errorMessage = null;
+      isLoading = true;
+    });
     // Reconnect socket when tab is activated again
     debugPrint('NFO Tab activated - reconnecting socket');
     if (!_disposed && mounted) {
@@ -253,6 +271,9 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
               child: Builder(
                 builder: (context) {
                   // Show loading state
+                  if (isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
                   final data = nfoWishlist;
                   if (_localNfoWatchlist.isEmpty) {
                     return Center(
@@ -543,7 +564,7 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                                                     .toString()
                                                     .contains('-')
                                                 ? Colors.red
-                                                : const Color(0xFF00C853),
+                                                : Colors.green.shade900,
                                             fontSize: 11,
                                             fontFamily:
                                                 FontFamily.globalFontFamily,

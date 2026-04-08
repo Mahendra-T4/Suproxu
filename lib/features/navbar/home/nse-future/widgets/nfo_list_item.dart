@@ -192,7 +192,7 @@ class _NFOListItemState extends State<NFOListItem> {
           value: _formatNumber(widget.itemData.change ?? 0.0),
           color: widget.itemData.change.toString().contains('-')
               ? Colors.red
-              : Colors.green,
+              : Colors.green.shade900,
         ),
         _buildDetailItem2(
           label: "LTP: ",

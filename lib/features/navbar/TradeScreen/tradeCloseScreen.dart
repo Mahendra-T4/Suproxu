@@ -129,7 +129,8 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
                                             fontSize: 13,
                                             fontWeight: FontWeight.w600,
 
-                                            fontFamily: FontFamily.globalFontFamily,
+                                            fontFamily:
+                                                FontFamily.globalFontFamily,
                                             color:
                                                 closedTrade
                                                     .record![index]
@@ -161,7 +162,8 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w600,
-                                            fontFamily: FontFamily.globalFontFamily,
+                                            fontFamily:
+                                                FontFamily.globalFontFamily,
                                             color: Colors.green,
                                           ),
                                         ),
@@ -178,11 +180,13 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
                                   Row(
                                     children: [
                                       Text(
-                                        'Sold by Trader',
+                                        closedTrade.record![index].tradeSoldText
+                                            .toString(),
                                         style: TextStyle(
                                           fontWeight: FontWeight.w600,
                                           color: kGoldenBraunColor,
-                                           fontFamily: FontFamily.globalFontFamily,
+                                          fontFamily:
+                                              FontFamily.globalFontFamily,
                                           fontSize: 12,
                                         ),
                                       ),
@@ -206,7 +210,8 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.bold,
-                                             fontFamily: FontFamily.globalFontFamily,
+                                            fontFamily:
+                                                FontFamily.globalFontFamily,
                                             color: Colors.redAccent,
                                           ),
                                         ),
@@ -215,8 +220,11 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
                                   ),
                                   Row(
                                     children: [
-                                      const Text(
-                                        'Bought by Trader',
+                                      Text(
+                                        closedTrade
+                                            .record![index]
+                                            .tradeBoughtText
+                                            .toString(),
                                       ).textStyleH3(),
                                       Container(
                                         margin: const EdgeInsets.only(left: 10),
@@ -240,7 +248,8 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
                                             fontWeight: FontWeight.bold,
                                             // fontFamily: 'JetBrainsMono',
                                             color: Colors.green,
-                                             fontFamily: FontFamily.globalFontFamily,
+                                            fontFamily:
+                                                FontFamily.globalFontFamily,
                                           ),
                                         ),
                                       ),
@@ -254,7 +263,13 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
                                 children: [
                                   Text(
                                     '${closedTrade.record![index].closeDate}',
-                                  ).textStyleH2(),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.black,
+                                      fontFamily: FontFamily.globalFontFamily,
+                                      fontSize: 12.sp,
+                                    ),
+                                  ),
                                   // Text(
                                   //   'Holding Mar.Ref: 10000',
                                   //   style: TextStyle(
@@ -276,7 +291,7 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
                       style: TextStyle(
                         color: zBlack,
                         fontSize: 15,
-                         fontFamily: FontFamily.globalFontFamily,
+                        fontFamily: FontFamily.globalFontFamily,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -285,14 +300,21 @@ class _ClosedOrdersTabState extends State<ClosedOrdersTab> {
             return Center(
               child: Text(
                 (state as ClosedTradeFailedErrorState).error,
-                style: TextStyle(color: Colors.red, fontFamily: FontFamily.globalFontFamily, fontSize: 16.sp),
+                style: TextStyle(
+                  color: Colors.red,
+                  fontFamily: FontFamily.globalFontFamily,
+                  fontSize: 16.sp,
+                ),
               ),
             );
           default:
             return const Center(
               child: Text(
                 'State not found',
-                style: TextStyle(color: Colors.white, fontFamily: FontFamily.globalFontFamily,),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: FontFamily.globalFontFamily,
+                ),
               ),
             );
         }
@@ -369,7 +391,7 @@ class OrderCard extends StatelessWidget {
                             color: Colors.white,
                             fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
-                             fontFamily: FontFamily.globalFontFamily,
+                            fontFamily: FontFamily.globalFontFamily,
                           ),
                         ),
                         Text(
@@ -377,7 +399,7 @@ class OrderCard extends StatelessWidget {
                           style: TextStyle(
                             color: kGoldenBraunColor,
                             fontSize: 12.sp,
-                             fontFamily: FontFamily.globalFontFamily,
+                            fontFamily: FontFamily.globalFontFamily,
                           ),
                         ),
                       ],
@@ -424,7 +446,7 @@ class OrderCard extends StatelessWidget {
         style: TextStyle(
           color: Colors.green,
           fontSize: 12.sp,
-           fontFamily: FontFamily.globalFontFamily,
+          fontFamily: FontFamily.globalFontFamily,
           fontWeight: FontWeight.w600,
         ),
       ),

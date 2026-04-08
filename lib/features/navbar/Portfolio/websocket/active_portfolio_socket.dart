@@ -5,52 +5,36 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/config/web_socket_config.dart';
-import 'package:suproxu/core/service/repositorie/global_respo.dart';
-import 'package:suproxu/features/navbar/home/model/mcx_entity.dart';
+import 'package:suproxu/features/navbar/Portfolio/model/active_portfolio_socket_model.dart';
 
-class SocketService {
+class ActivePortfolioSocket {
   late IO.Socket socket;
 
-  Function(MCXDataEntity)? onDataReceived;
+  Function(ActivePortfolioSocketModel)? onDataReceived;
   Function(String)? onError;
   Function()? onConnected;
   Function()? onDisconnected;
-  String? keyword;
   String socketType;
 
   String? _uKey;
   String? _deviceID;
-  String? _stockName;
 
-  SocketService({
+  ActivePortfolioSocket({
     this.onDataReceived,
     this.onError,
     this.onConnected,
     this.onDisconnected,
-    this.keyword,
-    this.socketType = 'get-stock-list',
+    this.socketType = 'active-portfolio-stock',
   });
 
-  void updateSearch(String newKeyword) {
-    keyword = newKeyword;
-    socketType = newKeyword.isEmpty ? 'get-stock-list' : 'stock-search';
-    log('Updating search: keyword="$keyword", socketType="$socketType"');
-    if (socket.connected) {
-      _emitDataRequest();
-    }
-  }
-
-  void _emitDataRequest() {
-    if (_uKey == null || _deviceID == null || _stockName == null) return;
-
+  void _emitDataRequest() async {
     socket.emit('activity', {
       'activity': socketType == 'stock-search'
           ? 'get-stock-search'
-          : 'get-stock-list',
+          : 'active-portfolio-stock',
+
       'userKey': _uKey,
       'deviceID': _deviceID,
-      'dataRelatedTo': _stockName,
-      'keyword': keyword,
     });
   }
 
@@ -60,18 +44,11 @@ class SocketService {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
     _deviceID = androidInfo.id.toString();
-    final stockList = await GlobalRepository.stocksMapper();
-    _stockName = stockList.stocks!
-        .firstWhere((stock) => stock.categoryName == 'MCX')
-        .categoryCode;
 
     try {
       log('=== WebSocket Connection Start ===');
       log('User Key: $_uKey');
       log('Device ID: $_deviceID');
-      log('Stock Name: $_stockName');
-      log('Socket Type: $socketType');
-      log('Keyword: $keyword');
 
       final wsUrl = WebSocketConfig.socketUrl.replaceFirst(
         'https://',
@@ -120,29 +97,19 @@ class SocketService {
         try {
           log('========== WebSocket Response ==========');
           log('Response Type: ${data.runtimeType}');
+          log('Active Portfolio Response Type: $data');
           if (data is Map<String, dynamic>) {
-            // Attempt to guard: only process responses that match the expected
-            // activity and the stock category (dataRelatedTo) to avoid
-            // cross-feed from other socket consumers (e.g. wishlist).
             final respActivity =
                 data['activity'] as String? ??
                 (data['response'] is Map<String, dynamic>
                     ? (data['response'] as Map<String, dynamic>)['activity']
                     : null);
-            final respDataRelatedTo =
-                data['dataRelatedTo'] as String? ??
-                (data['response'] is Map<String, dynamic>
-                    ? (data['response']
-                          as Map<String, dynamic>)['dataRelatedTo']
-                    : null);
 
             final currentExpectedActivity = socketType == 'stock-search'
                 ? 'get-stock-search'
-                : 'get-stock-list';
+                : 'active-portfolio-stock';
 
-            log(
-              'Response activity: $respActivity, dataRelatedTo: $respDataRelatedTo',
-            );
+            log('Response activity: $respActivity, ');
 
             if (respActivity != null &&
                 respActivity != currentExpectedActivity) {
@@ -150,16 +117,26 @@ class SocketService {
               return;
             }
 
-            if (respDataRelatedTo != null && respDataRelatedTo != _stockName) {
-              log('Ignoring response for dataRelatedTo: $respDataRelatedTo');
-              return;
+            // Attempt to guard: only process responses that match the expected
+            // activity and the stock category (dataRelatedTo) to avoid
+            // cross-feed from other socket consumers (e.g. wishlist).
+            if (data['response'] != null) {
+              log('Response Keys: ${data.keys.toList()}');
+              final activePortfolioData = ActivePortfolioSocketModel.fromJson(
+                data,
+              );
+              onDataReceived?.call(activePortfolioData);
+              log('Active Portfolio Data Received: $data');
+              log('======================================');
             }
 
             // Now parse only if 'response' exists and appears to be the expected shape
             if (data['response'] != null) {
               log('Response Keys: ${data.keys.toList()}');
-              final mcxData = MCXDataEntity.fromJson(data);
-              onDataReceived?.call(mcxData);
+              final activePortfolioData = ActivePortfolioSocketModel.fromJson(
+                data,
+              );
+              onDataReceived?.call(activePortfolioData);
               // log('MCX Record List Data Received: $data');
               log('======================================');
             }

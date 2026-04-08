@@ -34,6 +34,8 @@ class Record {
   dynamic buyPrice;
   dynamic salePrice;
   dynamic stockQty;
+  String? tradeBoughtText;
+  String? tradeSoldText;
   dynamic profitLoss;
   dynamic closeDate;
   dynamic closeTime;
@@ -43,20 +45,23 @@ class Record {
   dynamic closeMargin;
   dynamic brokerageValue;
 
-  Record(
-      {this.symbolName,
-      this.symbolKey,
-      this.dataRelatedTo,
-      this.buyPrice,
-      this.salePrice,
-      this.stockQty,
-      this.profitLoss,
-      this.closeDate,
-      this.closeTime,
-      this.totalBuyPrice,
-      this.totalSalePrice,
-      this.closeMargin,
-      this.brokerageValue});
+  Record({
+    this.symbolName,
+    this.symbolKey,
+    this.dataRelatedTo,
+    this.buyPrice,
+    this.salePrice,
+    this.stockQty,
+    this.profitLoss,
+    this.tradeBoughtText,
+    this.tradeSoldText,
+    this.closeDate,
+    this.closeTime,
+    this.totalBuyPrice,
+    this.totalSalePrice,
+    this.closeMargin,
+    this.brokerageValue,
+  });
 
   Record.fromJson(Map<String, dynamic> json) {
     symbolName = json['symbolName'];
@@ -66,6 +71,8 @@ class Record {
     salePrice = json['salePrice'];
     stockQty = json['stockQty'];
     profitLoss = json['profitLoss'];
+    tradeBoughtText = json['tradeBoughtText'];
+    tradeSoldText = json['tradeSoldText'];
     closeDate = json['closeDate'];
     closeTime = json['closeTime'];
     totalBuyPrice = json['totalBuyPrice'];
@@ -83,6 +90,8 @@ class Record {
     data['salePrice'] = salePrice;
     data['stockQty'] = stockQty;
     data['profitLoss'] = profitLoss;
+    data['tradeBoughtText'] = tradeBoughtText;
+    data['tradeSoldText'] = tradeSoldText;
     data['closeDate'] = closeDate;
     data['closeTime'] = closeTime;
     data['totalBuyPrice'] = totalBuyPrice;

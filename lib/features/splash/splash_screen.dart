@@ -11,6 +11,7 @@ import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/util/suproxu_logo.dart';
 import 'package:suproxu/features/auth/login/loginPage.dart';
 import 'package:http/http.dart' as http;
+import 'package:suproxu/features/navbar/Portfolio/websocket/active_portfolio_socket.dart';
 import 'package:suproxu/features/navbar/wishlist/wishlist.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -26,10 +27,30 @@ class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  late ActivePortfolioSocket socket;
 
   @override
   void initState() {
     super.initState();
+
+    // socket = ActivePortfolioSocket(
+    //   onDataReceived: (data) {
+    //     log('Portfolio WebSocket Data Received: $data');
+    //   },
+    //   onError: (error) {
+    //     log('WebSocket Error: $error');
+    //   },
+    //   onConnected: () {
+    //     log('WebSocket Connected');
+    //   },
+    //   onDisconnected: () {
+    //     socket.connect();
+    //     log('WebSocket Disconnected');
+    //   },
+    // );
+
+    // socket.connect();
+
     _controller = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,

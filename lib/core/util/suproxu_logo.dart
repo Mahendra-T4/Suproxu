@@ -37,11 +37,12 @@ class SuproxuLogo extends ConsumerWidget {
                 ),
               );
       },
-      loading: () => const CircularProgressIndicator(),
+      loading: () => Center(child: const CircularProgressIndicator()),
       error: (error, stackTrace) => const Icon(Icons.error),
     );
   }
 }
+
 // CachedNetworkImage(
 //       imageUrl: "https://www.suproxu.com/assets/img/suproxu-logo.jpg",
 //       width: width ?? 300,

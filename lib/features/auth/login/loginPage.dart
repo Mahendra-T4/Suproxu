@@ -359,7 +359,7 @@ class _LoginPagesState extends State<LoginPages> {
                           ).textStyleH5(),
                           SizedBox(height: 8.h),
                           const Text(
-                            'The Suproxu is not liable for any real money transaction. We dont deal in any real money.',
+                            'The Perk is not liable for any real money transaction. We dont deal in any real money.',
                           ).textStyleH5(),
                         ],
                       ],

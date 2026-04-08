@@ -442,7 +442,7 @@ class _McxHomeState extends State<McxHome> {
                                                           .toString()
                                                           .contains('-')
                                                       ? Colors.red
-                                                      : Colors.green,
+                                                      : Colors.green.shade900,
                                                   fontSize: 11.5,
                                                   fontFamily: FontFamily
                                                       .globalFontFamily,

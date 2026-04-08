@@ -25,15 +25,18 @@ class ProfileRepository {
     NotificationEntity notificationEntity = NotificationEntity();
     DatabaseService databaseService = DatabaseService();
     final uKey = await databaseService.getUserData(key: userIDKey);
-     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-  AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-  final deviceID = androidInfo.id.toString();
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    final deviceID = androidInfo.id.toString();
     try {
-      final response = await client.post(url, body: {
-        "activity": "notification",
-        "deviceID": deviceID.toString(),
-        "userKey": uKey
-      });
+      final response = await client.post(
+        url,
+        body: {
+          "activity": "notification",
+          "deviceID": deviceID.toString(),
+          "userKey": uKey,
+        },
+      );
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
         log(jsonResponse['message']);
@@ -53,16 +56,19 @@ class ProfileRepository {
     BalanceEntity balanceEntity = BalanceEntity();
     DatabaseService databaseService = DatabaseService();
     final userID = await databaseService.getUserData(key: userIDKey);
-     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-  AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-  final deviceID = androidInfo.id.toString();
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    final deviceID = androidInfo.id.toString();
 
     try {
-      final response = await http.post(url, body: {
-        'activity': 'get-statics',
-        "deviceID": deviceID.toString(),
-        'userKey': userID
-      });
+      final response = await http.post(
+        url,
+        body: {
+          'activity': 'get-statics',
+          "deviceID": deviceID.toString(),
+          'userKey': userID,
+        },
+      );
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         balanceEntity = BalanceEntity.fromJson(jsonData);
@@ -83,14 +89,17 @@ class ProfileRepository {
     DatabaseService databaseService = DatabaseService();
     final userID = await databaseService.getUserData(key: userIDKey);
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-  AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-  final deviceID = androidInfo.id.toString();
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    final deviceID = androidInfo.id.toString();
     try {
-      final response = await http.post(url, body: {
-        'activity': 'margin-brokerage-details',
-        "deviceID": deviceID.toString(),
-        'userKey': userID.toString()
-      });
+      final response = await http.post(
+        url,
+        body: {
+          'activity': 'margin-brokerage-details',
+          "deviceID": deviceID.toString(),
+          'userKey': userID.toString(),
+        },
+      );
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         profileInfoModel = ProfileInfoModel.fromJson(jsonData);
@@ -98,9 +107,11 @@ class ProfileRepository {
         // Access the nested data inside mcxDetails
         if (jsonData['mcxDetails'] != null) {
           marginHolding = List<Map<String, dynamic>>.from(
-              jsonData['mcxDetails']['marginHolding'] ?? []);
+            jsonData['mcxDetails']['marginHolding'] ?? [],
+          );
           marginUsed = List<Map<String, dynamic>>.from(
-              jsonData['mcxDetails']['marginUsed'] ?? []);
+            jsonData['mcxDetails']['marginUsed'] ?? [],
+          );
           log('Margin Holding: ${marginHolding.toString()}');
           log('Margin Used: ${marginUsed.toString()}');
         }
@@ -112,5 +123,34 @@ class ProfileRepository {
       log('Profile Info Error : $e');
     }
     return profileInfoModel;
+  }
+
+  static Future<void> tradeAccess(traceAccess) async {
+    final url = Uri.parse(notificationApiEndPointUrl);
+    DatabaseService databaseService = DatabaseService();
+    final userID = await databaseService.getUserData(key: userIDKey);
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    final deviceID = androidInfo.id.toString();
+    try {
+      final response = await http.post(
+        url,
+        body: {
+          'activity': 'trade-by-admin',
+          'tradeAccess': traceAccess,
+          "deviceID": deviceID.toString(),
+          'userKey': userID.toString(),
+        },
+      );
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+
+        log('Profile Info Response : ${jsonData.toString()}');
+      } else {
+        log('Failed to load profile info');
+      }
+    } catch (e) {
+      log('Profile Info Error : $e');
+    }
   }
 }

@@ -100,7 +100,7 @@ Widget _buildModernDropdownButton(
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         child: Container(
-          padding: EdgeInsets.all(4.r),
+          padding: EdgeInsets.all(6.r),
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(12.r)),
           child: SuproxuLogo(width: 50.w),
         ),

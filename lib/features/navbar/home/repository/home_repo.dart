@@ -52,16 +52,26 @@ class HomeRepository {
         superTradeBaseApiEndPointUrl,
         data: FormData.fromMap({'activity': 'logo'}),
       );
+      log('Logo API Response Status: ${response.statusCode}');
+      log('Logo API Response Data: ${response.data}');
+
       if (response.statusCode == 200) {
-        // final jsonResponse = jsonDecode(response.data);
-        logoModel = LogoModel.fromJson(response.data);
-        log(logoModel.message.toString());
-        // return right(logoModel);
+        try {
+          logoModel = LogoModel.fromJson(response.data);
+          log('Logo Model Status: ${logoModel.status}');
+          log('Logo URL: ${logoModel.logo}');
+          log('Transparent URL: ${logoModel.transparent}');
+          log('Logo Message: ${logoModel.message}');
+        } catch (parseError) {
+          log('Logo Parsing Error =>> $parseError');
+          log('Response Data Type: ${response.data.runtimeType}');
+        }
       } else {
-        log('Failed to load data from server');
+        log('Failed to load data from server. Status: ${response.statusCode}');
       }
     } catch (e) {
       log('Logo Error =>> $e');
+      log('Logo Error Type: ${e.runtimeType}');
     }
     return logoModel;
   }

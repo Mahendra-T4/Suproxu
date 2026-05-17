@@ -23,10 +23,11 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
   // await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
-  InternetConnectionService().startMonitoring();
-  // AuthService().checkUserValidation(context!);
 
+  // Start these services without blocking initialization
+  InternetConnectionService().startMonitoring();
   NotificationService().fetchUnreadCount();
+
   runApp(
     MultiBlocProvider(
       providers: [
@@ -38,10 +39,10 @@ void main() async {
       child: const MyApp(),
     ),
   );
-  // ClientConfig.initStudents();
+
+  // Load data after app is running (non-blocking)
   GlobalRepository.stocksMapper();
   SuproxuLogo();
-  // getDeviceID();
 }
 
 class MyApp extends StatelessWidget {

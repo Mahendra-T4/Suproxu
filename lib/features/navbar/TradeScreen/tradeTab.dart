@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
-import 'package:suproxu/core/service/Auth/auto_logout.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
 import 'package:suproxu/core/service/page/not_connected.dart';
 import 'package:suproxu/core/widgets/app_bar.dart';
@@ -21,81 +23,118 @@ class TradeTabsScreen extends StatefulWidget {
 }
 
 class _TradeTabsScreenState extends State<TradeTabsScreen> {
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
+
   @override
   void initState() {
     super.initState();
-    if (!mounted) return;
-    // Ensure autoLogoutUser is imported from core/logout/logout.dart
-    autoLogoutUser(context, mounted);
+    // Note: AuthCheckWidget already handles periodic auth validation
+    // This timer is optional for page-specific validation
+    _startValidationTimer();
+  }
+
+  void _startValidationTimer() {
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        debugPrint('TradeTabs auth validation error: $e');
+      }
+    });
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      debugPrint('TradeTabs: received logout event, cancelled local timer');
+    });
+  }
+
+  @override
+  void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<bool>(
-        stream: InternetConnectionService().connectionStream,
-        builder: (context, snapshot) {
-          if (snapshot.data == false) {
-            return const NoInternetConnection(); // Show your offline UI
-          }
-          return DefaultTabController(
-            length: 3,
-            child: Builder(builder: (context) {
+      stream: InternetConnectionService().connectionStream,
+      builder: (context, snapshot) {
+        if (snapshot.data == false) {
+          return const NoInternetConnection(); // Show your offline UI
+        }
+        return DefaultTabController(
+          length: 3,
+          child: Builder(
+            builder: (context) {
               return Container(
                 color: greyColor,
                 child: SafeArea(
                   child: Scaffold(
-                      backgroundColor: zBlack,
-                      appBar:
-                          customAppBar(context: context, isShowNotify: true),
-                      body: Column(
-                        children: [
-                         
-                          Container(
-                            color: Colors.white,
-                            child: TabBar(
-                              // controller: _tabController,
-                              dividerColor: Colors.transparent,
-                              indicator: UnderlineTabIndicator(
-                                borderSide: BorderSide(
-                                    width: 4.0, color: kGoldenBraunColor),
-                                insets: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
+                    backgroundColor: kWhiteColor,
+                    appBar: customAppBar(context: context, isShowNotify: true),
+                    body: Column(
+                      children: [
+                        Container(
+                          color: Colors.white,
+                          child: TabBar(
+                            // controller: _tabController,
+                            dividerColor: Colors.transparent,
+                            indicator: UnderlineTabIndicator(
+                              borderSide: BorderSide(
+                                width: 4.0,
+                                color: kGoldenBraunColor,
                               ),
-                              labelStyle: TextStyle(
-                                  fontWeight: FontWeight.w600, fontSize: 16.sp),
-                              unselectedLabelStyle:
-                                  const TextStyle(fontWeight: FontWeight.w500),
-                              indicatorSize: TabBarIndicatorSize.tab,
-                              labelColor: kGoldenBraunColor,
-                              unselectedLabelColor: Colors.grey[600],
-                              tabs: const [
-                                Tab(text: "Pending"),
-                                Tab(text: "Active"),
-                                Tab(text: "Closed"),
-                              ],
+                              insets: const EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                              ),
                             ),
-                          ),
-                          const Expanded(
-                            child: TabBarView(
-                              children: [
-                                //Tab Bar Screens ClassName
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16.sp,
+                              fontFamily: FontFamily.globalFontFamily,
+                            ),
+                            unselectedLabelStyle: const TextStyle(
+                              fontWeight: FontWeight.w500,
+                            ),
+                            indicatorSize: TabBarIndicatorSize.tab,
+                            labelColor: kGoldenBraunColor,
+                            unselectedLabelColor: Colors.grey[600],
+                            tabs: const [
+                              Tab(text: "Active"),
+                              Tab(text: "Pending"),
 
-                                // "Pending" Tab Content
-                                PendingTab(),
-                                Tradeactive(),
-                                ClosedOrdersTab(),
-                              ],
-                            ),
+                              Tab(text: "Closed"),
+                            ],
                           ),
-                        ],
-                      )
-                      // : const NoInternetConnection(),
-                      ),
+                        ),
+                        const Expanded(
+                          child: TabBarView(
+                            children: [
+                              //Tab Bar Screens ClassName
+
+                              // "Pending" Tab Content
+                              Tradeactive(),
+                              PendingTab(),
+
+                              ClosedOrdersTab(),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    // : const NoInternetConnection(),
+                  ),
                 ),
               );
-            }),
-          );
-        });
+            },
+          ),
+        );
+      },
+    );
   }
 
   Widget buildTradeCategories() {
@@ -140,10 +179,7 @@ class _TradeTabsScreenState extends State<TradeTabsScreen> {
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: Colors.blue.withOpacity(0.3),
-                width: 1,
-              ),
+              border: Border.all(color: Colors.blue.withOpacity(0.3), width: 1),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -156,6 +192,7 @@ class _TradeTabsScreenState extends State<TradeTabsScreen> {
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 12.sp,
+                    fontFamily: FontFamily.globalFontFamily,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -253,6 +290,7 @@ class OrderCard extends StatelessWidget {
                                 fontSize: 18.sp,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,
+                                fontFamily: FontFamily.globalFontFamily,
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -261,6 +299,7 @@ class OrderCard extends StatelessWidget {
                               expiryDate,
                               style: TextStyle(
                                 fontSize: 12.sp,
+                                fontFamily: FontFamily.globalFontFamily,
                                 color: Colors.grey[400],
                               ),
                             ),
@@ -277,10 +316,16 @@ class OrderCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildInfoColumn('Type', type,
-                        type == 'BUY' ? Colors.green : Colors.red),
                     _buildInfoColumn(
-                        'Quantity', quantity.toString(), Colors.white),
+                      'Type',
+                      type,
+                      type == 'BUY' ? Colors.green : Colors.red,
+                    ),
+                    _buildInfoColumn(
+                      'Quantity',
+                      quantity.toString(),
+                      Colors.white,
+                    ),
                     _buildInfoColumn('ID', '#$traderId', Colors.blue),
                   ],
                 ),
@@ -301,11 +346,7 @@ class OrderCard extends StatelessWidget {
         color: Colors.blue.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12.r),
       ),
-      child: Icon(
-        Icons.show_chart,
-        color: Colors.blue,
-        size: 24.r,
-      ),
+      child: Icon(Icons.show_chart, color: Colors.blue, size: 24.r),
     );
   }
 
@@ -333,6 +374,7 @@ class OrderCard extends StatelessWidget {
             style: TextStyle(
               color: isCompleted ? Colors.green : Colors.red,
               fontSize: 12.sp,
+              fontFamily: FontFamily.globalFontFamily,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -348,6 +390,7 @@ class OrderCard extends StatelessWidget {
           label,
           style: TextStyle(
             color: Colors.grey[400],
+            fontFamily: FontFamily.globalFontFamily,
             fontSize: 12.sp,
           ),
         ),
@@ -357,6 +400,7 @@ class OrderCard extends StatelessWidget {
           style: TextStyle(
             color: valueColor,
             fontSize: 14.sp,
+            fontFamily: FontFamily.globalFontFamily,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -417,6 +461,7 @@ class OrderCard extends StatelessWidget {
               label,
               style: TextStyle(
                 color: Colors.grey[400],
+                fontFamily: FontFamily.globalFontFamily,
                 fontSize: 12.sp,
               ),
             ),
@@ -426,6 +471,7 @@ class OrderCard extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w500,
+                fontFamily: FontFamily.globalFontFamily,
               ),
             ),
           ],
@@ -467,27 +513,33 @@ class ScrollableButtonRow extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.white,
         side: const BorderSide(width: 1, color: Colors.black),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(6),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
       ),
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 15, color: Colors.black),
+        style: const TextStyle(
+          fontSize: 15,
+          fontFamily: FontFamily.globalFontFamily,
+          color: Colors.black,
+        ),
       ),
     );
   }
 }
 
-Widget _buildPortfolioItem(String name, String date, int qty, double? avgSell,
-    double? avgBuy, double? profitLoss) {
+Widget _buildPortfolioItem(
+  String name,
+  String date,
+  int qty,
+  double? avgSell,
+  double? avgBuy,
+  double? profitLoss,
+) {
   return Card(
     elevation: 0,
     margin: const EdgeInsets.symmetric(vertical: 8),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(15),
-    ),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
     color: Colors.transparent,
     child: Container(
       padding: const EdgeInsets.all(16),
@@ -521,6 +573,7 @@ Widget _buildPortfolioItem(String name, String date, int qty, double? avgSell,
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                   color: Colors.white,
+                  fontFamily: FontFamily.globalFontFamily,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -528,26 +581,29 @@ Widget _buildPortfolioItem(String name, String date, int qty, double? avgSell,
                 Text(
                   '${profitLoss > 0 ? '+' : ''}$profitLoss',
                   style: TextStyle(
-                    color:
-                        profitLoss > 0 ? Colors.greenAccent : Colors.redAccent,
+                    color: profitLoss > 0
+                        ? Colors.greenAccent
+                        : Colors.redAccent,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
+                    fontFamily: FontFamily.globalFontFamily,
                   ),
                 ),
             ],
           ),
           const SizedBox(height: 4),
-          Text(
-            date,
-            style: TextStyle(color: Colors.grey[400], fontSize: 14),
-          ),
+          Text(date, style: TextStyle(color: Colors.grey[400], fontSize: 14)),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Qty: $qty',
-                style: TextStyle(color: Colors.grey[300], fontSize: 14),
+                style: TextStyle(
+                  color: Colors.grey[300],
+                  fontFamily: FontFamily.globalFontFamily,
+                  fontSize: 14,
+                ),
               ),
               if (avgSell != null && avgBuy != null)
                 Column(
@@ -555,11 +611,19 @@ Widget _buildPortfolioItem(String name, String date, int qty, double? avgSell,
                   children: [
                     Text(
                       'Avg Sell: $avgSell',
-                      style: TextStyle(color: Colors.grey[300], fontSize: 14),
+                      style: TextStyle(
+                        color: Colors.grey[300],
+                        fontFamily: FontFamily.globalFontFamily,
+                        fontSize: 14,
+                      ),
                     ),
                     Text(
                       'Avg Buy: $avgBuy',
-                      style: TextStyle(color: Colors.grey[300], fontSize: 14),
+                      style: TextStyle(
+                        color: Colors.grey[300],
+                        fontFamily: FontFamily.globalFontFamily,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),

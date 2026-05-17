@@ -101,18 +101,19 @@ class OhlcNFO {
   dynamic lastPrice;
   String? currentTime;
 
-  OhlcNFO(
-      {this.high,
-      this.low,
-      this.close,
-      this.open,
-      this.lotSize,
-      this.volume,
-      this.change,
-      this.salePrice,
-      this.buyPrice,
-      this.lastPrice,
-      this.currentTime});
+  OhlcNFO({
+    this.high,
+    this.low,
+    this.close,
+    this.open,
+    this.lotSize,
+    this.volume,
+    this.change,
+    this.salePrice,
+    this.buyPrice,
+    this.lastPrice,
+    this.currentTime,
+  });
 
   OhlcNFO.fromJson(Map<String, dynamic> json) {
     high = parseDouble(json['high']) ?? 0.0;

@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:suproxu/Assets/assets.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/color_blinker.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
@@ -32,10 +33,13 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
   TextEditingController searchController = TextEditingController();
   bool isMarketOpen = true; // This should be fetched from your backend
   bool isSearch = false;
+  bool isLoading = false;
 
   List<String> removingNfoItems = [];
   List<NFOWatchList> _localNfoWatchlist = [];
   List<NFOWatchList> _reorderedNfoCopy = [];
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
 
   late Timer _timer;
   @override
@@ -47,7 +51,51 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
         _setupAuthCheck();
       }
     });
+
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted && !_disposed) {
+        _refreshWishlistData();
+      }
+    });
+    _startValidationTimer();
   }
+
+  void _startValidationTimer() {
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        debugPrint('TradeTabs auth validation error: $e');
+      }
+    });
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      debugPrint('TradeTabs: received logout event, cancelled local timer');
+    });
+  }
+
+  Future<void> _refreshWishlistData() async {
+    debugPrint('Refreshing NFO Wishlist Data');
+
+    // Skip refresh during reordering to prevent UI flicker
+    if (_isReordering) {
+      debugPrint('Reordering in progress, skipping refresh');
+      return;
+    }
+
+    if (!_disposed && mounted) {
+      if (nfoSocket.isConnected) {
+        debugPrint('Socket connected - data will auto-refresh');
+      } else {
+        await nfoSocket.connect();
+      }
+    }
+  }
+
+  String? errorMessage;
 
   void _initializeWebSocket() {
     if (_disposed) return;
@@ -73,6 +121,12 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
         }
         log('==========================================');
 
+        // Skip updates during reordering to prevent UI blink
+        if (_isReordering) {
+          log('Reordering in progress, skipping WebSocket update');
+          return;
+        }
+
         _safeSetState(() {
           nfoWishlist = data;
           // Safely convert incoming list to NFOWatchList instances.
@@ -89,6 +143,7 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
             }
             return NFOWatchList();
           }).toList();
+          isLoading = false;
         });
       },
       onError: (error) {
@@ -96,6 +151,8 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
         _safeSetState(() {
           nfoWishlist = NFOWishlistEntity();
           _localNfoWatchlist = [];
+          errorMessage = error;
+          isLoading = false;
         });
       },
       onConnected: () {
@@ -130,14 +187,56 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
   // Remove unused methods
 
   bool _disposed = false;
+  bool _isReordering = false;
 
   @override
   void dispose() {
     _disposed = true;
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     _timer.cancel(); // Cancel the timer
     nfoSocket.disconnect();
     searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void deactivate() {
+    // Disconnect socket when tab is deactivated to prevent data overlap
+    // This prevents the socket from continuing to emit data in the background
+    debugPrint(
+      'NFO Tab deactivated - disconnecting socket to prevent data overlap',
+    );
+    try {
+      nfoSocket.disconnect();
+      // Clear data to prevent showing stale data when switching back
+      _safeSetState(() {
+        nfoWishlist = NFOWishlistEntity();
+        _localNfoWatchlist = [];
+        errorMessage = null;
+      });
+    } catch (e) {
+      debugPrint('Error disconnecting NFO socket on deactivate: $e');
+    }
+    super.deactivate();
+  }
+
+  @override
+  void activate() {
+    // Clear existing data before reconnecting to prevent blinking with old data
+    _safeSetState(() {
+      nfoWishlist = NFOWishlistEntity();
+      _localNfoWatchlist = [];
+      errorMessage = null;
+      isLoading = true;
+    });
+    // Reconnect socket when tab is activated again
+    debugPrint('NFO Tab activated - reconnecting socket');
+    if (!_disposed && mounted) {
+      // Reinitialize the socket when returning to this tab
+      _initializeWebSocket();
+    }
+    super.activate();
   }
 
   void _safeSetState(VoidCallback fn) {
@@ -155,13 +254,11 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: zBlack,
+      backgroundColor: kWhiteColor,
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(
-              height: 8,
-            ),
+            const SizedBox(height: 8),
             SearchWidget(
               hint: 'Search & Add',
               isReadOnly: true,
@@ -169,313 +266,368 @@ class _NseFutureStockWishlistState extends State<NseFutureStockWishlist> {
                 context.pushNamed(NseFuture.routeName);
               },
             ),
-            const SizedBox(
-              height: 8,
-            ),
-            Expanded(child: Builder(builder: (context) {
-              // Show loading state
-              final data = nfoWishlist;
-              if (data.nfoWatchlist == null) {
-                return Center(
-                  child: Text(data.message.toString()),
-                );
-              }
+            const SizedBox(height: 8),
+            Expanded(
+              child: Builder(
+                builder: (context) {
+                  // Show loading state
+                  if (isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final data = nfoWishlist;
+                  if (_localNfoWatchlist.isEmpty) {
+                    return Center(
+                      child: Text(
+                        errorMessage ?? 'Data not available',
+                        style: const TextStyle(color: zBlack),
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  }
 
-              // Show empty state
-              // if (data.nfoWatchlist!.isEmpty) {
-              //   return Center(
-              //     child: Column(
-              //       mainAxisAlignment: MainAxisAlignment.center,
-              //       children: [
-              //         Icon(Icons.bookmark_border,
-              //             size: 48, color: Colors.grey[400]),
-              //         const SizedBox(height: 16),
-              //         const Text(
-              //           'Your watchlist is empty',
-              //           style: TextStyle(
-              //             fontSize: 16,
-              //             color: Colors.grey,
-              //           ),
-              //         ),
-              //         const SizedBox(height: 8),
-              //         ElevatedButton(
-              //           onPressed: () {
-              //             context.pushNamed(NseFuture.routeName);
-              //           },
-              //           child: const Text('Add Symbols'),
-              //         ),
-              //       ],
-              //     ),
-              //   );
-              // }
-
-              return ReorderableListView.builder(
-                itemCount: data.nfoWatchlist!.length,
-                onReorder: (oldIndex, newIndex) {
-                  _safeSetState(() {
-                    if (newIndex > oldIndex) newIndex--;
-                    final item = _localNfoWatchlist.removeAt(oldIndex);
-                    _localNfoWatchlist.insert(newIndex, item);
-                    // Copy reordered data
-                    _reorderedNfoCopy = List.from(_localNfoWatchlist);
-
-                    log(
-                        name: 'Reordered List: ',
-                        _localNfoWatchlist.first.symbolName.toString());
-                  });
-
-                  // Create comma-separated string for symbolKey
-                  String symbolKeys = _localNfoWatchlist
-                      .map((e) => e.symbolKey.toString())
-                      .join(',');
-
-                  // Create array format string for symbolOrder
-                  String orderNumbers = List.generate(
-                          _localNfoWatchlist.length, (i) => (i + 1).toString())
-                      .join(',');
-
-                  WishlistRepository.symbolSorting(
-                      param: SortListParam(
-                          symbolKey: symbolKeys, symbolOrder: orderNumbers));
-                },
-                buildDefaultDragHandles: true,
-                itemBuilder: (context, index) {
-                  var record = data.nfoWatchlist![index];
-                  // Remove unused variable
-                  //  final item = data.mcxWatchlist![index];
-
-                  return Container(
-                    key: ValueKey(record.symbolKey),
-                    child: GestureDetector(
-                      onTap: () {
-                        GoRouter.of(context).pushNamed(
-                          NseFutureSymbolPage.routeName,
-                          extra: SymbolScreenParams(
-                            symbol: record.symbol.toString(),
-                            index: index,
-                            symbolKey: record.symbolKey.toString(),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.only(
-                          left: 10,
-                          right: 10,
-                          top: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: zBlack,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  flex: 3,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        record.symbolName
-                                            .toString()
-                                            .toUpperCase(),
-                                      ).textStyleH1(),
-                                      // SizedBox(height: 4.h),
-                                    ],
-                                  ),
+                  return ReorderableListView.builder(
+                    itemCount: _localNfoWatchlist.length,
+                    proxyDecorator: (child, index, animation) {
+                      return AnimatedBuilder(
+                        animation: animation,
+                        builder: (context, child) {
+                          return Material(
+                            elevation: 12,
+                            color: kWhiteColor,
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: kWhiteColor,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: kWhiteColor,
+                                  width: 2,
                                 ),
-                                Column(
+                              ),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: child,
+                      );
+                    },
+                    onReorder: (oldIndex, newIndex) {
+                      _isReordering = true;
+
+                      _safeSetState(() {
+                        if (newIndex > oldIndex) newIndex--;
+                        final item = _localNfoWatchlist.removeAt(oldIndex);
+                        _localNfoWatchlist.insert(newIndex, item);
+                        // Copy reordered data
+                        _reorderedNfoCopy = List.from(_localNfoWatchlist);
+
+                        log(
+                          name: 'Reordered List: ',
+                          _localNfoWatchlist.first.symbolName.toString(),
+                        );
+                      });
+
+                      // Create comma-separated string for symbolKey
+                      String symbolKeys = _localNfoWatchlist
+                          .map((e) => e.symbolKey.toString())
+                          .join(',');
+
+                      // Create array format string for symbolOrder
+                      String orderNumbers = List.generate(
+                        _localNfoWatchlist.length,
+                        (i) => (i + 1).toString(),
+                      ).join(',');
+
+                      WishlistRepository.symbolSorting(
+                            param: SortListParam(
+                              symbolKey: symbolKeys,
+                              symbolOrder: orderNumbers,
+                            ),
+                          )
+                          .then((_) {
+                            // Add delay before re-enabling WebSocket updates to let UI settle
+                            Future.delayed(const Duration(milliseconds: 500), () {
+                              if (mounted && !_disposed) {
+                                _isReordering = false;
+                                log(
+                                  'Reordering completed, WebSocket updates re-enabled',
+                                );
+                              }
+                            });
+                          })
+                          .catchError((error) {
+                            // On error, also re-enable WebSocket updates with delay
+                            Future.delayed(const Duration(milliseconds: 500), () {
+                              if (mounted && !_disposed) {
+                                _isReordering = false;
+                                log(
+                                  'Reordering error: $error, WebSocket updates re-enabled',
+                                );
+                              }
+                            });
+                          });
+                    },
+                    buildDefaultDragHandles: true,
+                    itemBuilder: (context, index) {
+                      var record = _localNfoWatchlist[index];
+                      // Remove unused variable
+                      //  final item = data.mcxWatchlist![index];
+                      final date = record.expiryDate?.substring(0, 10);
+                      return Container(
+                        key: ValueKey(record.symbolKey),
+                        child: GestureDetector(
+                          onTap: () {
+                            GoRouter.of(context).pushNamed(
+                              NseFutureSymbolPage.routeName,
+                              extra: SymbolScreenParams(
+                                symbol: record.symbol.toString(),
+                                index: index,
+                                symbolKey: record.symbolKey.toString(),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              left: 10,
+                              right: 10,
+                              top: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: kWhiteColor,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                    Expanded(
+                                      flex: 3,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            record.symbolName
+                                                .toString()
+                                                .toUpperCase(),
+                                          ).textStyleH1(),
+                                          // SizedBox(height: 4.h),
+                                        ],
+                                      ),
+                                    ),
+                                    Column(
                                       children: [
-                                        BlinkingPriceText(
-                                          assetId: data
-                                              .nfoWatchlist![index].symbolKey
-                                              .toString(),
-                                          text:
-                                              "₹${_formatNumber(data.nfoWatchlist![index].lastSale!.price)}",
-                                          compareValue: double.parse(data
-                                              .nfoWatchlist![index]
-                                              .ohlc!
-                                              .lastPrice
-                                              .toString()),
-                                          currentValue: double.parse(data
-                                              .nfoWatchlist![index]
-                                              .lastSale!
-                                              .price
-                                              .toString()),
-                                        ),
-                                        SizedBox(width: 20.w),
-                                        BlinkingPriceText(
-                                          assetId: data
-                                              .nfoWatchlist![index].symbol
-                                              .toString(),
-                                          text:
-                                              "₹${_formatNumber(data.nfoWatchlist![index].lastBuy!.price)}",
-                                          compareValue: double.parse(data
-                                              .nfoWatchlist![index]
-                                              .ohlc!
-                                              .lastPrice
-                                              .toString()),
-                                          currentValue: double.parse(data
-                                              .nfoWatchlist![index]
-                                              .lastBuy!
-                                              .price
-                                              .toString()),
-                                        ),
-                                        SizedBox(
-                                          height: 5.w,
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            BlinkingPriceText(
+                                              assetId: data
+                                                  .nfoWatchlist![index]
+                                                  .symbolKey
+                                                  .toString(),
+                                              text:
+                                                  "₹${_formatNumber(data.nfoWatchlist![index].ohlc!.salePrice)}",
+                                              compareValue: double.parse(
+                                                data
+                                                    .nfoWatchlist![index]
+                                                    .ohlc!
+                                                    .lastPrice
+                                                    .toString(),
+                                              ),
+                                              currentValue: double.parse(
+                                                data
+                                                    .nfoWatchlist![index]
+                                                    .ohlc!
+                                                    .salePrice
+                                                    .toString(),
+                                              ),
+                                            ),
+                                            SizedBox(width: 20.w),
+                                            BlinkingPriceText(
+                                              assetId: data
+                                                  .nfoWatchlist![index]
+                                                  .symbol
+                                                  .toString(),
+                                              text:
+                                                  "₹${_formatNumber(data.nfoWatchlist![index].ohlc!.buyPrice)}",
+                                              compareValue: double.parse(
+                                                data
+                                                    .nfoWatchlist![index]
+                                                    .ohlc!
+                                                    .lastPrice
+                                                    .toString(),
+                                              ),
+                                              currentValue: double.parse(
+                                                data
+                                                    .nfoWatchlist![index]
+                                                    .ohlc!
+                                                    .buyPrice
+                                                    .toString(),
+                                              ),
+                                            ),
+                                            SizedBox(height: 5.w),
+                                          ],
                                         ),
                                       ],
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  spacing: 5,
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      record.expiryDate ?? '',
-                                    ).textStyleH2(),
-                                  ],
-                                ),
-                                IconButton(
-                                  onPressed: () async {
-                                    final symbolKey =
-                                        record.symbolKey.toString();
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      spacing: 5,
+                                      children: [
+                                        Text(
+                                          record.expiryDate ?? '',
+                                        ).textStyleH2(),
+                                      ],
+                                    ),
+                                    IconButton(
+                                      onPressed: () async {
+                                        final symbolKey = record.symbolKey
+                                            .toString();
 
-                                    if (!mounted) return;
+                                        if (!mounted) return;
 
-                                    // final scaffoldMessenger =
-                                    //     ScaffoldMessenger.of(context);
+                                        // final scaffoldMessenger =
+                                        //     ScaffoldMessenger.of(context);
 
-                                    _safeSetState(() {
-                                      removingNfoItems.add(symbolKey);
-                                    });
-
-                                    try {
-                                      final success = await WishlistRepository
-                                          .removeWatchListSymbols(
-                                        category: 'NFO',
-                                        symbolKey: symbolKey,
-                                      );
-
-                                      if (success) {
                                         _safeSetState(() {
-                                          data.nfoWatchlist!.removeAt(index);
-                                          _localNfoWatchlist.removeAt(index);
+                                          removingNfoItems.add(symbolKey);
                                         });
-                                      }
-                                    } catch (error) {
-                                      log(error.toString());
-                                    } finally {
-                                      _safeSetState(() {
-                                        removingNfoItems.remove(symbolKey);
-                                      });
-                                    }
-                                  },
-                                  icon: removingNfoItems.contains(data
-                                          .nfoWatchlist![index].symbolKey
-                                          .toString())
-                                      ? const SizedBox(
-                                          width: 24,
-                                          height: 24,
-                                          child: CircularProgressIndicator(
-                                            color: Colors.white,
-                                            strokeWidth: 2,
+
+                                        try {
+                                          final success =
+                                              await WishlistRepository.removeWatchListSymbols(
+                                                category: 'NFO',
+                                                symbolKey: symbolKey,
+                                              );
+
+                                          if (success) {
+                                            _safeSetState(() {
+                                              data.nfoWatchlist!.removeAt(
+                                                index,
+                                              );
+                                              _localNfoWatchlist.removeAt(
+                                                index,
+                                              );
+                                            });
+                                          }
+                                        } catch (error) {
+                                          log(error.toString());
+                                        } finally {
+                                          _safeSetState(() {
+                                            removingNfoItems.remove(symbolKey);
+                                          });
+                                        }
+                                      },
+                                      icon:
+                                          removingNfoItems.contains(
+                                            data.nfoWatchlist![index].symbolKey
+                                                .toString(),
+                                          )
+                                          ? const SizedBox(
+                                              width: 24,
+                                              height: 24,
+                                              child: CircularProgressIndicator(
+                                                color: zBlack,
+                                                strokeWidth: 2,
+                                              ),
+                                            )
+                                          : Image.asset(
+                                              Assets.assetsImagesCheckbox,
+                                              width: 34,
+                                              height: 34,
+                                            ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  // spacing: MediaQuery.sizeOf(context).width * .08,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          "Chg: ",
+                                          style: TextStyle(
+                                            color:
+                                                data.nfoWatchlist![index].change
+                                                    .toString()
+                                                    .contains('-')
+                                                ? Colors.red
+                                                : Colors.green.shade900,
+                                            fontSize: 11,
+                                            fontFamily:
+                                                FontFamily.globalFontFamily,
+                                            fontWeight: FontWeight.w700,
                                           ),
-                                        )
-                                      : SvgPicture.asset(
-                                          Assets
-                                              .assetsImagesSupertradeRemoveWishlistIcon,
-                                          height: 30,
-                                          color: kGoldenBraunColor,
                                         ),
-                                )
-                              ],
-                            ),
-                            Row(
-                              // spacing: MediaQuery.sizeOf(context).width * .08,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text("Chg: ",
-                                        style: TextStyle(
-                                            color: data
-                                                    .nfoWatchlist![index].change
+                                        Text(
+                                          _formatNumber(record.change ?? 0.0),
+                                          style: TextStyle(
+                                            color:
+                                                data.nfoWatchlist![index].change
                                                     .toString()
                                                     .contains('-')
                                                 ? Colors.red
                                                 : const Color(0xFF00C853),
                                             fontSize: 11,
-                                            fontWeight: FontWeight.w700)),
-                                    Text(_formatNumber(record.change ?? 0.0),
-                                        style: TextStyle(
-                                            color: data
-                                                    .nfoWatchlist![index].change
-                                                    .toString()
-                                                    .contains('-')
-                                                ? Colors.red
-                                                : const Color(0xFF00C853),
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w700)),
+                                            fontFamily:
+                                                FontFamily.globalFontFamily,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        const Text("LTP: ").textStyleH3(),
+                                        Text(
+                                          _formatNumber(record.ohlc!.lastPrice),
+                                        ).textStyleH3(),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        const Text("H: ").textStyleH3(),
+                                        Text(
+                                          _formatNumber(record.ohlc!.high),
+                                        ).textStyleH3(),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        const Text("L: ").textStyleH3(),
+                                        Text(
+                                          _formatNumber(record.ohlc!.low),
+                                        ).textStyleH3(),
+                                      ],
+                                    ),
                                   ],
                                 ),
-                                Row(
-                                  children: [
-                                    const Text(
-                                      "LTP: ",
-                                    ).textStyleH3(),
-                                    Text(
-                                      _formatNumber(record.ohlc!.lastPrice),
-                                    ).textStyleH3(),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    const Text(
-                                      "H: ",
-                                    ).textStyleH3(),
-                                    Text(
-                                      _formatNumber(record.ohlc!.high),
-                                    ).textStyleH3(),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    const Text(
-                                      "L: ",
-                                    ).textStyleH3(),
-                                    Text(
-                                      _formatNumber(record.ohlc!.low),
-                                    ).textStyleH3(),
-                                  ],
+                                Divider(
+                                  thickness: 1.5,
+                                  color: Colors.grey.shade800,
                                 ),
                               ],
                             ),
-                            Divider(
-                              thickness: 1.5,
-                              color: Colors.grey.shade800,
-                            )
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   );
                 },
-              );
-            }))
+              ),
+            ),
           ],
         ),
       ),

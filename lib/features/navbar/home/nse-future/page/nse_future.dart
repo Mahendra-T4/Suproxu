@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/features/navbar/home/nse-future/widgets/searchbar_widget.dart';
+import 'dart:async';
 import 'dart:developer' as developer;
 import 'package:suproxu/features/navbar/home/websocket/nfo_websocket.dart';
 import '../widgets/nfo_list_item.dart';
@@ -22,19 +25,43 @@ class _NseFutureState extends State<NseFuture> {
   NFODataEntity filteredNFO = NFODataEntity();
   String? errorMessage;
   String _currentSearchQuery = '';
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
 
   @override
   void initState() {
     super.initState();
+    // Start periodic validation timer (every 10 seconds)
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        developer.log('NseFuture auth validation error: $e');
+      }
+    });
+    // Subscribe to global logout events to cleanup immediately
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      try {
+        nfoWebSocket.dispose();
+      } catch (_) {}
+      developer.log('NseFuture: handled global logout cleanup');
+    });
+
     nfoWebSocket = NFOWebSocket(
       keyword: _searchController.text,
-      onNFODataReceived: (data) {
+      onDataReceived: (data) {
+        if (!mounted) return;
         setState(() {
           nfoData = data;
           _performSearch(_searchController.text);
         });
       },
       onError: (error) {
+        if (!mounted) return;
         setState(() {
           errorMessage = error;
         });
@@ -52,6 +79,24 @@ class _NseFutureState extends State<NseFuture> {
     _searchController.addListener(() {
       _performSearch(_searchController.text);
     });
+
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        _refreshNFOData();
+      }
+    });
+  }
+
+  Future<void> _refreshNFOData() async {
+    debugPrint('Refreshing NFO Data');
+
+    if (!mounted) return;
+
+    try {
+      nfoWebSocket.connect();
+    } catch (e) {
+      developer.log('Error refreshing NFO data: $e');
+    }
   }
 
   void _performSearch(String query) {
@@ -91,19 +136,39 @@ class _NseFutureState extends State<NseFuture> {
 
   @override
   void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     nfoWebSocket.dispose();
     super.dispose();
   }
 
   @override
+  void activate() {
+    super.activate();
+    // Reconnect socket when the page comes back into focus
+    developer.log('NseFuture: Page activated - reconnecting websocket');
+    try {
+      nfoWebSocket.connect();
+    } catch (e) {
+      developer.log('Error reconnecting NFO websocket on activate: $e');
+    }
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    // Disconnect socket when page is not active
+    nfoWebSocket.disconnect();
+    developer.log('Portfolio socket deactivated and disconnected');
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: zBlack,
+      backgroundColor: kWhiteColor,
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async {
-            // Implement refresh logic if needed
-          },
+          onRefresh: _refreshNFOData,
           child: Column(
             children: [
               SearchBarWidget(controller: _searchController),
@@ -117,7 +182,10 @@ class _NseFutureState extends State<NseFuture> {
                           children: [
                             Text(
                               'Error: $errorMessage',
-                              style: const TextStyle(color: Colors.red),
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontFamily: FontFamily.globalFontFamily,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 16),
@@ -126,10 +194,16 @@ class _NseFutureState extends State<NseFuture> {
                                 setState(() {
                                   errorMessage = null;
                                 });
-                                nfoWebSocket.dispose();
-                                initState();
+                                // Just reconnect without disconnecting
+                                // (socket is shared with other pages)
+                                nfoWebSocket.connect();
                               },
-                              child: const Text('Retry Connection'),
+                              child: const Text(
+                                'Retry Connection',
+                                style: TextStyle(
+                                  fontFamily: FontFamily.globalFontFamily,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -143,7 +217,12 @@ class _NseFutureState extends State<NseFuture> {
                           children: [
                             CircularProgressIndicator(),
                             SizedBox(height: 16),
-                            Text('Connecting to server...'),
+                            Text(
+                              'Connecting to server...',
+                              style: TextStyle(
+                                fontFamily: FontFamily.globalFontFamily,
+                              ),
+                            ),
                           ],
                         ),
                       );

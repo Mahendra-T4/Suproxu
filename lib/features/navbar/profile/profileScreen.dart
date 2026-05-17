@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/constants/color.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/core/service/connectivity/connectivity_service.dart';
 import 'package:suproxu/core/service/page/not_connected.dart';
+import 'dart:async';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -17,6 +20,8 @@ class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
 
   @override
   void initState() {
@@ -30,6 +35,23 @@ class _ProfileScreenState extends State<ProfileScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+
+    // Start periodic validation timer (every 10 seconds)
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        debugPrint('Profile auth validation error: $e');
+      }
+    });
+    // Subscribe to global logout events to cleanup immediately
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      debugPrint('Profile: handled global logout cleanup');
+    });
   }
 
   String? uFName;
@@ -49,10 +71,12 @@ class _ProfileScreenState extends State<ProfileScreen>
     final uemail = await databaseService.getUserData(key: userEmailIDKey);
     final activeTrade = await databaseService.getUserData(key: activeTradeKey);
     final closeTrade = await databaseService.getUserData(key: closeTradeKey);
-    final pendingTrade =
-        await databaseService.getUserData(key: pendingTradeKey);
-    final profitAndLoss =
-        await databaseService.getUserData(key: profitAndLossKey);
+    final pendingTrade = await databaseService.getUserData(
+      key: pendingTradeKey,
+    );
+    final profitAndLoss = await databaseService.getUserData(
+      key: profitAndLossKey,
+    );
     final userBalance = await databaseService.getUserData(key: userBalanceKey);
     setState(() {
       uFName = fName;
@@ -68,6 +92,8 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   @override
   void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     _animationController.dispose();
     super.dispose();
   }
@@ -101,6 +127,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 22,
+                fontFamily: FontFamily.globalFontFamily,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.2,
               ),
@@ -146,8 +173,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                               children: [
                                 CircleAvatar(
                                   radius: 50,
-                                  backgroundColor:
-                                      Colors.blueAccent.withOpacity(0.1),
+                                  backgroundColor: Colors.blueAccent
+                                      .withOpacity(0.1),
                                   child: const Icon(
                                     Icons.person,
                                     size: 60,
@@ -159,6 +186,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   'Hey, Welcome Back 👋',
                                   style: TextStyle(
                                     fontSize: 20,
+                                    fontFamily: FontFamily.globalFontFamily,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
@@ -167,6 +195,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 Text(
                                   '$uFName $uLName',
                                   style: TextStyle(
+                                    fontFamily: FontFamily.globalFontFamily,
                                     fontSize: 16,
                                     color: Colors.grey[400],
                                   ),
@@ -241,6 +270,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           style: TextStyle(
             color: color,
             fontSize: 18,
+            fontFamily: FontFamily.globalFontFamily,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -248,6 +278,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         Text(
           label,
           style: TextStyle(
+            fontFamily: FontFamily.globalFontFamily,
             color: Colors.grey[500],
             fontSize: 12,
           ),
@@ -287,6 +318,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 'Ledger Balance',
                 style: TextStyle(
                   fontSize: 16,
+                  fontFamily: FontFamily.globalFontFamily,
                   color: Colors.white70,
                   fontWeight: FontWeight.bold,
                 ),
@@ -299,6 +331,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             '\$19,708.07',
             style: TextStyle(
               fontSize: 28,
+              fontFamily: FontFamily.globalFontFamily,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -311,6 +344,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 'Margin Available',
                 style: TextStyle(
                   fontSize: 16,
+                  fontFamily: FontFamily.globalFontFamily,
                   color: Colors.white70,
                   fontWeight: FontWeight.bold,
                 ),
@@ -323,6 +357,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             '\$13,308.57',
             style: TextStyle(
               fontSize: 28,
+              fontFamily: FontFamily.globalFontFamily,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -373,6 +408,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  fontFamily: FontFamily.globalFontFamily,
                   color: accentColor,
                 ),
               ),
@@ -404,6 +440,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           label,
           style: TextStyle(
             fontSize: 14,
+            fontFamily: FontFamily.globalFontFamily,
             color: Colors.grey[500],
           ),
         ),
@@ -412,6 +449,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           style: TextStyle(
             fontSize: 14,
             color: valueColor,
+            fontFamily: FontFamily.globalFontFamily,
             fontWeight: FontWeight.bold,
           ),
         ),

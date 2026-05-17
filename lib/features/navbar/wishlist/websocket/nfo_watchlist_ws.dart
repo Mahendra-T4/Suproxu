@@ -21,7 +21,7 @@ class NFOWatchListWebSocketService {
 
   // Use correct activity name as per backend
   static const String _activity = 'get-wishlist-stocks';
-  static const Duration _emitInterval = Duration(milliseconds: 400);
+  static const Duration _emitInterval = Duration(milliseconds: 200);
 
   NFOWatchListWebSocketService({
     required this.onNFODataReceived,
@@ -49,24 +49,26 @@ class NFOWatchListWebSocketService {
         return;
       }
 
-      final wsUrl =
-          WebSocketConfig.socketUrl.replaceFirst('https://', 'wss://');
+      final wsUrl = WebSocketConfig.socketUrl.replaceFirst(
+        'https://',
+        'wss://',
+      );
 
       // Build socket with proper options
-      final socket = IO.io(
-        wsUrl,
-        IO.OptionBuilder()
-            .setPath(WebSocketConfig.socketPath)
-            .setTransports(['websocket'])
-            .disableAutoConnect()
-            // .setReconnection(true)
-            .setReconnectionAttempts(5)
-            .setReconnectionDelay(1000)
-            .setReconnectionDelayMax(5000)
-            .setTimeout(10000)
-            .setAuth({'token': WebSocketConfig.authToken})
-            .build(),
-      );
+      final socket = IO.io(WebSocketConfig.socketUrl, {
+        'path': WebSocketConfig.socketPath,
+        'transports': ['websocket'],
+        'autoConnect': true,
+        'reconnection': true,
+        'reconnectionDelay': 1000,
+        'reconnectionDelayMax': 5000,
+        'reconnectionAttempts': 5,
+        'timeout': 10000,
+        'auth': {'token': WebSocketConfig.authToken},
+        'extraHeaders': {
+          'Authorization': 'Bearer ${WebSocketConfig.authToken}',
+        },
+      });
 
       _socket = socket;
 
@@ -208,6 +210,14 @@ class NFOWatchListWebSocketService {
     }
   }
 
+  /// Reset disposed state for reconnection after navigation
+  void reset() {
+    if (_isDisposed && _socket == null) {
+      developer.log('WebSocket: Resetting disposed state for reconnection');
+      _isDisposed = false;
+    }
+  }
+
   /// Disconnect and clean up all resources
   void disconnect() {
     if (_isDisposed) return;
@@ -226,7 +236,7 @@ class NFOWatchListWebSocketService {
   /// Reconnect manually if needed
   Future<void> reconnect() async {
     disconnect();
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 200));
     if (!_isDisposed) {
       await connect();
     }

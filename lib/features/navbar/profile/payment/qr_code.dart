@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:suproxu/Assets/font_family.dart';
 
 class QRCodePage extends StatelessWidget {
   const QRCodePage({super.key});
@@ -9,7 +10,10 @@ class QRCodePage extends StatelessWidget {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text('Scan to Pay'),
+        title: const Text(
+          'Scan to Pay',
+          style: TextStyle(fontFamily: FontFamily.globalFontFamily),
+        ),
         centerTitle: true,
       ),
       body: Center(
@@ -19,26 +23,28 @@ class QRCodePage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                  clipBehavior: Clip.antiAlias,
-                  // padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Image.asset('assets/images/scanner.png')),
+                clipBehavior: Clip.antiAlias,
+                // padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Image.asset('assets/images/scanner.png'),
+              ),
               const SizedBox(height: 20),
               const Text(
                 'Scan this QR code to make a payment',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
+                  fontFamily: FontFamily.globalFontFamily,
                   color: Colors.white,
                 ),
               ),
@@ -49,8 +55,10 @@ class QRCodePage extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 50,
+                    vertical: 15,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -59,6 +67,7 @@ class QRCodePage extends StatelessWidget {
                   'Go Back',
                   style: TextStyle(
                     fontSize: 18,
+                    fontFamily: FontFamily.globalFontFamily,
                     color: Colors.white,
                   ),
                 ),

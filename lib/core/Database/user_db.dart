@@ -10,8 +10,10 @@ class DatabaseService with ChangeNotifier {
 
   DatabaseService._internal();
 
-  Future<void> saveUserData(
-      {required String key, required dynamic value}) async {
+  Future<void> saveUserData({
+    required String key,
+    required dynamic value,
+  }) async {
     final pref = await SharedPreferences.getInstance();
     try {
       if (value is String) {
@@ -37,6 +39,16 @@ class DatabaseService with ChangeNotifier {
       return pref.get(key);
     } catch (e) {
       throw Exception("Error retrieving data: $e");
+    }
+  }
+
+  Future<void> clearUserData({required String key}) async {
+    final pref = await SharedPreferences.getInstance();
+    try {
+      await pref.remove(key);
+      notifyListeners();
+    } catch (e) {
+      throw Exception("Error clearing data: $e");
     }
   }
 
@@ -69,7 +81,4 @@ class DatabaseService with ChangeNotifier {
     yield pref;
     notifyListeners();
   }
-
-  
- 
 }

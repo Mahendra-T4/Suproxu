@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/constants/apis/api_urls.dart';
-import 'package:suproxu/core/service/device_service.dart';
 import 'package:suproxu/features/navbar/Portfolio/model/active_portfolio_stock_entity.dart';
 
 class ActiveRepository {

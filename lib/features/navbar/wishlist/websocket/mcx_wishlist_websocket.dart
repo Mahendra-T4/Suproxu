@@ -22,7 +22,7 @@ class MCXWishlistWebSocketService {
 
   // Activity and config
   static const String _activity = 'get-wishlist-stocks';
-  static const Duration _emitInterval = Duration(milliseconds: 400);
+  static const Duration _emitInterval = Duration(milliseconds: 200);
   static const String _dataRelatedTo = 'MCX';
 
   MCXWishlistWebSocketService({
@@ -35,11 +35,12 @@ class MCXWishlistWebSocketService {
 
   /// Connect to WebSocket
   Future<void> connect() async {
-    if (_isDisposed) return;
+    // Allow reconnection even if previously marked as disposed (for temporary deactivations)
     if (_socket?.connected == true || _isConnecting) {
       developer.log('MCX WS: Already connected or connecting. Skipping.');
       return;
     }
+    _isDisposed = false; // Reset disposed flag on reconnection attempt
 
     _isConnecting = true;
 
@@ -51,8 +52,10 @@ class MCXWishlistWebSocketService {
         return;
       }
 
-      final wsUrl =
-          WebSocketConfig.socketUrl.replaceFirst('https://', 'wss://');
+      final wsUrl = WebSocketConfig.socketUrl.replaceFirst(
+        'https://',
+        'wss://',
+      );
 
       final socket = IO.io(
         wsUrl,
@@ -163,7 +166,8 @@ class MCXWishlistWebSocketService {
       }
 
       // Guard 1: Ensure this response is for MCX market
-      final dr = (data['dataRelatedTo'] ?? data['category'])
+      final dr =
+          (data['dataRelatedTo'] ?? data['category'])
               ?.toString()
               .toUpperCase() ??
           '';
@@ -179,7 +183,8 @@ class MCXWishlistWebSocketService {
           (data['symbolKey'] != null &&
               data['symbolKey'].toString().isNotEmpty)) {
         developer.log(
-            'Ignored symbol-level response (not a wishlist): activity=$activity');
+          'Ignored symbol-level response (not a wishlist): activity=$activity',
+        );
         return;
       }
 
@@ -188,8 +193,10 @@ class MCXWishlistWebSocketService {
       // Guard 3: Only forward non-empty watchlist responses
       if (mcxData.mcxWatchlist != null && mcxData.mcxWatchlist!.isNotEmpty) {
         onDataReceived(mcxData);
+        developer.log('✓ MCX Wishlist Data Response: $data');
         developer.log(
-            '✓ MCX Wishlist Data Parsed: ${mcxData.mcxWatchlist!.length} items');
+          '✓ MCX Wishlist Data Parsed: ${mcxData.mcxWatchlist!.length} items',
+        );
       } else {
         developer.log('Ignored empty MCX watchlist response');
       }
@@ -232,6 +239,14 @@ class MCXWishlistWebSocketService {
     }
   }
 
+  /// Reset disposed state for reconnection after navigation
+  void reset() {
+    if (_isDisposed && _socket == null) {
+      developer.log('WebSocket: Resetting disposed state for reconnection');
+      _isDisposed = false;
+    }
+  }
+
   /// Disconnect and clean up
   void disconnect() {
     if (_isDisposed) return;
@@ -249,9 +264,13 @@ class MCXWishlistWebSocketService {
 
   /// Manual reconnect
   Future<void> reconnect() async {
-    disconnect();
-    await Future.delayed(const Duration(milliseconds: 400));
-    if (!_isDisposed) await connect();
+    _stopPeriodicEmit();
+    _socket?.clearListeners();
+    _socket?.disconnect();
+    _socket = null;
+    _isConnecting = false;
+    await Future.delayed(const Duration(milliseconds: 200));
+    await connect();
   }
 
   /// Connection status

@@ -5,20 +5,16 @@ class MCXWishlistEntity {
   final List<MCXWatchlist>? mcxWatchlist;
   String? message;
 
-  MCXWishlistEntity({
-    this.status,
-    this.mcxWatchlist = const [],
-    this.message = '',
-  });
+  MCXWishlistEntity({this.status, this.mcxWatchlist, this.message = ''});
 
   factory MCXWishlistEntity.fromJson(Map<String, dynamic> json) {
     return MCXWishlistEntity(
       status: json['status'] as int? ?? 0,
       mcxWatchlist: json['response'] != null
           ? (json['response'] as List<dynamic>)
-              .map((v) => MCXWatchlist.fromJson(v as Map<String, dynamic>))
-              .toList()
-          : const [],
+                .map((v) => MCXWatchlist.fromJson(v as Map<String, dynamic>))
+                .toList()
+          : [],
       message: json['message'] as String? ?? '',
     );
   }

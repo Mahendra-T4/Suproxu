@@ -19,21 +19,30 @@ abstract class PortfolioRepository {
         ActivePortfolioStockEntity();
     final userKey = await config.getUserData(key: userIDKey);
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-  AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-  final deviceID = androidInfo.id.toString();
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    final deviceID = androidInfo.id.toString();
     try {
-      final response = await client.post(url,
-          body: {'activity': 'active-portfolio-stock', "deviceID": deviceID.toString(), 'userKey': userKey});
+      final response = await client.post(
+        url,
+        body: {
+          'activity': 'active-portfolio-stock',
+          "deviceID": deviceID.toString(),
+          'userKey': userKey,
+        },
+      );
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
-        activePorfolioEntity =
-            ActivePortfolioStockEntity.fromJson(jsonResponse);
+        activePorfolioEntity = ActivePortfolioStockEntity.fromJson(
+          jsonResponse,
+        );
         log('Active Porfolio ${activePorfolioEntity.message}');
         return ActivePortfolioStockEntity.fromJson(jsonResponse);
       } else {
         return ActivePortfolioStockEntity(
-            status: 0, message: 'Failed to load data from Super Trade Server');
+          status: 0,
+          message: 'Failed to load data from Super Trade Server',
+        );
       }
     } catch (e) {
       log('Active Portfolio Repo Error =>> $e');
@@ -45,11 +54,17 @@ abstract class PortfolioRepository {
     ClosePortfolioStockEntity closePorfolioEntity = ClosePortfolioStockEntity();
     final userKey = await config.getUserData(key: userIDKey);
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-  AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-  final deviceID = androidInfo.id.toString();
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    final deviceID = androidInfo.id.toString();
     try {
-      final response = await client.post(url,
-          body: {'activity': 'closed-portfolio-stock', "deviceID": deviceID.toString(), 'userKey': userKey});
+      final response = await client.post(
+        url,
+        body: {
+          'activity': 'closed-portfolio-stock',
+          "deviceID": deviceID.toString(),
+          'userKey': userKey,
+        },
+      );
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
@@ -58,7 +73,9 @@ abstract class PortfolioRepository {
         return ClosePortfolioStockEntity.fromJson(jsonResponse);
       } else {
         return ClosePortfolioStockEntity(
-            status: 0, message: 'Failed to load data from Super Trade Server');
+          status: 0,
+          message: 'Failed to load data from Super Trade Server',
+        );
       }
     } catch (e) {
       log('Active Portfolio Repo Error =>> $e');

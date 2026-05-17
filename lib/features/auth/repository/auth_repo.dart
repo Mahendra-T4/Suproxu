@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
@@ -22,100 +21,124 @@ class AuthRepository {
 
   //! user login
 
-  static Future<LoginModel> userLogin(
-      {required String email, required String password}) async {
+  static Future<LoginModel> userLogin({
+    required String email,
+    required String password,
+  }) async {
     DatabaseService dbService = DatabaseService();
     SharedPreferences pref = await SharedPreferences.getInstance();
     LoginModel loginModel = LoginModel();
     final client = http.Client();
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-  AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-  final deviceID = androidInfo.id.toString();
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    final deviceID = androidInfo.id.toString();
     final url = Uri.parse(loginApiEndPointUrl);
-    var userDeviceID;
-    DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
-    AndroidDeviceInfo _androidInfo = await _deviceInfo.androidInfo;
+    // var userDeviceID;
+    // DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
+    // AndroidDeviceInfo _androidInfo = await _deviceInfo.androidInfo;
 
-    if (Platform.isAndroid) {
-      userDeviceID = _androidInfo.id.toString();
-    }
+    // if (Platform.isAndroid) {
+    //   userDeviceID = _androidInfo.id.toString();
+    // }
     try {
-      final response = await client.post(url, body: {
-        "activity": "login",
-        "deviceID": deviceID.toString(),
-        "uEmail": email,
-        "uPassword": password
-      });
+      final response = await client.post(
+        url,
+        body: {
+          "activity": "login",
+          "deviceID": deviceID.toString(),
+          "uEmail": email,
+          "uPassword": password,
+        },
+      );
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
         loginModel = LoginModel.fromJson(jsonResponse);
         // successToastMsg(context, message);
         log('User Key =>>${loginModel.record!.userKey.toString()}');
+        log('User Login Json Response =>>${response.body}');
+
+        if (loginModel.record?.updatePassword == 1) {
+          //* save user login token
+          pref.setBool(loginToken, true);
+        }
 
         //* save user first name
         dbService.saveUserData(
-            key: userFirstNameKey,
-            value: loginModel.record!.userFirstName.toString());
+          key: userFirstNameKey,
+          value: loginModel.record!.userFirstName.toString(),
+        );
 
         //* save user last name
         dbService.saveUserData(
-            key: userLastNameKey,
-            value: loginModel.record!.userLastName.toString());
+          key: userLastNameKey,
+          value: loginModel.record!.userLastName.toString(),
+        );
 
         //* save user email
         dbService.saveUserData(
-            key: userEmailIDKey,
-            value: loginModel.record!.userEmailID.toString());
+          key: userEmailIDKey,
+          value: loginModel.record!.userEmailID.toString(),
+        );
 
         //* save user mobile
         dbService.saveUserData(
-            key: mobileNumberKey,
-            value: loginModel.record!.userMobileNumber.toString());
+          key: mobileNumberKey,
+          value: loginModel.record!.userMobileNumber.toString(),
+        );
 
         //* save user alternate mobile number
         dbService.saveUserData(
-            key: alternateMobileKey,
-            value: loginModel.record!.userAlternateNumber.toString());
+          key: alternateMobileKey,
+          value: loginModel.record!.userAlternateNumber.toString(),
+        );
 
         //* save user userImage
         dbService.saveUserData(
-            key: userImageKey, value: loginModel.record!.userImage.toString());
+          key: userImageKey,
+          value: loginModel.record!.userImage.toString(),
+        );
 
         //* save user userImage
         dbService.saveUserData(
-            key: userBalanceKey,
-            value: loginModel.record!.userBalance.toString());
+          key: userBalanceKey,
+          value: loginModel.record!.userBalance.toString(),
+        );
 
         //* save userKey
         dbService.saveUserData(
-            key: userIDKey, value: loginModel.record!.userKey.toString());
+          key: userIDKey,
+          value: loginModel.record!.userKey.toString(),
+        );
         log('UserID =>> ${loginModel.record!.userKey.toString()}');
 
         //* save userPoints
         dbService.saveUserData(
-            key: activeTradeKey,
-            value: loginModel.record!.userActiveTrade.toString());
+          key: activeTradeKey,
+          value: loginModel.record!.userActiveTrade.toString(),
+        );
 
         //* save user trade
         dbService.saveUserData(
-            key: closeTradeKey,
-            value: loginModel.record!.userCloseTrade.toString());
+          key: closeTradeKey,
+          value: loginModel.record!.userCloseTrade.toString(),
+        );
         //* save user trade
         dbService.saveUserData(
-            key: pendingTradeKey,
-            value: loginModel.record!.userPendingTrade.toString());
+          key: pendingTradeKey,
+          value: loginModel.record!.userPendingTrade.toString(),
+        );
 
         //* save user trade
         dbService.saveUserData(
-            key: profitAndLossKey,
-            value: loginModel.record!.userProfitLoss.toString());
+          key: profitAndLossKey,
+          value: loginModel.record!.userProfitLoss.toString(),
+        );
 
         //* save userQR
         dbService.saveUserData(
-            key: agentQRKey, value: loginModel.record!.agentQR.toString());
-
-        //* save user login token
-        pref.setBool(loginToken, true);
+          key: agentQRKey,
+          value: loginModel.record!.agentQR.toString(),
+        );
       } else {
         log('data not found something want wrong');
       }
@@ -136,15 +159,18 @@ class AuthRepository {
     // final uEmail = databaseService.getUserData(key: userEmailIDKey);
     final url = Uri.parse(forgotPasswordApiEndPointUrl);
     ForgotPasswordEntity forgotPasswordEntity = ForgotPasswordEntity();
-     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-  AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-  final deviceID = androidInfo.id.toString();
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    final deviceID = androidInfo.id.toString();
     try {
-      final response = await client.post(url, body: {
-        'activity': 'forget-password',
-        "deviceID": deviceID.toString(),
-        'uEmail': uEmail.toString()
-      });
+      final response = await client.post(
+        url,
+        body: {
+          'activity': 'forget-password',
+          "deviceID": deviceID.toString(),
+          'uEmail': uEmail.toString(),
+        },
+      );
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
         forgotPasswordEntity = ForgotPasswordEntity.fromJson(jsonResponse);
@@ -165,10 +191,11 @@ class AuthRepository {
 
   //! change password
 
-  static Future<ChangePasswordEntity> changePasswordEntity(
-      {required String currentPass,
-      required String newPassword,
-      required String confirmPassword}) async {
+  static Future<ChangePasswordEntity> changePassword({
+    required String currentPass,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
     final url = Uri.parse(changePasswordApiUrlEndPointUrl);
     ChangePasswordEntity changePasswordEntity = ChangePasswordEntity();
     DatabaseService databaseService = DatabaseService();
@@ -177,25 +204,27 @@ class AuthRepository {
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
     final deviceID = androidInfo.id.toString();
     try {
-      final response = await client.post(url, body: {
-        'activity': 'change-password',
-        'userKey': uKey,
-        'currentPass': currentPass,
-        'newPassword': newPassword,
-        "deviceID": deviceID.toString(),
-        'confirmPassword': confirmPassword
-      });
+      final response = await client.post(
+        url,
+        body: {
+          'activity': 'change-password',
+          'userKey': uKey,
+          'currentPass': currentPass,
+          'newPassword': newPassword,
+          "deviceID": deviceID.toString(),
+          'confirmPassword': confirmPassword,
+        },
+      );
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
         changePasswordEntity = ChangePasswordEntity.fromJson(jsonResponse);
-
-       
+        log('Change Password Json Response =>> ${response.body}');
+        log('Change Password Status =>> ${changePasswordEntity.message}');
       } else {
         log('Failed to load api data');
       }
     } catch (e) {
       log('Change Password Error =>> $e');
-   
     }
     return changePasswordEntity;
   }

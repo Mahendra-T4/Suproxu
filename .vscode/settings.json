@@ -4,5 +4,6 @@
         "Forgetpassword",
         "Portfolioclose",
         "Setpassword"
-    ]
+    ],
+    "cmake.sourceDirectory": "D:/CodeWithMax/Mobile Projects/T4/suproxu/windows/runner"
 }

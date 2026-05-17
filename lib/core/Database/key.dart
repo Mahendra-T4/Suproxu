@@ -30,4 +30,6 @@ const String closeTradeKey = 'closeTradeKey';
 
 const String pendingTradeKey = 'pendingTradeKey';
 
-const String notifyKey  = 'notifyKey';
+const String warnedKey = 'warnedKey';
+
+const String notifyKey = 'notifyKey';

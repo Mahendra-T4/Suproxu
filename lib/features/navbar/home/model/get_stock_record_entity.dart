@@ -1,6 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
-
 double? parseDouble(dynamic value) {
   if (value == null) return null;
   if (value is double) return value;
@@ -45,7 +44,7 @@ class GetStockRecordEntity {
             .toList();
       } else if (json['data'] is Map) {
         responseList = [
-          ResponseGetRecord.fromJson(json['data'] as Map<String, dynamic>?)
+          ResponseGetRecord.fromJson(json['data'] as Map<String, dynamic>?),
         ];
       }
     }
@@ -67,14 +66,14 @@ class GetStockRecordEntity {
 }
 
 class ResponseGetRecord {
-  final String symbolKey;
-  int watchlist; // Not final since it can be updated
-  final String receivedSymbol;
-  final String symbol;
-  final String symbolName;
-  final String category;
-  final String expiryDate;
-  final String currentTime;
+  final dynamic symbolKey;
+  dynamic watchlist; // Not final since it can be updated
+  final dynamic receivedSymbol;
+  final dynamic symbol;
+  final dynamic symbolName;
+  final dynamic category;
+  final dynamic expiryDate;
+  final dynamic currentTime;
   final dynamic change;
   final dynamic openInterest;
   final dynamic upperCKT;
@@ -86,26 +85,26 @@ class ResponseGetRecord {
   final OhlcGetRecord ohlc;
 
   ResponseGetRecord({
-    this.symbolKey = '',
-    this.watchlist = 0,
-    this.receivedSymbol = '',
-    this.symbol = '',
-    this.symbolName = '',
-    this.category = '',
-    this.expiryDate = '',
-    this.currentTime = '',
-    this.change = 0.0,
-    this.openInterest = 0.0,
-    this.upperCKT = 0.0,
-    this.lowerCKT = 0.0,
-    this.averageTradePrice = 0.0,
+    this.symbolKey,
+    this.watchlist,
+    this.receivedSymbol,
+    this.symbol,
+    this.symbolName,
+    this.category,
+    this.expiryDate,
+    this.currentTime,
+    this.change,
+    this.openInterest,
+    this.upperCKT,
+    this.lowerCKT,
+    this.averageTradePrice,
     LastBuy? lastBuy,
     LastBuy? lastSell,
     this.lotSize = 0,
     OhlcGetRecord? ohlc,
-  })  : lastBuy = lastBuy ?? LastBuy(),
-        lastSell = lastSell ?? LastBuy(),
-        ohlc = ohlc ?? OhlcGetRecord();
+  }) : lastBuy = lastBuy ?? LastBuy(),
+       lastSell = lastSell ?? LastBuy(),
+       ohlc = ohlc ?? OhlcGetRecord();
 
   factory ResponseGetRecord.fromJson(Map<String, dynamic>? json) {
     if (json == null) {
@@ -139,15 +138,20 @@ class ResponseGetRecord {
         close: parseDouble(readString(m, ['close']) ?? m['close']) ?? 0.0,
         open: parseDouble(readString(m, ['open']) ?? m['open']) ?? 0.0,
         volume: parseDouble(readString(m, ['volume']) ?? m['volume']) ?? 0.0,
-        salePrice: parseDouble(readString(m, ['sale_price', 'salePrice']) ??
-                m['sale_price']) ??
+        salePrice:
+            parseDouble(
+              readString(m, ['sale_price', 'salePrice']) ?? m['sale_price'],
+            ) ??
             0.0,
-        buyPrice: parseDouble(
-                readString(m, ['buy_price', 'buyPrice']) ?? m['buy_price']) ??
+        buyPrice:
+            parseDouble(
+              readString(m, ['buy_price', 'buyPrice']) ?? m['buy_price'],
+            ) ??
             0.0,
-        lastPrice: parseDouble(
-                readString(m, ['ltp', 'last_price', 'lastPrice']) ??
-                    m['ltp']) ??
+        lastPrice:
+            parseDouble(
+              readString(m, ['ltp', 'last_price', 'lastPrice']) ?? m['ltp'],
+            ) ??
             0.0,
       );
     }
@@ -160,8 +164,13 @@ class ResponseGetRecord {
     }
 
     return ResponseGetRecord(
-      symbolKey: readString(
-              m, ['symbolKey', 'symbol_key', 'symbolkey', 'symbolKey']) ??
+      symbolKey:
+          readString(m, [
+            'symbolKey',
+            'symbol_key',
+            'symbolkey',
+            'symbolKey',
+          ]) ??
           '',
       watchlist: m['watchlist'] is int
           ? m['watchlist'] ?? 0
@@ -259,11 +268,7 @@ class LastBuy {
   final int quantity;
   final int orders;
 
-  LastBuy({
-    this.price = 0.0,
-    this.quantity = 0,
-    this.orders = 0,
-  });
+  LastBuy({this.price = 0.0, this.quantity = 0, this.orders = 0});
 
   factory LastBuy.fromJson(Map<String, dynamic>? json) {
     if (json == null) {
@@ -288,11 +293,7 @@ class LastBuy {
     return data;
   }
 
-  LastBuy copyWith({
-    dynamic price,
-    int? quantity,
-    int? orders,
-  }) {
+  LastBuy copyWith({dynamic price, int? quantity, int? orders}) {
     return LastBuy(
       price: price ?? this.price,
       quantity: quantity ?? this.quantity,

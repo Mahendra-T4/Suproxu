@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/constants/widget/toast.dart';
 import 'package:suproxu/core/service/Auth/auto_logout.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
 import 'package:suproxu/core/service/page/not_connected.dart';
 import 'package:suproxu/core/widgets/app_bar.dart';
 import 'package:suproxu/features/navbar/profile/bloc/profile_bloc.dart';
+import 'dart:async';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -23,6 +26,8 @@ class _NotificationScreenState extends State<NotificationScreen>
   late Animation<double> _fadeAnimation;
 
   late ProfileBloc _profileBloc;
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
 
   @override
   void initState() {
@@ -40,10 +45,29 @@ class _NotificationScreenState extends State<NotificationScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+
+    // Start periodic validation timer (every 10 seconds)
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        debugPrint('Notification auth validation error: $e');
+      }
+    });
+    // Subscribe to global logout events to cleanup immediately
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      debugPrint('Notification: handled global logout cleanup');
+    });
   }
 
   @override
   void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
     _profileBloc.close();
     _animationController.dispose();
     super.dispose();
@@ -52,157 +76,172 @@ class _NotificationScreenState extends State<NotificationScreen>
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<bool>(
-        stream: InternetConnectionService().connectionStream,
-        builder: (context, snapshot) {
-          if (snapshot.data == false) {
-            return NoInternetConnection(); // Show your offline UI
-          }
-          return Container(
-            color: greyColor,
-            child: SafeArea(
-              child: Scaffold(
-                backgroundColor: zBlack, // Dark premium background
-                appBar: customAppBarWithTitle(
-                    context: context,
-                    title: 'Notification',
-                    isShowNotify: false),
-                body: BlocConsumer(
-                    bloc: _profileBloc,
-                    listener: (context, state) {
-                      if (state is ProfileFailedErrorStateForNotification) {
-                        final error = state.error;
-                        failedToast(context, error.toString());
-                      }
-                    },
-                    builder: (_, state) {
-                      switch (state.runtimeType) {
-                        case const (ProfileLoadingState):
-                          return const Center(
-                            child: CircularProgressIndicator.adaptive(),
-                          );
-                        case const (ProfileLoadedSuccessStateForNotification):
-                          final successState =
-                              state as ProfileLoadedSuccessStateForNotification;
-                          return successState.notificationEntity.notification !=
-                                  null
-                              ? FadeTransition(
-                                  opacity: _fadeAnimation,
-                                  child: ListView.builder(
-                                    padding: const EdgeInsets.all(16.0),
-                                    itemCount: successState.notificationEntity
-                                        .notification!.length,
-                                    itemBuilder: (context, index) {
-                                      // final notification = notifications[index];
-                                      return InkWell(
-                                        onTap: () {
-                                          // Navigator.pushNamed(context,
-                                          //     NotificationDetailsView.routeName,
-                                          //     arguments: NotifyParams(
-                                          //         title: 'Notification',
-                                          //         contents: successState
-                                          //             .notificationEntity
-                                          //             .notification!
-                                          //             .first
-                                          //             .notificationMsg
-                                          //             .toString()));
-                                        },
-                                        child: AnimatedContainer(
-                                          duration:
-                                              const Duration(milliseconds: 300),
-                                          margin: const EdgeInsets.symmetric(
-                                              vertical: 8.0),
-                                          padding: const EdgeInsets.all(16.0),
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(15),
-                                              color: kWhiteColor),
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              // Leading Icon
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.all(8),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.blueAccent
-                                                      .withOpacity(0.2),
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: const Icon(
-                                                  Icons.notifications,
-                                                  color: Colors.blueAccent,
-                                                  size: 24,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 12),
-                                              // Notification Content
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      successState
-                                                          .notificationEntity
-                                                          .notification![index]
-                                                          .notificationMsg
-                                                          .toString(),
-                                                      style: const TextStyle(
-                                                        fontSize: 15,
-                                                        color: zBlack,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                      ),
-                                                      maxLines: 2,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                    const SizedBox(height: 8),
-                                                    Text(
-                                                      successState
-                                                          .notificationEntity
-                                                          .notification![index]
-                                                          .notificationDate
-                                                          .toString(),
-                                                      style: const TextStyle(
-                                                        fontSize: 12,
-                                                        color: zBlack,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
+      stream: InternetConnectionService().connectionStream,
+      builder: (context, snapshot) {
+        if (snapshot.data == false) {
+          return NoInternetConnection(); // Show your offline UI
+        }
+        return Container(
+          color: greyColor,
+          child: SafeArea(
+            child: Scaffold(
+              backgroundColor: kWhiteColor, // Dark premium background
+              appBar: customAppBarWithTitle(
+                context: context,
+                title: 'Notification',
+                isShowNotify: false,
+              ),
+              body: BlocConsumer(
+                bloc: _profileBloc,
+                listener: (context, state) {
+                  if (state is ProfileFailedErrorStateForNotification) {
+                    final error = state.error;
+                    failedToast(context, error.toString());
+                  }
+                },
+                builder: (_, state) {
+                  switch (state.runtimeType) {
+                    case const (ProfileLoadingState):
+                      return const Center(
+                        child: CircularProgressIndicator.adaptive(),
+                      );
+                    case const (ProfileLoadedSuccessStateForNotification):
+                      final successState =
+                          state as ProfileLoadedSuccessStateForNotification;
+                      return successState.notificationEntity.notification !=
+                              null
+                          ? FadeTransition(
+                              opacity: _fadeAnimation,
+                              child: ListView.builder(
+                                padding: const EdgeInsets.all(16.0),
+                                itemCount: successState
+                                    .notificationEntity
+                                    .notification!
+                                    .length,
+                                itemBuilder: (context, index) {
+                                  // final notification = notifications[index];
+                                  return InkWell(
+                                    onTap: () {
+                                      // Navigator.pushNamed(context,
+                                      //     NotificationDetailsView.routeName,
+                                      //     arguments: NotifyParams(
+                                      //         title: 'Notification',
+                                      //         contents: successState
+                                      //             .notificationEntity
+                                      //             .notification!
+                                      //             .first
+                                      //             .notificationMsg
+                                      //             .toString()));
                                     },
-                                  ),
-                                )
-                              : Center(
-                                  child: Text(
-                                    successState.notificationEntity.message
-                                        .toString(),
-                                    style: const TextStyle(
-                                      color: zBlack,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500,
+                                    child: AnimatedContainer(
+                                      duration: const Duration(
+                                        milliseconds: 300,
+                                      ),
+                                      margin: const EdgeInsets.symmetric(
+                                        vertical: 8.0,
+                                      ),
+                                      padding: const EdgeInsets.all(16.0),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(15),
+                                        color: Colors.grey.withOpacity(.3),
+                                      ),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          // Leading Icon
+                                          Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: Colors.blueAccent
+                                                  .withOpacity(0.2),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(
+                                              Icons.notifications,
+                                              color: Colors.blueAccent,
+                                              size: 24,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          // Notification Content
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  successState
+                                                      .notificationEntity
+                                                      .notification![index]
+                                                      .notificationMsg
+                                                      .toString(),
+                                                  style: const TextStyle(
+                                                    fontSize: 15,
+                                                    color: zBlack,
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Text(
+                                                  successState
+                                                      .notificationEntity
+                                                      .notification![index]
+                                                      .notificationDate
+                                                      .toString(),
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
+                                                    color: zBlack,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                );
-                        case const (ProfileFailedErrorStateForNotification):
-                          return const SizedBox.shrink();
-                        default:
-                          return const Center(
-                            child: Text("State not found"),
-                          );
-                      }
-                    }),
+                                  );
+                                },
+                              ),
+                            )
+                          : Center(
+                              child: Text(
+                                successState.notificationEntity.message
+                                    .toString(),
+                                style: TextStyle(
+                                  color: zBlack,
+                                  fontSize: 15,
+                                  fontFamily: FontFamily.globalFontFamily,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            );
+                    case const (ProfileFailedErrorStateForNotification):
+                      return const SizedBox.shrink();
+                    default:
+                      return const Center(
+                        child: Text(
+                          "State not found",
+                          style: TextStyle(
+                            fontFamily: FontFamily.globalFontFamily,
+                          ),
+                        ),
+                      );
+                  }
+                },
               ),
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 }
 

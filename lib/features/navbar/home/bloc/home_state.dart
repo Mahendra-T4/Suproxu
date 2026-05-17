@@ -6,7 +6,7 @@ final class HomeInitialState extends HomeState {}
 
 final class HomeLoadingState extends HomeState {}
 
-final class HomeLoadingState2 extends HomeState{}
+final class HomeLoadingState2 extends HomeState {}
 
 //! MCX Trade States
 
@@ -41,8 +41,9 @@ final class HomeFailedErrorStateForNSETrading extends HomeState {
 final class StockCategorySuccessfulLoadedSuccessState extends HomeState {
   final StocksCategoryEntity stocksCategoryEntity;
 
-  StockCategorySuccessfulLoadedSuccessState(
-      {required this.stocksCategoryEntity});
+  StockCategorySuccessfulLoadedSuccessState({
+    required this.stocksCategoryEntity,
+  });
 }
 
 final class StockCategoryFailedErrorState extends HomeState {
@@ -98,7 +99,6 @@ final class SearchStockByNameFailedErrorState extends HomeState {
 
   SearchStockByNameFailedErrorState({required this.error});
 }
-
 
 // final class SellRecordListStocksSuccessState extends HomeState{
 //   final BuySaleEntity b

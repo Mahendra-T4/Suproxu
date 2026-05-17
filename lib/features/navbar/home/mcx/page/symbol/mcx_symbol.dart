@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:suproxu/Assets/assets.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
 import 'package:suproxu/core/service/page/not_connected.dart';
 import 'package:suproxu/features/navbar/home/mcx/page/symbol/mcx_symbol_builder.dart';
+import 'package:suproxu/features/navbar/home/model/get_stock_record_entity.dart';
 import 'package:suproxu/features/navbar/profile/notification/notificationScreen.dart';
 import 'package:suproxu/features/navbar/wishlist/model/mcx_symbol_param.dart';
 
@@ -26,7 +28,7 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: zBlack,
+      // backgroundColor: zBlack,
       appBar: AppBar(
         backgroundColor: Colors.black,
         leading: IconButton(
@@ -47,232 +49,267 @@ class _MCXSymbolRecordPageState extends MCXSymbolWidgetBuilder {
             },
           ),
         ],
-        title: Text(
-          widget.params.symbol,
-        ).textStyleH(),
+        title: Text(widget.params.symbol).textStyleH(),
       ),
       body: StreamBuilder<bool>(
         stream: InternetConnectionService().connectionStream,
         builder: (context, snapshot) {
           if (snapshot.data == false) {
-            return const NoInternetConnection(); // Show your offline UI
+            return const NoInternetConnection();
           }
-          return Builder(
-            builder: (context) {
-              if (errorMessage != null) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Error: $errorMessage',
-                        style: const TextStyle(color: Colors.red),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            errorMessage = null;
-                          });
-                          try {
-                            webSocket.disconnect();
-                          } catch (_) {}
-                          webSocket.connect();
-                        },
-                        child: const Text('Retry Connection'),
-                      ),
-                    ],
-                  ),
-                );
-              }
+          // ✅ Use ValueListenableBuilder to listen to real-time socket data updates
+          return ValueListenableBuilder<GetStockRecordEntity>(
+            valueListenable: (this as dynamic).symbolDataNotifier,
+            builder: (context, symbolData, child) {
+              return Builder(
+                builder: (context) {
+                  // 🔥 Safety check: ensure we're displaying data for the correct symbol
+                  if (symbolData.response.isNotEmpty) {
+                    final matchesCurrentSymbol = symbolData.response.any(
+                      (r) =>
+                          r.symbolKey.trim() == widget.params.symbolKey.trim(),
+                    );
 
-              // Show loading indicator while waiting for first data
-              if (symbolData.status != 1 && errorMessage == null) {
-                webSocket.connect();
-                return const SizedBox.shrink();
-              }
-
-              if (symbolData.response.isEmpty) {
-                return const Center(
-                  child: Text('No data available'),
-                );
-              }
-
-              return SingleChildScrollView(
-                child: Column(
-                  children: [
-                    SizedBox(height: screenHeight * 0.01),
-                    Container(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        color: kWhiteColor,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Row(
+                    if (!matchesCurrentSymbol) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => setState(() => selectedTab = 0),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  alignment: Alignment.center,
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: screenHeight * 0.018,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    gradient: selectedTab == 0
-                                        ? LinearGradient(
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                            colors: [
-                                              const Color(0xFF00C853),
-                                              const Color(0xFF00C853)
-                                                  .withOpacity(0.8),
-                                            ],
-                                          )
-                                        : null,
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: selectedTab == 0
-                                        ? [
-                                            BoxShadow(
-                                              color: const Color(0xFF00C853)
-                                                  .withOpacity(0.3),
-                                              spreadRadius: 1,
-                                              blurRadius: 8,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                          ]
-                                        : null,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.show_chart,
-                                        color: selectedTab == 0
-                                            ? Colors.white
-                                            : Colors.black,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        "Market",
-                                        style: TextStyle(
-                                          color: selectedTab == 0
-                                              ? Colors.white
-                                              : Colors.black,
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 16,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 8.h),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => setState(() => selectedTab = 1),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  alignment: Alignment.center,
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: screenHeight * 0.018,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: selectedTab == 1
-                                        ? const Color(0xFF2C2C2E)
-                                        : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(12),
-                                    gradient: selectedTab == 1
-                                        ? LinearGradient(
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                            colors: [
-                                              const Color(0xFF00C853),
-                                              const Color(0xFF00C853)
-                                                  .withOpacity(0.8),
-                                            ],
-                                          )
-                                        : null,
-                                    boxShadow: selectedTab == 1
-                                        ? [
-                                            BoxShadow(
-                                              color: const Color(0xFF00C853)
-                                                  .withOpacity(0.3),
-                                              spreadRadius: 1,
-                                              blurRadius: 8,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                          ]
-                                        : null,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.receipt_long,
-                                        color: selectedTab == 1
-                                            ? Colors.white
-                                            : zBlack,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        "Order",
-                                        style: TextStyle(
-                                          color: selectedTab == 1
-                                              ? Colors.white
-                                              : zBlack,
-                                          fontFamily: 'JetBrainsMono',
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 16,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                            const CircularProgressIndicator(),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Loading ${widget.params.symbol}...',
+                              style: const TextStyle(fontSize: 16),
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                    symbolData.status == 1
-                        ? selectedTab == 0
-                            ? marketCrudeoil(
-                                context,
-                                symbolData.response.first.ohlc,
-                                symbolData.response.first,
-                                screenHeight,
-                                screenWidth,
-                              )
-                            : limitCrudeoil(
-                                context,
-                                symbolData.response.first.ohlc,
-                                symbolData.response.first,
-                                screenHeight,
-                                screenWidth,
-                              )
-                        : Center(
-                            child: Text(
-                              symbolData.message.toString(),
-                              style: const TextStyle(
-                                color: zBlack,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
+                      );
+                    }
+                  }
+
+                  // Show loading indicator while waiting for first data
+                  if (symbolData.status != 1 && errorMessage == null) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (symbolData.response.isEmpty) {
+                    return const Center(child: Text('No data available'));
+                  }
+
+                  return SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        SizedBox(height: screenHeight * 0.01),
+                        Container(
+                          height: screenHeight * 0.08,
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            color: lvoryWhiteColor,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                spreadRadius: .5,
+                                blurRadius: 5,
+                                offset: const Offset(0, 2),
                               ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Stack(
+                              children: [
+                                // Animated Sliding Background Indicator
+                                AnimatedAlign(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeOutCubic,
+                                  alignment: selectedTab == 0
+                                      ? Alignment.centerLeft
+                                      : Alignment.centerRight,
+                                  child: Container(
+                                    width:
+                                        (MediaQuery.of(context).size.width -
+                                            48) /
+                                        2, // Half width minus padding/margin
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: screenHeight * 0.018,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: selectedTab == 0
+                                          ? aquaGreyColor.withOpacity(.6)
+                                          : aquaGreyColor.withOpacity(.6),
+
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+
+                                // Tab Buttons (on top of the sliding background)
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: () =>
+                                            setState(() => selectedTab = 0),
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: screenHeight * 0.018,
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              AnimatedScale(
+                                                scale: selectedTab == 0
+                                                    ? 1.05
+                                                    : 1.0,
+                                                duration: const Duration(
+                                                  milliseconds: 300,
+                                                ),
+                                                child: Icon(
+                                                  Icons.show_chart,
+                                                  color: selectedTab == 0
+                                                      ? Colors.black
+                                                      : aquaGreyColor,
+                                                  size: 20,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              AnimatedDefaultTextStyle(
+                                                duration: const Duration(
+                                                  milliseconds: 300,
+                                                ),
+                                                style: TextStyle(
+                                                  color: selectedTab == 0
+                                                      ? Colors.black
+                                                      : aquaGreyColor,
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: 18.5,
+                                                  letterSpacing: 2,
+                                                ),
+                                                child: const Text(
+                                                  "MARKET",
+                                                  style: TextStyle(
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: 8.h),
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            selectedTab = 1;
+                                            salePrice = symbolData
+                                                .response
+                                                .first
+                                                .ohlc
+                                                .salePrice;
+                                            buyPrice = symbolData
+                                                .response
+                                                .first
+                                                .ohlc
+                                                .buyPrice;
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: screenHeight * 0.018,
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              AnimatedScale(
+                                                scale: selectedTab == 1
+                                                    ? 1.05
+                                                    : 1.0,
+                                                duration: const Duration(
+                                                  milliseconds: 300,
+                                                ),
+                                                child: Icon(
+                                                  Icons.receipt_long,
+                                                  color: selectedTab == 1
+                                                      ? Colors.black
+                                                      : aquaGreyColor,
+                                                  size: 20,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              AnimatedDefaultTextStyle(
+                                                duration: const Duration(
+                                                  milliseconds: 300,
+                                                ),
+                                                style: TextStyle(
+                                                  color: selectedTab == 1
+                                                      ? Colors.black
+                                                      : aquaGreyColor,
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: 18.5,
+                                                  letterSpacing: 2,
+                                                ),
+                                                child: const Text(
+                                                  "ORDER",
+                                                  style: TextStyle(
+                                                    fontFamily: FontFamily
+                                                        .globalFontFamily,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                          )
-                  ],
-                ),
+                          ),
+                        ),
+                        symbolData.status == 1
+                            ? selectedTab == 0
+                                  ? marketCrudeoil(
+                                      context,
+                                      symbolData.response.first.ohlc,
+                                      symbolData.response.first,
+                                      screenHeight,
+                                      screenWidth,
+                                    )
+                                  : limitCrudeoil(
+                                      context,
+                                      symbolData.response.first.ohlc,
+                                      symbolData.response.first,
+                                      screenHeight,
+                                      screenWidth,
+                                    )
+                            : Center(
+                                child: Text(
+                                  symbolData.message.toString(),
+                                  style: const TextStyle(
+                                    color: zBlack,
+                                    fontSize: 15,
+                                    fontFamily: FontFamily.globalFontFamily,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                      ],
+                    ),
+                  );
+                },
               );
             },
           );

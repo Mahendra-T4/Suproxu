@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/service/Auth/auto_logout.dart';
+import 'package:suproxu/core/service/Auth/user_validation.dart';
 import 'package:suproxu/core/widgets/app_bar.dart';
 import 'package:suproxu/features/navbar/profile/bloc/profile_bloc.dart';
+import 'dart:async';
 
 class UserWalletPage extends StatefulWidget {
   const UserWalletPage({super.key});
@@ -15,6 +17,8 @@ class UserWalletPage extends StatefulWidget {
 
 class _UserWalletPageState extends State<UserWalletPage> {
   late ProfileBloc _profileBloc;
+  Timer? _validationTimer;
+  StreamSubscription<void>? _logoutSub;
   @override
   void initState() {
     _profileBloc = ProfileBloc();
@@ -22,13 +26,38 @@ class _UserWalletPageState extends State<UserWalletPage> {
     // Ensure autoLogoutUser is imported from core/logout/logout.dart
     autoLogoutUser(context, mounted);
     _profileBloc.add(FetchingBalanceLogEvent());
+
+    // Start periodic validation timer (every 10 seconds)
+    _validationTimer = Timer.periodic(const Duration(seconds: 10), (
+      timer,
+    ) async {
+      if (!mounted) return;
+      try {
+        await AuthService().validateAndLogout(context);
+      } catch (e) {
+        debugPrint('UserWallet auth validation error: $e');
+      }
+    });
+    // Subscribe to global logout events to cleanup immediately
+    _logoutSub = AuthService().onLogout.listen((_) {
+      _validationTimer?.cancel();
+      debugPrint('UserWallet: handled global logout cleanup');
+    });
+
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: zBlack,
+      backgroundColor: kWhiteColor,
       appBar: customAppBarWithTitle(
         context: context,
         title: 'User Wallet',
@@ -38,9 +67,7 @@ class _UserWalletPageState extends State<UserWalletPage> {
         bloc: _profileBloc,
         builder: (context, state) {
           if (state is ProfileLoadingState) {
-            return const Center(
-              child: CircularProgressIndicator.adaptive(),
-            );
+            return const Center(child: CircularProgressIndicator.adaptive());
           } else if (state is FetchingBalanceLogSuccessStatus) {
             return state.balanceLogModel.status == 1
                 ? ListView.builder(
@@ -58,7 +85,9 @@ class _UserWalletPageState extends State<UserWalletPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              state.balanceLogModel.record![index]
+                              state
+                                  .balanceLogModel
+                                  .record![index]
                                   .transactionDate
                                   .toString(),
                               style: const TextStyle(
@@ -68,7 +97,9 @@ class _UserWalletPageState extends State<UserWalletPage> {
                               ),
                             ),
                             Text(
-                              state.balanceLogModel.record![index]
+                              state
+                                  .balanceLogModel
+                                  .record![index]
                                   .transactionAmount
                                   .toString(),
                               style: TextStyle(
@@ -85,7 +116,7 @@ class _UserWalletPageState extends State<UserWalletPage> {
                 : Center(
                     child: Text(
                       state.balanceLogModel.message.toString(),
-                      style: TextStyle(fontSize: 16, color: kGoldenBraunColor),
+                      style: TextStyle(fontSize: 16, color: zBlack),
                     ),
                   );
           } else if (state is FetchingBalanceLogFailedStatus) {

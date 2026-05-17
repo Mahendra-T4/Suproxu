@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:suproxu/Assets/assets.dart';
+import 'package:suproxu/Assets/font_family.dart';
 import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/extensions/color_blinker.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
@@ -121,11 +122,7 @@ class _NFOListItemState extends State<NFOListItem> {
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.itemData.expiryDate ?? '',
-            ).textStyleH3(),
-          ],
+          children: [Text(widget.itemData.expiryDate ?? '').textStyleH3()],
         ),
         _buildWishlistButton(),
       ],
@@ -135,25 +132,54 @@ class _NFOListItemState extends State<NFOListItem> {
   Widget _buildWishlistButton() {
     return InkWell(
       onTap: () async {
-        final success = await WishlistRepository.addToWishlist(
-          category: 'NFO',
-          symbolKey: widget.itemData.symbolKey.toString(),
-          context: context,
-        );
+        bool success = false;
+        if (widget.itemData.watchlist == 1) {
+          // Remove from wishlist
+          success = await WishlistRepository.removeWatchListSymbols(
+            category: 'NFO',
+            symbolKey: widget.itemData.symbolKey.toString(),
+          );
+        } else {
+          // Add to wishlist
+          success = await WishlistRepository.addToWishlist(
+            category: 'NFO',
+            symbolKey: widget.itemData.symbolKey.toString(),
+            context: context,
+          );
+        }
 
         if (success && mounted) {
           widget.onWishlistChanged();
         }
       },
-      child: Image.asset(
-        widget.itemData.watchlist == 1
-            ? Assets.assetsImagesSupertradeRomoveWishlist
-            : Assets.assetsImagesSuperTradeAddWishlist,
-        scale: 19,
-        color: widget.itemData.watchlist == 1
-            ? Colors.deepPurpleAccent
-            : kGoldenBraunColor,
-      ),
+      child: widget.itemData.watchlist == 1
+          ? Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: Image.asset(
+                Assets.assetsImagesCheckbox,
+                width: 34,
+                height: 34,
+              ),
+            )
+          : Container(
+              height: 28,
+              width: 28,
+              margin: const EdgeInsets.only(right: 10),
+              decoration: BoxDecoration(
+                color: Colors.lightGreen.withOpacity(0.5),
+                border: Border.all(color: greyColor, width: 2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+      // child: Image.asset(
+      //   widget.itemData.watchlist == 1
+      //       ? Assets.assetsImagesSupertradeRomoveWishlist
+      //       : Assets.assetsImagesSuperTradeAddWishlist,
+      //   scale: 19,
+      //   color: widget.itemData.watchlist == 1
+      //       ? Colors.deepPurpleAccent
+      //       : kGoldenBraunColor,
+      // ),
     );
   }
 
@@ -166,7 +192,7 @@ class _NFOListItemState extends State<NFOListItem> {
           value: _formatNumber(widget.itemData.change ?? 0.0),
           color: widget.itemData.change.toString().contains('-')
               ? Colors.red
-              : Colors.green,
+              : Colors.green.shade900,
         ),
         _buildDetailItem2(
           label: "LTP: ",
@@ -192,6 +218,7 @@ class _NFOListItemState extends State<NFOListItem> {
     final textStyle = TextStyle(
       color: color ?? zBlack,
       fontSize: 11.5,
+      fontFamily: FontFamily.globalFontFamily,
       fontWeight: FontWeight.bold,
     );
 
@@ -211,6 +238,7 @@ class _NFOListItemState extends State<NFOListItem> {
     final textStyle = TextStyle(
       color: color ?? zBlack,
       fontSize: 11.5,
+      fontFamily: FontFamily.globalFontFamily,
       fontWeight: FontWeight.bold,
     );
 

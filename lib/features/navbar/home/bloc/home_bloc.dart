@@ -5,6 +5,8 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:suproxu/features/navbar/home/model/buy_sale_entity.dart';
 import 'package:suproxu/features/navbar/home/model/get_stock_record_entity.dart';
+import 'package:suproxu/features/navbar/home/model/logo_model.dart';
+
 import 'package:suproxu/features/navbar/home/model/mcx_entity.dart';
 import 'package:suproxu/features/navbar/home/model/nse_enity.dart';
 import 'package:suproxu/features/navbar/home/model/search_stock_entity.dart';
@@ -26,19 +28,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<GetMCXSymbolDataSuccessEvent>(getMCXSymbolDataSuccessEvent);
     // on<SearchStockBySymbolEvent>(searchStockBySymbolEvent);
   }
-
-  // FutureOr<void> mcxDataSuccessfulFetchingEvent(
-  //     MCXDataSuccessfulFetchingEvent event, Emitter<HomeState> emit) async {
-  //   emit(HomeLoadingState());
-  //   try {
-  //     // await Future.delayed(Duration(milliseconds: 800));
-  //     final mcxTrade = await TradeRepository.mcxTradeDataLoader();
-  //     emit(HomeSuccessStateForMCXTrading(mcxDataEntity: mcxTrade));
-  //   } catch (e) {
-  //     emit(HomeFailedErrorStateForMCXTrading(error: e.toString()));
-  //     log('MCX BLOC ERROR =>> $e');
-  //   }
-  // }
 
   FutureOr<void> nseDataSuccessfulFetchingEvent(
     NSEDataSuccessfulFetchingEvent event,
@@ -131,17 +120,4 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       emit(GetMCXSymbolDataFailedErrorState(error: e.toString()));
     }
   }
-
-  // FutureOr<void> searchStockBySymbolEvent(
-  //     SearchStockBySymbolEvent event, Emitter<HomeState> emit) async {
-  //   emit(HomeLoadingState());
-  //   try {
-  //     final searchStockEntity = await SearchRepository.searchStock(
-  //         query: event.query, stockName: event.stockName);
-  //     emit(SearchStockByNameSuccessState(searchStockEntity: searchStockEntity));
-  //   } catch (e) {
-  //     log('Search Stock Bloc Error : $e');
-  //     emit(SearchStockByNameFailedErrorState(error: e.toString()));
-  //   }
-  // }
 }

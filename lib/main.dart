@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:suproxu/core/constants/color.dart';
 import 'package:suproxu/core/router/router_confic.dart';
 import 'package:suproxu/core/service/Auth/auth_wiget_service.dart';
 import 'package:suproxu/core/service/connectivity/internet_connection_service.dart';
 import 'package:suproxu/core/service/notification/notification_service.dart';
 import 'package:suproxu/core/service/repositorie/global_respo.dart';
+import 'package:suproxu/core/util/suproxu_logo.dart';
 import 'package:suproxu/features/auth/bloc/auth_bloc.dart';
 import 'package:suproxu/features/navbar/TradeScreen/bloc/trade_bloc.dart';
 import 'package:suproxu/features/navbar/home/bloc/home_bloc.dart';
@@ -14,11 +17,17 @@ import 'package:suproxu/features/navbar/profile/bloc/profile_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // 🔒 Lock app to portrait mode only
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   // await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
-  InternetConnectionService().startMonitoring();
-  // AuthService().checkUserValidation(context!);
 
+  // Start these services without blocking initialization
+  InternetConnectionService().startMonitoring();
   NotificationService().fetchUnreadCount();
+
   runApp(
     MultiBlocProvider(
       providers: [
@@ -30,9 +39,10 @@ void main() async {
       child: const MyApp(),
     ),
   );
-  // ClientConfig.initStudents();
+
+  // Load data after app is running (non-blocking)
   GlobalRepository.stocksMapper();
-  // getDeviceID();
+  SuproxuLogo();
 }
 
 class MyApp extends StatelessWidget {
@@ -44,17 +54,17 @@ class MyApp extends StatelessWidget {
     return ScreenUtilInit(
       child: ProviderScope(
         child: MaterialApp.router(
-          title: 'Stock Info',
+          title: 'Perk',
           theme: ThemeData(
+            scaffoldBackgroundColor: kWhiteColor,
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,
           ),
-          // initialRoute: SplashScreen.routeName,
           routerConfig: routerConfig,
-          builder: (context, child) {
-            return AuthCheckWidget(child: child ?? const SizedBox());
-          },
 
+          // builder: (context, child) {
+          //   return AuthCheckWidget(child: child ?? const SizedBox());
+          // },
           debugShowCheckedModeBanner: false,
         ),
       ),

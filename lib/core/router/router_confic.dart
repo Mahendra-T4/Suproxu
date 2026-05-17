@@ -1,4 +1,6 @@
 import 'package:go_router/go_router.dart';
+import 'package:suproxu/core/service/navigation/navigation_service.dart';
+import 'package:suproxu/core/widgets/trade_warning.dart';
 import 'package:suproxu/features/auth/change-pass/changePassword.dart';
 import 'package:suproxu/features/auth/forgot-pass/forgetPassword.dart';
 import 'package:suproxu/features/auth/login/loginPage.dart';
@@ -18,25 +20,26 @@ import 'package:suproxu/features/navbar/profile/ledger/ledgerScreen.dart';
 import 'package:suproxu/features/navbar/profile/notification/notificationScreen.dart';
 import 'package:suproxu/features/navbar/profile/payment/paymentScreen.dart';
 import 'package:suproxu/features/navbar/profile/profile/profile_info.dart';
+import 'package:suproxu/features/navbar/profile/roles/superoxu_rules.dart';
 import 'package:suproxu/features/navbar/profile/wallet/user_wallet.dart';
 import 'package:suproxu/features/navbar/profile/withdraw/withdraw.dart';
 import 'package:suproxu/features/navbar/wishlist/model/mcx_symbol_param.dart';
-import 'package:suproxu/features/navbar/wishlist/wishlist-tabs/MCX-Tab/page/mcx_stock_wishlist_fixed.dart';
+import 'package:suproxu/features/navbar/wishlist/preview/symbol_card_tile_widget.dart';
 import 'package:suproxu/features/navbar/wishlist/wishlist.dart';
 import 'package:suproxu/features/splash/splash_screen.dart';
 
-
 final GoRouter routerConfig = GoRouter(
+  navigatorKey: NavigationService.navigatorKey,
   initialLocation: SplashScreen.routeName,
   routes: [
     ShellRoute(
       builder: (context, state, child) => GlobalNavBar(child: child),
       routes: [
-        // GoRoute(
-        //   path: Mcxscreen.routeName,
-        //   name: Mcxscreen.routeName,
-        //   builder: (context, state) => Mcxscreen(),
-        // ),
+        GoRoute(
+          path: SymbolCardTileWidget.routeName,
+          name: SymbolCardTileWidget.routeName,
+          builder: (context, state) => SymbolCardTileWidget(),
+        ),
         // GoRoute(
         //   path: MCXStockPage.routeName,
         //   name: MCXStockPage.routeName,
@@ -46,12 +49,6 @@ final GoRouter routerConfig = GoRouter(
           path: McxHome.routeName,
           name: McxHome.routeName,
           builder: (context, state) => const McxHome(),
-        ),
-
-        GoRoute(
-          path: McxStockWishlist.routeName,
-          name: McxStockWishlist.routeName,
-          builder: (context, state) => const McxStockWishlist(),
         ),
         // GoRoute(
         //   path: NseFutureMain.routeName,
@@ -68,11 +65,7 @@ final GoRouter routerConfig = GoRouter(
           name: WishList.routeName,
           builder: (context, state) => const WishList(),
         ),
-        // GoRoute(
-        //   path: MCXWishListPanel.routeName,
-        //   name: MCXWishListPanel.routeName,
-        //   builder: (context, state) => MCXWishListPanel(),
-        // ),
+
         GoRoute(
           path: TradeTabsScreen.routeName,
           name: TradeTabsScreen.routeName,
@@ -107,6 +100,11 @@ final GoRouter routerConfig = GoRouter(
           path: NseFuture.routeName,
           name: NseFuture.routeName,
           builder: (context, state) => const NseFuture(),
+        ),
+        GoRoute(
+          path: SuproxuRulesPage.routeName,
+          name: SuproxuRulesPage.routeName,
+          builder: (context, state) => const SuproxuRulesPage(),
         ),
 
         GoRoute(
@@ -168,6 +166,23 @@ final GoRouter routerConfig = GoRouter(
         ),
       ],
     ),
+    GoRoute(
+      path: TradeWarning.routeName,
+      name: TradeWarning.routeName,
+      builder: (context, state) {
+        final updatePassword = state.extra as String;
+        return TradeWarning(updatePassword: updatePassword);
+      },
+    ),
+
+    // GoRoute(
+    //   path: McxWatchListBypass.routeName,
+    //   name: McxWatchListBypass.routeName,
+    //   builder: (context, state) {
+    //     final mcxSymbolParams = state.extra as MCXSymbolParams;
+    //     return McxWatchListBypass(item: mcxSymbolParams);
+    //   },
+    // ),
     GoRoute(
       path: LoginPages.routeName,
       name: LoginPages.routeName,

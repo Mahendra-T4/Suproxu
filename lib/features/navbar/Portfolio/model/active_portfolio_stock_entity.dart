@@ -4,8 +4,12 @@ class ActivePortfolioStockEntity {
   String? message;
   ActiveStatics? activeStatics;
 
-  ActivePortfolioStockEntity(
-      {this.status, this.response, this.message, this.activeStatics});
+  ActivePortfolioStockEntity({
+    this.status,
+    this.response,
+    this.message,
+    this.activeStatics,
+  });
 
   ActivePortfolioStockEntity.fromJson(Map<String, dynamic> json) {
     status = json['status'];
@@ -47,17 +51,18 @@ class Response {
   dynamic marginHolding;
   LiveData? liveData;
 
-  Response(
-      {this.symbolName,
-      this.symbolKey,
-      this.dataRelatedTo,
-      this.tradePrice,
-      this.orderMethod,
-      this.tradeMethod,
-      this.stockQty,
-      this.margin,
-      this.marginHolding,
-      this.liveData});
+  Response({
+    this.symbolName,
+    this.symbolKey,
+    this.dataRelatedTo,
+    this.tradePrice,
+    this.orderMethod,
+    this.tradeMethod,
+    this.stockQty,
+    this.margin,
+    this.marginHolding,
+    this.liveData,
+  });
 
   Response.fromJson(Map<String, dynamic> json) {
     symbolName = json['symbolName'];
@@ -99,8 +104,12 @@ class LiveData {
   dynamic profitLoss;
   dynamic tradeM2M;
 
-  LiveData(
-      {this.currentMarketPrice, this.lotSize, this.profitLoss, this.tradeM2M});
+  LiveData({
+    this.currentMarketPrice,
+    this.lotSize,
+    this.profitLoss,
+    this.tradeM2M,
+  });
 
   LiveData.fromJson(Map<String, dynamic> json) {
     currentMarketPrice = json['currentMarketPrice'];
@@ -125,18 +134,22 @@ class ActiveStatics {
   dynamic marginAvailable;
   dynamic m2m;
   dynamic activeProfitLoss;
+  dynamic requiredHoldingMargin;
 
-  ActiveStatics(
-      {this.ledgerBalance,
-      this.marginAvailable,
-      this.m2m,
-      this.activeProfitLoss});
+  ActiveStatics({
+    this.ledgerBalance,
+    this.marginAvailable,
+    this.m2m,
+    this.activeProfitLoss,
+    this.requiredHoldingMargin,
+  });
 
   ActiveStatics.fromJson(Map<String, dynamic> json) {
     ledgerBalance = json['ledgerBalance'];
     marginAvailable = json['marginAvailable'];
     m2m = json['m2m'];
     activeProfitLoss ??= json['activeProfitLoss'];
+    requiredHoldingMargin = json['requiredHoldingMargin'];
   }
 
   Map<String, dynamic> toJson() {
@@ -145,6 +158,7 @@ class ActiveStatics {
     data['marginAvailable'] = this.marginAvailable;
     data['m2m'] = this.m2m;
     data['activeProfitLoss'] = this.activeProfitLoss;
+    data['requiredHoldingMargin'] = this.requiredHoldingMargin;
     return data;
   }
 }

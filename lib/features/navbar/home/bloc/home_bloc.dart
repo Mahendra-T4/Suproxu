@@ -5,6 +5,8 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:suproxu/features/navbar/home/model/buy_sale_entity.dart';
 import 'package:suproxu/features/navbar/home/model/get_stock_record_entity.dart';
+import 'package:suproxu/features/navbar/home/model/logo_model.dart';
+
 import 'package:suproxu/features/navbar/home/model/mcx_entity.dart';
 import 'package:suproxu/features/navbar/home/model/nse_enity.dart';
 import 'package:suproxu/features/navbar/home/model/search_stock_entity.dart';
@@ -26,8 +28,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<GetMCXSymbolDataSuccessEvent>(getMCXSymbolDataSuccessEvent);
     // on<SearchStockBySymbolEvent>(searchStockBySymbolEvent);
   }
-
-
 
   FutureOr<void> nseDataSuccessfulFetchingEvent(
     NSEDataSuccessfulFetchingEvent event,
@@ -120,6 +120,4 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       emit(GetMCXSymbolDataFailedErrorState(error: e.toString()));
     }
   }
-
-  
 }

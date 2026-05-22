@@ -145,18 +145,33 @@ class _PendingTabState extends State<PendingTab>
                                         ),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          border: Border.all(color: Colors.red),
+                                          border: Border.all(
+                                            color:
+                                                pendingTradeEntity
+                                                        .record![index]
+                                                        .tradeMethod ==
+                                                    1
+                                                ? Colors.green
+                                                : Colors.red,
+                                          ),
                                           borderRadius: BorderRadius.circular(
                                             20,
                                           ),
                                         ),
                                         child: Text(
                                           '${pendingTradeEntity.record![index].orderMethod} X ${pendingTradeEntity.record![index].availableQty}',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w500,
-                                           fontFamily: FontFamily.globalFontFamily,
-                                            color: Colors.redAccent,
+                                            fontFamily:
+                                                FontFamily.globalFontFamily,
+                                            color:
+                                                pendingTradeEntity
+                                                        .record![index]
+                                                        .tradeMethod ==
+                                                    1
+                                                ? Colors.green
+                                                : Colors.red,
                                           ),
                                         ),
                                       ),
@@ -181,7 +196,8 @@ class _PendingTabState extends State<PendingTab>
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w500,
-                                            fontFamily: FontFamily.globalFontFamily,
+                                            fontFamily:
+                                                FontFamily.globalFontFamily,
                                             color: Colors.redAccent,
                                           ),
                                         ),
@@ -203,9 +219,10 @@ class _PendingTabState extends State<PendingTab>
                                               .toString(),
                                           style: TextStyle(
                                             fontWeight: FontWeight.w800,
-                                           fontFamily: FontFamily.globalFontFamily,
+                                            fontFamily:
+                                                FontFamily.globalFontFamily,
                                             fontSize: 15,
-                                            color: kGoldenBraunColor,
+                                            color: Colors.black,
                                           ),
                                         ),
                                       ),
@@ -235,7 +252,8 @@ class _PendingTabState extends State<PendingTab>
                                         })(),
                                         style: TextStyle(
                                           fontWeight: FontWeight.w500,
-                                          fontFamily: FontFamily.globalFontFamily,
+                                          fontFamily:
+                                              FontFamily.globalFontFamily,
                                           color: kGoldenBraunColor,
                                           fontSize: 12,
                                         ),
@@ -250,10 +268,10 @@ class _PendingTabState extends State<PendingTab>
                                         '${pendingTradeEntity.record![index].currentDate} & ${pendingTradeEntity.record![index].time}',
                                         style: TextStyle(
                                           fontWeight: FontWeight.w500,
-                                          fontFamily: FontFamily.globalFontFamily,
-                                          color: kGoldenBraunColor,
+                                          fontFamily:
+                                              FontFamily.globalFontFamily,
+                                          color: Colors.black,
                                           fontSize: 12,
-
                                         ),
                                       ),
                                     ],

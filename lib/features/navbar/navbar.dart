@@ -36,6 +36,8 @@ class _GlobalNavBarState extends State<GlobalNavBar>
   late AnimationController _controller;
   late Animation<double> _animation;
 
+  var global = 'Global Variable';
+
   static final List<String> _listOfWidget = [
     WishList.routeName,
     TradeTabsScreen.routeName,
@@ -62,9 +64,11 @@ class _GlobalNavBarState extends State<GlobalNavBar>
     WithdrawPage.routeName,
     UserWalletPage.routeName,
     SuproxuRulesPage.routeName,
-    ProfileInfo.routeName, LodgeComplaintScreen.routeName,  PaymentScreen.routeName, LedgerReportScreen.routeName,
+    ProfileInfo.routeName,
+    LodgeComplaintScreen.routeName,
+    PaymentScreen.routeName,
+    LedgerReportScreen.routeName,
     DepositScreen.routeName,
-    
   ];
 
   @override

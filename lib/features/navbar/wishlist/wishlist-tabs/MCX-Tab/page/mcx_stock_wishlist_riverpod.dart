@@ -32,6 +32,7 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
   MCXWishlistEntity mcxWishlist = MCXWishlistEntity();
   Timer? _validationTimer;
   StreamSubscription<void>? _logoutSub;
+  Timer? _refreshTimer;
   String? errorMessage;
   bool _disposed = false;
   final Set<String> removingItems = {};
@@ -48,7 +49,7 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
       }
     });
 
-    Timer.periodic(const Duration(seconds: 1), (timer) {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted && !_disposed) {
         _refreshWishlistData();
       }
@@ -129,6 +130,9 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
   @override
   void dispose() {
     _disposed = true;
+    _validationTimer?.cancel();
+    _logoutSub?.cancel();
+    _refreshTimer?.cancel();
     try {
       socket.disconnect();
     } catch (e) {
@@ -377,7 +381,7 @@ class _McxStockWishlistState extends State<McxStockWishlist> {
 
   Widget _buildItemFooter(MCXWatchlist item) {
     final isNegative = item.change.toString().contains('-');
-    final changeColor = isNegative ? Colors.red : Colors.green;
+    final changeColor = isNegative ? Colors.red : Colors.green.shade900;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

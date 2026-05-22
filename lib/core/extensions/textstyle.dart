@@ -166,7 +166,7 @@ extension TextStyleX on Text {
       data ?? '',
       style: TextStyle(
         fontWeight: FontWeight.w700,
-        color: kGoldenBraunColor,
+        color: Colors.brown.shade700,
         fontFamily: FontFamily.globalFontFamily,
         fontSize: 12.sp,
       ),
@@ -271,7 +271,7 @@ extension TextStyleX on Text {
         fontWeight: FontWeight.w700,
         fontFamily: FontFamily.globalFontFamily,
         color: zBlack,
-        fontSize: 12,
+        fontSize: 13,
       ),
       textAlign: textAlign,
       maxLines: maxLines,

@@ -80,7 +80,7 @@ class _NseFutureState extends State<NseFuture> {
       _performSearch(_searchController.text);
     });
 
-     Timer.periodic(const Duration(seconds:1), (timer) {
+    Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
         _refreshNFOData();
       }
@@ -152,6 +152,14 @@ class _NseFutureState extends State<NseFuture> {
     } catch (e) {
       developer.log('Error reconnecting NFO websocket on activate: $e');
     }
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    // Disconnect socket when page is not active
+    nfoWebSocket.disconnect();
+    developer.log('Portfolio socket deactivated and disconnected');
   }
 
   @override

@@ -197,13 +197,14 @@ class MCXSymbolWebSocketService {
 
         if (!hasMatchingSymbol) {
           developer.log(
-            'Ignored symbol response (symbol=$symbolKey not in response): ${mcxData.response.map((r) => r.symbolKey).join(",")}',
+            'Ignored symbol response (symbol=$symbolKey not in response): ${mcxData.response.map((r) => r.symbolKey).join}',
           );
           return;
         }
 
         onDataReceived(mcxData);
         developer.log('✓ MCX Symbol Data Parsed & Sent: symbolKey=$symbolKey');
+        developer.log('✓ MCX Symbol Data Response: $data');
       } else {
         developer.log('Ignored non-map response: $data');
       }

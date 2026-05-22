@@ -11,7 +11,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:suproxu/core/Database/key.dart';
 import 'package:suproxu/core/Database/user_db.dart';
 import 'package:suproxu/core/constants/color.dart';
-import 'package:suproxu/core/constants/widget/toast.dart';
 import 'package:suproxu/core/extensions/textstyle.dart';
 import 'package:suproxu/core/widgets/warning_alert_box.dart';
 import 'package:suproxu/features/navbar/TradeScreen/bloc/trade_bloc.dart';
@@ -257,7 +256,7 @@ class _TradeactiveState extends State<Tradeactive>
                                               extra: SymbolScreenParams(
                                                 symbol: activeTradeEntity
                                                     .record![index]
-                                                    .symbolKey
+                                                    .symbolName
                                                     .toString(),
                                                 index: index,
                                                 symbolKey: activeTradeEntity
@@ -316,7 +315,8 @@ class _TradeactiveState extends State<Tradeactive>
                                                                 1
                                                             ? Colors.green
                                                             : Colors.red,
-                                                             fontFamily: FontFamily.globalFontFamily,
+                                                        fontFamily: FontFamily
+                                                            .globalFontFamily,
                                                       ),
                                                     ),
                                                   ),
@@ -425,6 +425,9 @@ class _TradeactiveState extends State<Tradeactive>
                                                                 );
                                                               }
 
+                                                              // fire the appropriate HomeBloc event, wait for it to finish,
+                                                              // then refresh the trade list afterwards. remove the
+                                                              // row locally only once refresh succeeds to avoid stale data.
                                                               if (activeTradeEntity
                                                                       .record![index]
                                                                       .tradeMethod ==
@@ -452,18 +455,6 @@ class _TradeactiveState extends State<Tradeactive>
                                                                         .toString(),
                                                                   ),
                                                                 );
-                                                                setState(() {
-                                                                  loadingIndices
-                                                                      .remove(
-                                                                        index,
-                                                                      );
-                                                                  activeTradeEntity
-                                                                      .record!
-                                                                      .removeAt(
-                                                                        index,
-                                                                      ); // Add loading state for this specific button
-                                                                });
-
                                                                 _tradeBloc.add(
                                                                   ActiveStockTradeEvent(
                                                                     activity:
@@ -494,18 +485,6 @@ class _TradeactiveState extends State<Tradeactive>
                                                                         .toString(),
                                                                   ),
                                                                 );
-                                                                setState(() {
-                                                                  loadingIndices
-                                                                      .remove(
-                                                                        index,
-                                                                      );
-                                                                  activeTradeEntity
-                                                                      .record!
-                                                                      .removeAt(
-                                                                        index,
-                                                                      ); // Add loading state for this specific button
-                                                                });
-
                                                                 _tradeBloc.add(
                                                                   ActiveStockTradeEvent(
                                                                     activity:
@@ -514,7 +493,7 @@ class _TradeactiveState extends State<Tradeactive>
                                                                 );
                                                               }
 
-                                                              // Wait for the HomeBloc action to complete
+                                                              // Wait for the HomeBloc action to complete (success or error)
                                                               await _homeBloc
                                                                   .stream
                                                                   .firstWhere(
@@ -523,23 +502,22 @@ class _TradeactiveState extends State<Tradeactive>
                                                                             is! HomeLoadingState,
                                                                   );
 
-                                                              // Clear loading state
-                                                              setState(() {
-                                                                loadingIndices
-                                                                    .remove(
-                                                                      index,
-                                                                    );
-                                                              });
+                                                              // now perform local update and refresh trade list
+                                                              if (mounted) {
+                                                                setState(() {
+                                                                  loadingIndices
+                                                                      .remove(
+                                                                        index,
+                                                                      );
+                                                                });
+                                                              }
 
-                                                              // Trigger refresh of trade list
-
-                                                              // // Clear loading state and refresh data
-                                                              // setState(() {
-                                                              //   loadingIndices
-                                                              //       .remove(index);
-                                                              // });
-
-                                                              // Refresh the trade list
+                                                              _tradeBloc.add(
+                                                                ActiveStockTradeEvent(
+                                                                  activity:
+                                                                      'active-stock',
+                                                                ),
+                                                              );
                                                             } catch (e) {
                                                               if (mounted) {
                                                                 ScaffoldMessenger.of(
@@ -604,17 +582,19 @@ class _TradeactiveState extends State<Tradeactive>
                                                         .spaceBetween,
                                                 children: [
                                                   Text(
-                                                    (() {
-                                                      if (activeTradeEntity
-                                                              .record![index]
-                                                              .tradeMethod ==
-                                                          1) {
-                                                        return 'Sold by Trader';
-                                                      } else {
-                                                        return 'Bought by Trader';
-                                                      }
-                                                    })(),
-                                                  ).textStyleH3(),
+                                                    activeTradeEntity
+                                                        .record![index]
+                                                        .tradeText
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color: kGoldenBraunColor,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      fontFamily: FontFamily
+                                                          .globalFontFamily,
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
                                                   Text(
                                                     'Margin : ${activeTradeEntity.record![index].margin}',
                                                   ).textStyleH3(),
@@ -739,6 +719,7 @@ class _TradeactiveState extends State<Tradeactive>
                     stockQty: availableQty.toString(),
                   ),
                 );
+                _tradeBloc.add(ActiveStockTradeEvent(activity: 'active-stock'));
               }
             },
             icon: Icon(Icons.close, size: 18.r, color: Colors.white),

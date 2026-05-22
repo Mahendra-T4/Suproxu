@@ -12,16 +12,19 @@ import 'package:suproxu/features/navbar/Portfolio/model/active_portfolio_stock_e
 final activePortfolioProvider = StreamProvider<ActivePortfolioStockEntity>((
   ref,
 ) async* {
-  DatabaseService config = DatabaseService();
-  final userKey = await config.getUserData(key: userIDKey);
   DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
   AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
   final deviceID = androidInfo.id.toString();
   final url = Uri.parse(superTradeBaseApiEndPointUrl);
-  ActivePortfolioStockEntity activePorfolioEntity =
-      ActivePortfolioStockEntity();
 
+  // This provider runs indefinitely emitting updates every short delay.
+  // Instead of capturing the userKey once, fetch it on each iteration so that
+  // switching accounts or invalidating the provider will pick up the new
+  // value.  Consumers can still call `ref.invalidate(activePortfolioProvider)`
+  // when the logged-in user changes, but even without explicit invalidation the
+  // loop will read the current key from the database each time.
   while (true) {
+    final userKey = await DatabaseService().getUserData(key: userIDKey);
     try {
       final response = await http.post(
         url,
@@ -34,18 +37,21 @@ final activePortfolioProvider = StreamProvider<ActivePortfolioStockEntity>((
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
-        activePorfolioEntity = ActivePortfolioStockEntity.fromJson(
+        final activePorfolioEntity = ActivePortfolioStockEntity.fromJson(
           jsonResponse,
         );
         log('Active Porfolio : ${activePorfolioEntity.message}');
         log('Active Porfolio Response ${response.body}');
-        yield ActivePortfolioStockEntity.fromJson(jsonResponse);
+        yield activePorfolioEntity;
       } else {
         log('Failed to load data from Super Trade Server');
       }
     } catch (e) {
       log('Active Portfolio Repo Error =>> $e');
     }
-    await Future.delayed(const Duration(microseconds: 100));
+
+    // throttle the loop to avoid overwhelming the server; original code used
+    // microseconds which is essentially tight loop, keep similar behaviour.
+    await Future.delayed(const Duration(milliseconds: 100));
   }
 });

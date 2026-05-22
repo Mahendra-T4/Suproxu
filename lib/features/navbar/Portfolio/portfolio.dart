@@ -25,20 +25,14 @@ class Portfolioclose extends StatefulWidget {
 class _PortfoliocloseState extends State<Portfolioclose>
     with SingleTickerProviderStateMixin {
   late TabController tabController;
-  double ledgerBalance = 19700.25;
-  double investBalance = 10000;
-  var ProfitLoOnInvest = 0.0;
+
   Timer? _validationTimer;
   StreamSubscription<void>? _logoutSub;
-  double calculateLossOnInvest(double ledgerBalance, double investBalance) {
-    final loss = investBalance - 2000;
-    ProfitLoOnInvest = investBalance - loss;
-    return ProfitLoOnInvest;
-  }
 
   @override
   void initState() {
     super.initState();
+
     if (!mounted) return;
     _validationTimer = Timer.periodic(const Duration(seconds: 10), (
       timer,

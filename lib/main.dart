@@ -15,6 +15,8 @@ import 'package:suproxu/features/navbar/TradeScreen/bloc/trade_bloc.dart';
 import 'package:suproxu/features/navbar/home/bloc/home_bloc.dart';
 import 'package:suproxu/features/navbar/profile/bloc/profile_bloc.dart';
 
+//git check
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // 🔒 Lock app to portrait mode only

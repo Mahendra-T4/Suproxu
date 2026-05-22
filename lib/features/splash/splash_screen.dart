@@ -14,6 +14,8 @@ import 'package:http/http.dart' as http;
 import 'package:suproxu/features/navbar/Portfolio/websocket/active_portfolio_socket.dart';
 import 'package:suproxu/features/navbar/wishlist/wishlist.dart';
 
+//perk app
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
